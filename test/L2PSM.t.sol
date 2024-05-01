@@ -44,7 +44,25 @@ contract L2PSMTestBase is Test {
 
 contract L2PSMConstructorTests is L2PSMTestBase {
 
-    function test_constructor() public view {
+    function test_constructor_invalidSDai() public {
+        vm.expectRevert("L2PSM/invalid-sDai");
+        new L2PSM(address(0), address(asset), address(oracle));
+    }
+
+    function test_constructor_invalidAsset() public {
+        vm.expectRevert("L2PSM/invalid-asset");
+        new L2PSM(address(sDai), address(0), address(oracle));
+    }
+
+    function test_constructor_invalidOracle() public {
+        vm.expectRevert("L2PSM/invalid-oracle");
+        new L2PSM(address(sDai), address(asset), address(0));
+    }
+
+    function test_constructor() public {
+        // Deploy new PSM to get test coverage
+        psm = new L2PSM(address(sDai), address(asset), address(oracle));
+
         assertEq(address(psm.sDai()),   address(sDai));
         assertEq(address(psm.asset()),  address(asset));
         assertEq(address(psm.oracle()), address(oracle));
