@@ -10,6 +10,9 @@ interface IDSROracleLike {
 }
 
 // TODO: Get better name
+// TODO: Add events
+// TODO: Determine what admin functionality we want (fees?)
+// TODO: Add interface and inherit
 contract L2PSM {
 
     using SafeERC20 for IERC20;
@@ -38,8 +41,7 @@ contract L2PSM {
     function buySDai(uint256 amountIn, uint256 minAmountOut) external {
         require(amountIn != 0, "L2PSM/invalid-amountIn");
 
-        uint256 amountOut
-            = amountIn * sDaiPrecision / oracle.getConversionRateBinomialApprox() / assetPrecision;
+        uint256 amountOut = getBuySDaiQuote(amountIn);
 
         require(amountOut >= minAmountOut, "L2PSM/invalid-amountOut");
 
@@ -50,13 +52,28 @@ contract L2PSM {
     function sellSDai(uint256 amountIn, uint256 minAmountOut) external {
         require(amountIn != 0, "L2PSM/invalid-amountIn");
 
-        uint256 amountOut
-            = amountIn * assetPrecision / oracle.getConversionRateBinomialApprox() / sDaiPrecision;
+        uint256 amountOut = getSellSDaiQuote(amountIn);
 
         require(amountOut >= minAmountOut, "L2PSM/invalid-amountOut");
 
         sDai.safeTransferFrom(msg.sender, address(this), amountIn);
         asset.safeTransfer(msg.sender, amountOut);
+    }
+
+    function getBuySDaiQuote(uint256 amountIn) public view returns (uint256) {
+        return amountIn
+            * sDaiPrecision
+            * 1e27
+            / oracle.getConversionRateBinomialApprox()
+            / assetPrecision;
+    }
+
+    function getSellSDaiQuote(uint256 amountIn) public view returns (uint256) {
+        return amountIn
+            * assetPrecision
+            * oracle.getConversionRateBinomialApprox()
+            / 1e27
+            / sDaiPrecision;
     }
 
 }
