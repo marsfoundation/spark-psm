@@ -10,20 +10,21 @@ interface IDSROracleLike {
 }
 
 // TODO: Get better name
-// TODO: Add events
+// TODO: Add events and corresponding tests
 // TODO: Determine what admin functionality we want (fees?)
-// TODO: Add interface and inherit
+// TODO: Add interface with natspec and inherit
+// TODO: Discuss rounding up/down
 contract L2PSM {
 
     using SafeERC20 for IERC20;
 
-    IERC20 public sDai;
-    IERC20 public asset;
+    IERC20 public immutable sDai;
+    IERC20 public immutable asset;
 
-    IDSROracleLike public oracle;
+    IDSROracleLike public immutable oracle;
 
-    uint256 public sDaiPrecision;
-    uint256 public assetPrecision;
+    uint256 public immutable sDaiPrecision;
+    uint256 public immutable assetPrecision;
 
     constructor(address sDai_, address asset_, address oracle_) {
         require(sDai_   != address(0), "L2PSM/invalid-sDai");
@@ -62,16 +63,16 @@ contract L2PSM {
 
     function getBuySDaiQuote(uint256 amountIn) public view returns (uint256) {
         return amountIn
-            * sDaiPrecision
             * 1e27
+            * sDaiPrecision
             / oracle.getConversionRateBinomialApprox()
             / assetPrecision;
     }
 
     function getSellSDaiQuote(uint256 amountIn) public view returns (uint256) {
         return amountIn
-            * assetPrecision
             * oracle.getConversionRateBinomialApprox()
+            * assetPrecision
             / 1e27
             / sDaiPrecision;
     }

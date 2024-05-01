@@ -34,7 +34,7 @@ contract L2PSMTestBase is Test {
             + asset.balanceOf(address(psm)) * 1e12;
     }
 
-    modifier assertPsmValueDoesNotChange {
+    modifier assertAtomicPsmValueDoesNotChange {
         uint256 beforeValue = _getPsmValue();
         _;
         assertEq(_getPsmValue(), beforeValue);
@@ -54,6 +54,9 @@ contract L2PSMConstructorTests is L2PSMTestBase {
     }
 
 }
+
+// TODO: Add fuzz tests
+// TODO: Add overflow boundary tests
 
 contract L2PSMQuoteFunctionTests is L2PSMTestBase {
 
@@ -227,7 +230,7 @@ contract L2PSMBuySDaiTests is L2PSMTestBase {
         psm.buySDai(125e6, 100e18);
     }
 
-    function test_buySDai() public assertPsmValueDoesNotChange {
+    function test_buySDai() public assertAtomicPsmValueDoesNotChange {
         asset.mint(buyer, 100e6);
 
         vm.startPrank(buyer);
@@ -336,7 +339,7 @@ contract L2PSMSellSDaiTests is L2PSMTestBase {
         psm.sellSDai(80e18 + 0.8e12 - 1, 100e6);
     }
 
-    function test_sellSDai() public assertPsmValueDoesNotChange {
+    function test_sellSDai() public assertAtomicPsmValueDoesNotChange {
         sDai.mint(buyer, 80e18);
 
         vm.startPrank(buyer);
