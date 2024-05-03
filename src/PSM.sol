@@ -110,8 +110,6 @@ contract PSM {
 
     function convertToShares(uint256 assetValue) public view returns (uint256) {
         uint256 totalValue = getPsmTotalValue();
-        console2.log("totalValue ", totalValue);
-        console2.log("totalShares", totalShares);
         if (totalValue != 0) {
             return assetValue * totalShares / totalValue;
         }
