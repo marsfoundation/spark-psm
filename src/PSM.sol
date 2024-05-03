@@ -76,7 +76,7 @@ contract PSM {
     function deposit(address asset, uint256 assetsToDeposit) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
-        uint256 newShares = convertToShares(getAssetValue(asset, assetsToDeposit));
+        uint256 newShares = convertToShares(_getAssetValue(asset, assetsToDeposit));
 
         shares[msg.sender] += newShares;
         totalShares        += newShares;
@@ -94,21 +94,11 @@ contract PSM {
 
         uint256 assetValue = convertToAssets(sharesToWithdraw);
 
-        uint256 assets;
-
-        if (asset == address(asset0)) {
-            assets = assetValue * asset0Precision / 1e18;
-        } else {
-            // TODO: Figure out if 1e18 can go before division or if it'll
-            //       cause overflows too easily
-            assets = assetValue * 1e27 / rateProvider.getConversionRate() * 1e18;
-        }
-
-        IERC20(asset).safeTransfer(msg.sender, assets);
+        IERC20(asset).safeTransfer(msg.sender, _getAssetsByValue(asset, assetValue));
     }
 
     /**********************************************************************************************/
-    /*** Swap preview functions                                                                 ***/
+    /*** Conversion functions                                                                   ***/
     /**********************************************************************************************/
 
     function convertToShares(uint256 assetValue) public view returns (uint256) {
@@ -119,36 +109,18 @@ contract PSM {
         return numShares * getPsmTotalValue() / totalShares;
     }
 
-    function getAssetValue(address asset, uint256 amount) public view returns (uint256) {
-        if (asset == address(asset0)) {
-            return getAsset0Value(amount);
-        }
-
-        return getAsset1Value(amount);
-    }
+    /**********************************************************************************************/
+    /*** Asset value functions                                                                  ***/
+    /**********************************************************************************************/
 
     function getPsmTotalValue() public view returns (uint256) {
-        return getAsset0Value(asset0.balanceOf(address(this)))
-            + getAsset1Value(asset1.balanceOf(address(this)));
+        return _getAsset0Value(asset0.balanceOf(address(this)))
+            + _getAsset1Value(asset1.balanceOf(address(this)));
     }
 
-    function getAsset0Value(uint256 amount) public view returns (uint256) {
-        return amount * 1e18 / asset0Precision;
-    }
-
-    function getAsset1Value(uint256 amount) public view returns (uint256) {
-        return amount * rateProvider.getConversionRate() / 1e27 / asset1Precision;
-    }
-
-    function getAssetsByValue(address asset, uint256 assetValue) public view returns (uint256) {
-        if (asset == address(asset0)) {
-            return assetValue * asset0Precision / 1e18;
-        }
-
-        // TODO: Figure out if 1e18 can go before division or if it'll
-        //       cause overflows too easily
-        return assetValue * 1e27 / rateProvider.getConversionRate() * 1e18;
-    }
+    /**********************************************************************************************/
+    /*** Swap preview functions                                                                 ***/
+    /**********************************************************************************************/
 
     function previewSwapAssetZeroToOne(uint256 amountIn) public view returns (uint256) {
         return amountIn
@@ -164,6 +136,34 @@ contract PSM {
             * asset0Precision
             / 1e27
             / asset1Precision;
+    }
+
+    /**********************************************************************************************/
+    /*** Internal helper functions                                                              ***/
+    /**********************************************************************************************/
+
+    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
+        if (asset == address(asset0)) {
+            return _getAsset0Value(amount);
+        }
+
+        return _getAsset1Value(amount);
+    }
+
+    function _getAssetsByValue(address asset, uint256 assetValue) internal view returns (uint256) {
+        if (asset == address(asset0)) {
+            return assetValue * asset0Precision / 1e18;
+        }
+
+        return assetValue * 1e27 * asset1Precision / rateProvider.getConversionRate() / 1e18;
+    }
+
+    function _getAsset0Value(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / asset0Precision;
+    }
+
+    function _getAsset1Value(uint256 amount) internal view returns (uint256) {
+        return amount * rateProvider.getConversionRate() / 1e27;
     }
 
 }
