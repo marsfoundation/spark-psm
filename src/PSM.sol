@@ -155,7 +155,8 @@ contract PSM {
             return assetValue * asset0Precision / 1e18;
         }
 
-        return assetValue * 1e27 * asset1Precision / rateProvider.getConversionRate() / 1e18;
+        // NOTE: Doing operation here to prevent overflow
+        return assetValue * 1e27 / rateProvider.getConversionRate() * asset1Precision / 1e18;
     }
 
     function _getAsset0Value(uint256 amount) internal view returns (uint256) {
