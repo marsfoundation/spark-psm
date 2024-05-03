@@ -9,12 +9,46 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMConversionTests is PSMTestBase {
 
-    function test_convertToShares() public {
-        // usdc.mint(address(psm), 100e6);
-        // sDai.mint(address(psm), 100e18);
+    function testFuzz_convertToShares_noValue(uint256 amount) public view {
+        assertEq(psm.convertToShares(amount), amount);
+    }
 
-        // uint256 shares = psm.convertToShares(100e6, 80e18);
+    function test_convertToShares_deposits() public {
+        usdc.mint(address(this), 100e6);
+        usdc.approve(address(psm), 100e6);
 
-        // assertEq(shares, 80e18);
+        psm.deposit(address(usdc), 100e6);
+
+        assertEq(psm.convertToShares(1), 1);
+        assertEq(psm.convertToShares(2), 2);
+        assertEq(psm.convertToShares(3), 3);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+        assertEq(psm.convertToShares(2e18), 2e18);
+        assertEq(psm.convertToShares(3e18), 3e18);
+
+        sDai.mint(address(this), 100e18);
+        sDai.approve(address(psm), 100e18);
+
+        psm.deposit(address(sDai), 100e18);
+
+        assertEq(psm.convertToShares(1), 1);
+        assertEq(psm.convertToShares(4), 4);
+        assertEq(psm.convertToShares(8), 9);
+
+        assertEq(psm.convertToShares(1e18), 1.125e18);
+        assertEq(psm.convertToShares(4e18), 4.5e18);
+        assertEq(psm.convertToShares(8e18), 9e18);
+
+        // Mint into psm without increasing shares
+        sDai.mint(address(psm), 100e18);
+    }
+
+    function testFuzz_convertToShares(uint256 usdcAmount, uint256 sDaiAmount) public {
+        usdcAmount = _bound(usdcAmount, 0, USDC_TOKEN_MAX);
+        sDaiAmount = _bound(sDaiAmount, 0, SDAI_TOKEN_MAX);
+
+        usdc.mint(address(this), usdcAmount);
+
     }
 }

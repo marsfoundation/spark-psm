@@ -19,6 +19,10 @@ contract PSMTestBase is Test {
 
     MockRateProvider public rateProvider;
 
+    // 1,000,000,000,000 of each token
+    uint256 public constant USDC_TOKEN_MAX = 1e18;
+    uint256 public constant SDAI_TOKEN_MAX = 1e30;
+
     function setUp() public virtual {
         sDai = new MockERC20("sDai",  "sDai",  18);
         usdc = new MockERC20("usdc", "usdc", 6);

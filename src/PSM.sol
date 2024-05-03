@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
+import { console2 } from "forge-std/console2.sol";
+
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
@@ -13,6 +15,7 @@ interface IRateProviderLike {
 // TODO: Determine what admin functionality we want (fees?)
 // TODO: Add interface with natspec and inherit
 // TODO: Discuss rounding up/down
+// TODO: Frontrunning attack
 contract PSM {
 
     using SafeERC20 for IERC20;
@@ -76,7 +79,11 @@ contract PSM {
     function deposit(address asset, uint256 assetsToDeposit) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
+        // console2.log("_getAssetValue", _getAssetValue(asset, assetsToDeposit));
+
         uint256 newShares = convertToShares(_getAssetValue(asset, assetsToDeposit));
+
+        // console2.log("newShares", newShares);
 
         shares[msg.sender] += newShares;
         totalShares        += newShares;
@@ -102,7 +109,13 @@ contract PSM {
     /**********************************************************************************************/
 
     function convertToShares(uint256 assetValue) public view returns (uint256) {
-        return assetValue * totalShares / getPsmTotalValue();
+        uint256 totalValue = getPsmTotalValue();
+        console2.log("totalValue ", totalValue);
+        console2.log("totalShares", totalShares);
+        if (totalValue != 0) {
+            return assetValue * totalShares / totalValue;
+        }
+        return assetValue;
     }
 
     function convertToAssets(uint256 numShares) public view returns (uint256) {

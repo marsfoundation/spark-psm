@@ -74,7 +74,7 @@ contract PSMHarnessTests is PSMTestBase {
 
     function testFuzz_getAsset1Value(uint256 conversionRate, uint256 amount) public {
         conversionRate = _bound(conversionRate, 0, 1000e27);
-        amount         = _bound(amount,         0, 1e45);
+        amount         = _bound(amount,         0, SDAI_TOKEN_MAX);
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -100,7 +100,7 @@ contract PSMHarnessTests is PSMTestBase {
     }
 
     function testFuzz_getAssetValue(uint256 amount) public view {
-        amount = _bound(amount, 0, 1e45);
+        amount = _bound(amount, 0, SDAI_TOKEN_MAX);
 
         assertEq(psmHarness.getAssetValue(address(usdc), amount), psmHarness.getAsset0Value(amount));
         assertEq(psmHarness.getAssetValue(address(sDai), amount), psmHarness.getAsset1Value(amount));
@@ -131,7 +131,7 @@ contract PSMHarnessTests is PSMTestBase {
     }
 
     function testFuzz_getAssetsByValue_asset0(uint256 amount) public view {
-        amount = _bound(amount, 0, 1e45);
+        amount = _bound(amount, 0, USDC_TOKEN_MAX);
 
         assertEq(psmHarness.getAssetsByValue(address(usdc), amount), amount / 1e12);
     }
@@ -139,7 +139,7 @@ contract PSMHarnessTests is PSMTestBase {
     function testFuzz_getAssetsByValue_asset1(uint256 conversionRate, uint256 amount) public {
         // NOTE: 0.0001e27 considered lower bound for overflow considerations
         conversionRate = bound(conversionRate, 0.0001e27, 1000e27);
-        amount         = bound(amount,         0,         1e45);
+        amount         = bound(amount,         0,         SDAI_TOKEN_MAX);
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -211,8 +211,8 @@ contract GetPsmTotalValueTests is PSMTestBase {
     )
         public
     {
-        usdcAmount      = _bound(usdcAmount,     0,         1e45);
-        sDaiAmount      = _bound(sDaiAmount,     0,         1e45);
+        usdcAmount      = _bound(usdcAmount,     0,         USDC_TOKEN_MAX);
+        sDaiAmount      = _bound(sDaiAmount,     0,         SDAI_TOKEN_MAX);
         conversionRate  = _bound(conversionRate, 0.0001e27, 1000e27);
 
         usdc.mint(address(psm), usdcAmount);
