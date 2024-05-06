@@ -20,11 +20,12 @@ contract PSM {
 
     using SafeERC20 for IERC20;
 
-    // NOTE: Assumption is made that asset0 is the stablecoin and asset1 is the yield bearing asset
+    // NOTE: Assumption is made that asset1 is the yield-bearing counterpart of asset0.
+    //       Examples: asset0 = USDC and asset1 = sDAI, asset0 = WETH and asset1 = wstETH.
     IERC20 public immutable asset0;
     IERC20 public immutable asset1;
 
-    IRateProviderLike public immutable rateProvider;
+    address public immutable rateProvider;
 
     uint256 public immutable asset0Precision;
     uint256 public immutable asset1Precision;
@@ -40,7 +41,7 @@ contract PSM {
 
         asset0       = IERC20(asset0_);
         asset1       = IERC20(asset1_);
-        rateProvider = IRateProviderLike(rateProvider_);
+        rateProvider = rateProvider_;
 
         asset0Precision = 10 ** IERC20(asset0_).decimals();
         asset1Precision = 10 ** IERC20(asset1_).decimals();
@@ -79,11 +80,7 @@ contract PSM {
     function deposit(address asset, uint256 assetsToDeposit) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
-        // console2.log("_getAssetValue", _getAssetValue(asset, assetsToDeposit));
-
         uint256 newShares = convertToShares(_getAssetValue(asset, assetsToDeposit));
-
-        // console2.log("newShares", newShares);
 
         shares[msg.sender] += newShares;
         totalShares        += newShares;
@@ -96,8 +93,11 @@ contract PSM {
 
         require(shares[msg.sender] >= sharesToWithdraw, "PSM/insufficient-shares");
 
-        shares[msg.sender] -= sharesToWithdraw;
-        totalShares        -= sharesToWithdraw;
+        // Above require allows for unchecked to be used.
+        unchecked {
+            shares[msg.sender] -= sharesToWithdraw;
+            totalShares        -= sharesToWithdraw;
+        }
 
         uint256 assetValue = convertToAssets(sharesToWithdraw);
 
@@ -137,13 +137,13 @@ contract PSM {
         return amountIn
             * 1e27
             * asset1Precision
-            / rateProvider.getConversionRate()
+            / IRateProviderLike(rateProvider).getConversionRate()
             / asset0Precision;
     }
 
     function previewSwapAssetOneToZero(uint256 amountIn) public view returns (uint256) {
         return amountIn
-            * rateProvider.getConversionRate()
+            * IRateProviderLike(rateProvider).getConversionRate()
             * asset0Precision
             / 1e27
             / asset1Precision;
@@ -166,8 +166,11 @@ contract PSM {
             return assetValue * asset0Precision / 1e18;
         }
 
-        // NOTE: Doing operation here to prevent overflow
-        return assetValue * 1e27 / rateProvider.getConversionRate() * asset1Precision / 1e18;
+        // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
+        return assetValue
+            * 1e9
+            * asset1Precision
+            / IRateProviderLike(rateProvider).getConversionRate();
     }
 
     function _getAsset0Value(uint256 amount) internal view returns (uint256) {
@@ -175,7 +178,8 @@ contract PSM {
     }
 
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
-        return amount * rateProvider.getConversionRate() / 1e27;
+        // NOte: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
+        return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
     }
 
 }
