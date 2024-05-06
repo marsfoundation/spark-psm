@@ -51,26 +51,28 @@ contract PSM {
     /*** Swap functions                                                                         ***/
     /**********************************************************************************************/
 
-    function swapAssetZeroToOne(uint256 amountIn, uint256 minAmountOut) external {
-        require(amountIn != 0, "PSM/invalid-amountIn");
+    function swapAssetZeroToOne(uint256 amountIn, uint256 minAmountOut, address receiver) external {
+        require(amountIn != 0,          "PSM/invalid-amountIn");
+        require(receiver != address(0), "PSM/invalid-receiver");
 
         uint256 amountOut = previewSwapAssetZeroToOne(amountIn);
 
         require(amountOut >= minAmountOut, "PSM/invalid-amountOut");
 
         asset0.safeTransferFrom(msg.sender, address(this), amountIn);
-        asset1.safeTransfer(msg.sender, amountOut);
+        asset1.safeTransfer(receiver, amountOut);
     }
 
-    function swapAssetOneToZero(uint256 amountIn, uint256 minAmountOut) external {
-        require(amountIn != 0, "PSM/invalid-amountIn");
+    function swapAssetOneToZero(uint256 amountIn, uint256 minAmountOut, address receiver) external {
+        require(amountIn != 0,          "PSM/invalid-amountIn");
+        require(receiver != address(0), "PSM/invalid-receiver");
 
         uint256 amountOut = previewSwapAssetOneToZero(amountIn);
 
         require(amountOut >= minAmountOut, "PSM/invalid-amountOut");
 
         asset1.safeTransferFrom(msg.sender, address(this), amountIn);
-        asset0.safeTransfer(msg.sender, amountOut);
+        asset0.safeTransfer(receiver, amountOut);
     }
 
     /**********************************************************************************************/
