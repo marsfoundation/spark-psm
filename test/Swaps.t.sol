@@ -40,7 +40,7 @@ contract PSMSwapAssetZeroToOneTests is PSMTestBase {
 
         assertEq(expectedAmountOut, 80e18);
 
-        vm.expectRevert("PSM/invalid-amountOut");
+        vm.expectRevert("PSM/amountOut-too-low");
         psm.swapAssetZeroToOne(100e6, 80e18 + 1, receiver);
 
         psm.swapAssetZeroToOne(100e6, 80e18, receiver);
@@ -180,7 +180,7 @@ contract PSMSwapAssetOneToZeroTests is PSMTestBase {
 
         assertEq(expectedAmountOut, 100e6);
 
-        vm.expectRevert("PSM/invalid-amountOut");
+        vm.expectRevert("PSM/amountOut-too-low");
         psm.swapAssetOneToZero(80e18, 100e6 + 1, receiver);
 
         psm.swapAssetOneToZero(80e18, 100e6, receiver);

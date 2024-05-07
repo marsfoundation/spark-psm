@@ -19,6 +19,12 @@ contract PSMTestBase is Test {
 
     MockRateProvider public rateProvider;
 
+    modifier assertAtomicPsmValueDoesNotChange {
+        uint256 beforeValue = _getPsmValue();
+        _;
+        assertEq(_getPsmValue(), beforeValue);
+    }
+
     // 1,000,000,000,000 of each token
     uint256 public constant USDC_TOKEN_MAX = 1e18;
     uint256 public constant SDAI_TOKEN_MAX = 1e30;
@@ -40,10 +46,12 @@ contract PSMTestBase is Test {
             + usdc.balanceOf(address(psm)) * 1e12;
     }
 
-    modifier assertAtomicPsmValueDoesNotChange {
-        uint256 beforeValue = _getPsmValue();
-        _;
-        assertEq(_getPsmValue(), beforeValue);
+    function _deposit(address user, address asset, uint256 amount) internal {
+        vm.startPrank(user);
+        MockERC20(asset).mint(user, amount);
+        MockERC20(asset).approve(address(psm), amount);
+        psm.deposit(asset, amount);
+        vm.stopPrank();
     }
 
 }

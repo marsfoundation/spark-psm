@@ -57,7 +57,7 @@ contract PSM {
 
         uint256 amountOut = previewSwapAssetZeroToOne(amountIn);
 
-        require(amountOut >= minAmountOut, "PSM/invalid-amountOut");
+        require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
 
         asset0.safeTransferFrom(msg.sender, address(this), amountIn);
         asset1.safeTransfer(receiver, amountOut);
@@ -69,7 +69,7 @@ contract PSM {
 
         uint256 amountOut = previewSwapAssetOneToZero(amountIn);
 
-        require(amountOut >= minAmountOut, "PSM/invalid-amountOut");
+        require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
 
         asset1.safeTransferFrom(msg.sender, address(this), amountIn);
         asset0.safeTransfer(receiver, amountOut);
@@ -92,8 +92,9 @@ contract PSM {
 
     function withdraw(address asset, uint256 sharesToWithdraw) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        require(shares[msg.sender] >= sharesToWithdraw,               "PSM/insufficient-shares");
 
-        require(shares[msg.sender] >= sharesToWithdraw, "PSM/insufficient-shares");
+        uint256 assetsToWithdraw = convertToAssets(_getAssetsByValue(asset, sharesToWithdraw));
 
         // Above require allows for unchecked to be used.
         unchecked {
@@ -101,9 +102,7 @@ contract PSM {
             totalShares        -= sharesToWithdraw;
         }
 
-        uint256 assetValue = convertToAssets(sharesToWithdraw);
-
-        IERC20(asset).safeTransfer(msg.sender, _getAssetsByValue(asset, assetValue));
+        IERC20(asset).safeTransfer(msg.sender, assetsToWithdraw);
     }
 
     /**********************************************************************************************/
@@ -119,7 +118,11 @@ contract PSM {
     }
 
     function convertToAssets(uint256 numShares) public view returns (uint256) {
-        return numShares * getPsmTotalValue() / totalShares;
+        uint256 totalShares_ = totalShares;
+        if (totalShares_ != 0) {
+            return numShares * getPsmTotalValue() / totalShares_;
+        }
+        return numShares;
     }
 
     /**********************************************************************************************/
