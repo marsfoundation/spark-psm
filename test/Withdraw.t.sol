@@ -30,9 +30,8 @@ contract PSMWithdrawTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        // NOTE: Using shares here so 1e18 denomination is used
         vm.prank(user1);
-        psm.withdraw(address(usdc), 100e18);
+        psm.withdraw(address(usdc), 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -55,7 +54,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(sDai), 100e18);
+        psm.withdraw(address(sDai), 80e18);
 
         assertEq(sDai.balanceOf(user1),        80e18);
         assertEq(sDai.balanceOf(address(psm)), 0);
@@ -82,7 +81,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(usdc), 100e18);
+        psm.withdraw(address(usdc), 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -96,7 +95,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(sDai), 125e18);
+        psm.withdraw(address(sDai), 100e18);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);

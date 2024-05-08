@@ -91,22 +91,18 @@ contract PSM {
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
     }
 
-    // NOTE: Converting assets back into shares because in the situation where a user
-    // burns shares past the precision of the underlying asset E.g. anything below 1-e6 shares
-    // when withdrawing USDC, the user will burn more than their share and will change the value
-    // of the shares for other users.
-    function withdraw(address asset, uint256 sharesToWithdraw) external {
+    function withdraw(address asset, uint256 assetsToWithdraw) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
-        require(shares[msg.sender] >= sharesToWithdraw,               "PSM/insufficient-shares");
 
-        // Convert shares to asset value in 1e18 precision denominated in value of asset0
-        // then convert to units of specified asset.
-        uint256 assetsToWithdraw = _getAssetsByValue(asset, convertToAssets(sharesToWithdraw));
+        // Convert asset to 1e18 precision denominated in value of asset0 then convert to shares.
+        uint256 sharesToBurn = convertToShares(_getAssetValue(asset, assetsToWithdraw));
+
+        require(shares[msg.sender] >= sharesToBurn, "PSM/insufficient-shares");
 
         // Above require allows for unchecked to be used.
         unchecked {
-            shares[msg.sender] -= sharesToWithdraw;
-            totalShares        -= sharesToWithdraw;
+            shares[msg.sender] -= sharesToBurn;
+            totalShares        -= sharesToBurn;
         }
 
         IERC20(asset).safeTransfer(msg.sender, assetsToWithdraw);
