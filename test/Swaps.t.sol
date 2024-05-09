@@ -25,8 +25,8 @@ contract PSMSwapAssetZeroToOneTests is PSMTestBase {
     }
 
     function test_swapAssetZeroToOne_receiverZero() public {
-        vm.expectRevert("PSM/invalid-amountIn");
-        psm.swapAssetZeroToOne(0, 0, address(0));
+        vm.expectRevert("PSM/invalid-receiver");
+        psm.swapAssetZeroToOne(100e6, 80e18, address(0));
     }
 
     function test_swapAssetZeroToOne_minAmountOutBoundary() public {
@@ -165,8 +165,8 @@ contract PSMSwapAssetOneToZeroTests is PSMTestBase {
     }
 
     function test_swapAssetZeroToOne_receiverZero() public {
-        vm.expectRevert("PSM/invalid-amountIn");
-        psm.swapAssetOneToZero(0, 0, address(0));
+        vm.expectRevert("PSM/invalid-receiver");
+        psm.swapAssetOneToZero(100e6, 80e18, address(0));
     }
 
     function test_swapAssetOneToZero_minAmountOutBoundary() public {

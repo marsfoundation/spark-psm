@@ -5,6 +5,8 @@ import "forge-std/Test.sol";
 
 import { PSM } from "../src/PSM.sol";
 
+import { MockERC20 } from "erc20-helpers/MockERC20.sol";
+
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMWithdrawTests is PSMTestBase {
@@ -107,6 +109,160 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user1), 0);
 
         assertEq(psm.convertToShares(1e18), 1e18);
+    }
+
+    function test_withdraw_amountHigherThanBalanceOfAsset() public {
+        _deposit(user1, address(usdc), 100e6);
+        _deposit(user1, address(sDai), 100e18);
+
+        assertEq(usdc.balanceOf(user1),        0);
+        assertEq(usdc.balanceOf(address(psm)), 100e6);
+
+        assertEq(psm.totalShares(), 225e18);
+        assertEq(psm.shares(user1), 225e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        vm.prank(user1);
+        psm.withdraw(address(usdc), 125e6);
+
+        assertEq(usdc.balanceOf(user1),        100e6);
+        assertEq(usdc.balanceOf(address(psm)), 0);
+
+        assertEq(psm.totalShares(), 125e18);  // Only burns $100 of shares
+        assertEq(psm.shares(user1), 125e18);
+    }
+
+    function test_withdraw_amountHigherThanUserShares() public {
+        _deposit(user1, address(usdc), 100e6);
+        _deposit(user1, address(sDai), 100e18);
+        _deposit(user2, address(usdc), 200e6);
+
+        assertEq(usdc.balanceOf(user2),        0);
+        assertEq(usdc.balanceOf(address(psm)), 300e6);
+
+        assertEq(psm.totalShares(), 425e18);
+        assertEq(psm.shares(user2), 200e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        vm.prank(user2);
+        psm.withdraw(address(usdc), 225e6);
+
+        assertEq(usdc.balanceOf(user2),        200e6);  // Gets highest amount possible
+        assertEq(usdc.balanceOf(address(psm)), 100e6);
+
+        assertEq(psm.totalShares(), 225e18);
+        assertEq(psm.shares(user2), 0);  // Burns the users full amount of shares
+    }
+
+    function testFuzz_withdraw_multiUser(
+        uint256 depositAmount1,
+        uint256 depositAmount2,
+        uint256 depositAmount3,
+        uint256 withdrawAmount1,
+        uint256 withdrawAmount2,
+        uint256 withdrawAmount3
+    )
+        public
+    {
+        depositAmount1 = _bound(depositAmount1, 0, USDC_TOKEN_MAX);
+        depositAmount2 = _bound(depositAmount2, 0, USDC_TOKEN_MAX);
+        depositAmount3 = _bound(depositAmount3, 0, SDAI_TOKEN_MAX);
+
+        withdrawAmount1 = _bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
+        withdrawAmount2 = _bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
+        withdrawAmount3 = _bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+
+        _deposit(user1, address(usdc), depositAmount1);
+        _deposit(user2, address(usdc), depositAmount2);
+        _deposit(user2, address(sDai), depositAmount3);
+
+        uint256 totalUsdc  = depositAmount1 + depositAmount2;
+        uint256 totalValue = totalUsdc * 1e12 + depositAmount3 * 125/100;
+
+        assertEq(usdc.balanceOf(user1),        0);
+        assertEq(usdc.balanceOf(address(psm)), totalUsdc);
+
+        assertEq(psm.shares(user1), depositAmount1 * 1e12);
+        assertEq(psm.totalShares(), totalValue);
+
+        uint256 expectedWithdrawnAmount1
+            = _getExpectedWithdrawnAmount(usdc, user1, withdrawAmount1);
+
+        vm.prank(user1);
+        psm.withdraw(address(usdc), withdrawAmount1);
+
+        _checkPsmInvariant();
+
+        assertEq(
+            usdc.balanceOf(user1) * 1e12 + psm.getPsmTotalValue(),
+            totalValue
+        );
+
+        assertEq(usdc.balanceOf(user1),        expectedWithdrawnAmount1);
+        assertEq(usdc.balanceOf(address(psm)), totalUsdc - expectedWithdrawnAmount1);
+
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.totalShares(), totalValue - expectedWithdrawnAmount1 * 1e12);
+
+        // uint256 expectedWithdrawnAmount2
+        //     = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
+
+        // vm.prank(user2);
+        // psm.withdraw(address(usdc), withdrawAmount1);
+
+        // _checkPsmInvariant();
+
+        // assertEq(
+        //     usdc.balanceOf(user1) * 1e12 + psm.getPsmTotalValue(),
+        //     totalValue
+        // );
+
+        // assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
+        // assertEq(usdc.balanceOf(address(psm)), totalUsdc - expectedWithdrawnAmount1 - expectedWithdrawnAmount2);
+
+        // assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        // assertEq(psm.totalShares(), totalValue - expectedWithdrawnAmount1 * 1e12);
+
+        // assertEq(psm.shares(user1), 0);
+        // assertEq(psm.totalShares(), totalValue - depositAmount1 * 1e12);
+
+        // vm.prank(user2);
+        // psm.withdraw(address(sDai), withdrawAmount3);
+
+        // _checkPsmInvariant();
+
+        // assertApproxEqAbs(
+        //     (usdc.balanceOf(user1) + usdc.balanceOf(user2)) * 1e12
+        //         + (sDai.balanceOf(user2) * rateProvider.getConversionRate() / 1e27)
+        //         + psm.getPsmTotalValue(),
+        //     totalValue,
+        //     1
+        // );
+    }
+
+    function _checkPsmInvariant() internal view {
+        uint256 totalSharesValue = psm.convertToAssets(psm.totalShares());
+        uint256 totalAssetsValue =
+            sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
+            + usdc.balanceOf(address(psm)) * 1e12;
+
+        assertEq(totalSharesValue, totalAssetsValue);
+    }
+
+    function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
+        internal view returns (uint256 withdrawAmount)
+    {
+        uint256 balance    = asset.balanceOf(address(psm));
+        uint256 userAssets = psm.convertToAssets(psm.shares(user));
+
+        if (address(asset) == address(usdc)) {
+            userAssets /= 1e12;
+        }
+
+        withdrawAmount = userAssets < balance        ? userAssets : balance;
+        withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
     }
 
     // function test_withdraw_changeExchangeRate_smallBalances_nonRoundingCode() public {

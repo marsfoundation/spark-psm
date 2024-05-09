@@ -107,7 +107,7 @@ contract PSM {
         // the maximum amount of assets.
         if (sharesToBurn > shares[msg.sender]) {
             sharesToBurn     = shares[msg.sender];
-            assetsToWithdraw = convertToAssets(sharesToBurn);
+            assetsToWithdraw = _getAssetsByValue(asset, convertToAssets(sharesToBurn));
         }
 
         // Above logic allows for unchecked to be used.

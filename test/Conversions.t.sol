@@ -9,6 +9,10 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMConversionTests is PSMTestBase {
 
+    function testFuzz_convertToAssets_noValue(uint256 amount) public view {
+        assertEq(psm.convertToAssets(amount), amount);
+    }
+
     function testFuzz_convertToShares_noValue(uint256 amount) public view {
         assertEq(psm.convertToShares(amount), amount);
     }
