@@ -91,15 +91,26 @@ contract PSM {
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
     }
 
-    function withdraw(address asset, uint256 assetsToWithdraw) external {
+    function withdraw(address asset, uint256 maxAssetsToWithdraw) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+
+        uint256 assetBalance = IERC20(asset).balanceOf(address(this));
+
+        uint256 assetsToWithdraw = assetBalance < maxAssetsToWithdraw
+            ? assetBalance
+            : maxAssetsToWithdraw;
 
         // Convert asset to 1e18 precision denominated in value of asset0 then convert to shares.
         uint256 sharesToBurn = convertToShares(_getAssetValue(asset, assetsToWithdraw));
 
-        require(shares[msg.sender] >= sharesToBurn, "PSM/insufficient-shares");
+        // If the asset amount is higher than the user's share balance, burn all shares and withdraw
+        // the maximum amount of assets.
+        if (sharesToBurn > shares[msg.sender]) {
+            sharesToBurn     = shares[msg.sender];
+            assetsToWithdraw = convertToAssets(sharesToBurn);
+        }
 
-        // Above require allows for unchecked to be used.
+        // Above logic allows for unchecked to be used.
         unchecked {
             shares[msg.sender] -= sharesToBurn;
             totalShares        -= sharesToBurn;
