@@ -105,6 +105,8 @@ contract PSM {
 
         // If the asset amount is higher than the user's share balance, burn all shares and withdraw
         // the maximum amount of assets.
+        // Sometimes this will burn some more shares than the user owns of the underlying asset.
+        // E.g., Anything below 1-e6 worth of USDC will burn those shares and withdraw 0 USDC.
         if (sharesToBurn > shares[msg.sender]) {
             sharesToBurn     = shares[msg.sender];
             assetsToWithdraw = _getAssetsByValue(asset, convertToAssets(sharesToBurn));

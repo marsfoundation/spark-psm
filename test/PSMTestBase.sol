@@ -39,6 +39,9 @@ contract PSMTestBase is Test {
         rateProvider.__setConversionRate(1.25e27);
 
         psm = new PSM(address(usdc), address(sDai), address(rateProvider));
+
+        vm.label(address(sDai), "sDAI");
+        vm.label(address(usdc), "USDC");
     }
 
     function _getPsmValue() internal view returns (uint256) {

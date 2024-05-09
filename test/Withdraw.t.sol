@@ -166,6 +166,8 @@ contract PSMWithdrawTests is PSMTestBase {
     )
         public
     {
+        // NOTE: Not covering zero cases, 1e-2 at 1e6 used as min for now so exact values can
+        //       be asserted
         depositAmount1 = _bound(depositAmount1, 0, USDC_TOKEN_MAX);
         depositAmount2 = _bound(depositAmount2, 0, USDC_TOKEN_MAX);
         depositAmount3 = _bound(depositAmount3, 0, SDAI_TOKEN_MAX);
@@ -201,32 +203,67 @@ contract PSMWithdrawTests is PSMTestBase {
         );
 
         assertEq(usdc.balanceOf(user1),        expectedWithdrawnAmount1);
+        assertEq(usdc.balanceOf(user2),        0);
         assertEq(usdc.balanceOf(address(psm)), totalUsdc - expectedWithdrawnAmount1);
 
         assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.shares(user2), depositAmount2 * 1e12 + depositAmount3 * 125/100);  // Includes sDAI deposit
         assertEq(psm.totalShares(), totalValue - expectedWithdrawnAmount1 * 1e12);
 
-        // uint256 expectedWithdrawnAmount2
-        //     = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
+        uint256 expectedWithdrawnAmount2
+            = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
 
-        // vm.prank(user2);
-        // psm.withdraw(address(usdc), withdrawAmount1);
+        console.log("---- START ----");
+        console2.log("depositAmount1          ", depositAmount1);
+        console2.log("depositAmount2          ", depositAmount2);
+        console2.log("depositAmount3          ", depositAmount3);
+        console2.log("withdrawAmount1         ", withdrawAmount1);
+        console2.log("withdrawAmount2         ", withdrawAmount2);
+        console2.log("withdrawAmount3         ", withdrawAmount3);
+        console2.log("usdcBalance(psm)        ", usdc.balanceOf(address(psm)));
+        console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
+        console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
+        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        console2.log("psm.shares(user1)       ", psm.shares(user1));
+        console2.log("psm.shares(user2)       ", psm.shares(user2));
 
-        // _checkPsmInvariant();
+        vm.prank(user2);
+        psm.withdraw(address(usdc), withdrawAmount2);
 
-        // assertEq(
-        //     usdc.balanceOf(user1) * 1e12 + psm.getPsmTotalValue(),
-        //     totalValue
-        // );
+        console.log("---- END ----");
 
-        // assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
-        // assertEq(usdc.balanceOf(address(psm)), totalUsdc - expectedWithdrawnAmount1 - expectedWithdrawnAmount2);
+        console2.log("depositAmount1          ", depositAmount1);
+        console2.log("depositAmount2          ", depositAmount2);
+        console2.log("depositAmount3          ", depositAmount3);
+        console2.log("withdrawAmount1         ", withdrawAmount1);
+        console2.log("withdrawAmount2         ", withdrawAmount2);
+        console2.log("withdrawAmount3         ", withdrawAmount3);
+        console2.log("usdcBalance             ", usdc.balanceOf(address(psm)));
+        console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
+        console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
+        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        console2.log("psm.shares(user1)       ", psm.shares(user1));
+        console2.log("psm.shares(user2)       ", psm.shares(user2));
 
-        // assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
-        // assertEq(psm.totalShares(), totalValue - expectedWithdrawnAmount1 * 1e12);
+        _checkPsmInvariant();
 
-        // assertEq(psm.shares(user1), 0);
-        // assertEq(psm.totalShares(), totalValue - depositAmount1 * 1e12);
+        assertEq(
+            (usdc.balanceOf(user1) + usdc.balanceOf(user2)) * 1e12 + psm.getPsmTotalValue(),
+            totalValue
+        );
+
+        assertEq(usdc.balanceOf(user1),        expectedWithdrawnAmount1);
+        assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
+        assertEq(usdc.balanceOf(address(psm)), totalUsdc - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2));
+
+        assertEq(sDai.balanceOf(user2),        0);
+        assertEq(sDai.balanceOf(address(psm)), depositAmount3);
+
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.shares(user2), (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12));
+        // assertEq(psm.totalShares(), totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12);
 
         // vm.prank(user2);
         // psm.withdraw(address(sDai), withdrawAmount3);
