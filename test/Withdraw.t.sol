@@ -168,13 +168,20 @@ contract PSMWithdrawTests is PSMTestBase {
     {
         // NOTE: Not covering zero cases, 1e-2 at 1e6 used as min for now so exact values can
         //       be asserted
-        depositAmount1 = _bound(depositAmount1, 0, USDC_TOKEN_MAX);
-        depositAmount2 = _bound(depositAmount2, 0, USDC_TOKEN_MAX);
-        depositAmount3 = _bound(depositAmount3, 0, SDAI_TOKEN_MAX);
+        depositAmount1 = bound(depositAmount1, 0, USDC_TOKEN_MAX);
+        depositAmount2 = bound(depositAmount2, 0, USDC_TOKEN_MAX);
+        depositAmount3 = bound(depositAmount3, 0, SDAI_TOKEN_MAX);
 
-        withdrawAmount1 = _bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
-        withdrawAmount2 = _bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
-        withdrawAmount3 = _bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+        withdrawAmount1 = bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
+        withdrawAmount2 = bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
+        withdrawAmount3 = bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+
+        // depositAmount1  = 0;
+        // depositAmount2  = 0;
+        // depositAmount3  = 50000000004;
+        // withdrawAmount1 = 0;
+        // withdrawAmount2 = 0;
+        // withdrawAmount3 = 50000000001;
 
         _deposit(user1, address(usdc), depositAmount1);
         _deposit(user2, address(usdc), depositAmount2);
@@ -213,39 +220,39 @@ contract PSMWithdrawTests is PSMTestBase {
         uint256 expectedWithdrawnAmount2
             = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
 
-        console.log("---- START ----");
-        console2.log("depositAmount1          ", depositAmount1);
-        console2.log("depositAmount2          ", depositAmount2);
-        console2.log("depositAmount3          ", depositAmount3);
-        console2.log("withdrawAmount1         ", withdrawAmount1);
-        console2.log("withdrawAmount2         ", withdrawAmount2);
-        console2.log("withdrawAmount3         ", withdrawAmount3);
-        console2.log("usdcBalance(psm)        ", usdc.balanceOf(address(psm)));
-        console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
-        console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
-        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
-        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
-        console2.log("psm.shares(user1)       ", psm.shares(user1));
-        console2.log("psm.shares(user2)       ", psm.shares(user2));
+        // console.log("---- START ----");
+        // console2.log("depositAmount1          ", depositAmount1);
+        // console2.log("depositAmount2          ", depositAmount2);
+        // console2.log("depositAmount3          ", depositAmount3);
+        // console2.log("withdrawAmount1         ", withdrawAmount1);
+        // console2.log("withdrawAmount2         ", withdrawAmount2);
+        // console2.log("withdrawAmount3         ", withdrawAmount3);
+        // console2.log("usdcBalance(psm)        ", usdc.balanceOf(address(psm)));
+        // console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
+        // console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
+        // console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        // console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        // console2.log("psm.shares(user1)       ", psm.shares(user1));
+        // console2.log("psm.shares(user2)       ", psm.shares(user2));
 
         vm.prank(user2);
         psm.withdraw(address(usdc), withdrawAmount2);
 
-        console.log("---- END ----");
+        // console.log("---- END ----");
 
-        console2.log("depositAmount1          ", depositAmount1);
-        console2.log("depositAmount2          ", depositAmount2);
-        console2.log("depositAmount3          ", depositAmount3);
-        console2.log("withdrawAmount1         ", withdrawAmount1);
-        console2.log("withdrawAmount2         ", withdrawAmount2);
-        console2.log("withdrawAmount3         ", withdrawAmount3);
-        console2.log("usdcBalance             ", usdc.balanceOf(address(psm)));
-        console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
-        console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
-        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
-        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
-        console2.log("psm.shares(user1)       ", psm.shares(user1));
-        console2.log("psm.shares(user2)       ", psm.shares(user2));
+        // console2.log("depositAmount1          ", depositAmount1);
+        // console2.log("depositAmount2          ", depositAmount2);
+        // console2.log("depositAmount3          ", depositAmount3);
+        // console2.log("withdrawAmount1         ", withdrawAmount1);
+        // console2.log("withdrawAmount2         ", withdrawAmount2);
+        // console2.log("withdrawAmount3         ", withdrawAmount3);
+        // console2.log("usdcBalance             ", usdc.balanceOf(address(psm)));
+        // console2.log("usdcBalance(user1)      ", usdc.balanceOf(address(user1)));
+        // console2.log("usdcBalance(user2)      ", usdc.balanceOf(address(user2)));
+        // console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        // console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        // console2.log("psm.shares(user1)       ", psm.shares(user1));
+        // console2.log("psm.shares(user2)       ", psm.shares(user2));
 
         _checkPsmInvariant();
 
@@ -262,44 +269,134 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)), depositAmount3);
 
         assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
-        assertEq(psm.shares(user2), (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12));
-        // assertEq(psm.totalShares(), totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12);
 
-        // vm.prank(user2);
-        // psm.withdraw(address(sDai), withdrawAmount3);
+        assertEq(
+            psm.shares(user2),
+            (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12)
+        );
 
-        // _checkPsmInvariant();
+        assertEq(psm.totalShares(), totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12);
 
-        // assertApproxEqAbs(
-        //     (usdc.balanceOf(user1) + usdc.balanceOf(user2)) * 1e12
-        //         + (sDai.balanceOf(user2) * rateProvider.getConversionRate() / 1e27)
-        //         + psm.getPsmTotalValue(),
-        //     totalValue,
-        //     1
-        // );
+        uint256 expectedWithdrawnAmount3
+            = _getExpectedWithdrawnAmount(sDai, user2, withdrawAmount3);
+
+        console.log("---- START ----");
+
+        console2.log("depositAmount1          ", depositAmount1);
+        console2.log("depositAmount2          ", depositAmount2);
+        console2.log("depositAmount3          ", depositAmount3);
+        console2.log("withdrawAmount1         ", withdrawAmount1);
+        console2.log("withdrawAmount2         ", withdrawAmount2);
+        console2.log("withdrawAmount3         ", withdrawAmount3);
+        console2.log("sDaiBalance             ", sDai.balanceOf(address(psm)));
+        console2.log("sDaiBalance(user1)      ", sDai.balanceOf(address(user1)));
+        console2.log("sDaiBalance(user2)      ", sDai.balanceOf(address(user2)));
+        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        console2.log("expectedWithdrawnAmount3", expectedWithdrawnAmount3);
+        console2.log("psm.shares(user1)       ", psm.shares(user1));
+        console2.log("psm.shares(user2)       ", psm.shares(user2));
+
+        vm.prank(user2);
+        psm.withdraw(address(sDai), withdrawAmount3);
+
+        console.log("---- END ----");
+
+        console2.log("depositAmount1          ", depositAmount1);
+        console2.log("depositAmount2          ", depositAmount2);
+        console2.log("depositAmount3          ", depositAmount3);
+        console2.log("withdrawAmount1         ", withdrawAmount1);
+        console2.log("withdrawAmount2         ", withdrawAmount2);
+        console2.log("withdrawAmount3         ", withdrawAmount3);
+        console2.log("sDaiBalance             ", sDai.balanceOf(address(psm)));
+        console2.log("sDaiBalance(user1)      ", sDai.balanceOf(address(user1)));
+        console2.log("sDaiBalance(user2)      ", sDai.balanceOf(address(user2)));
+        console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        console2.log("expectedWithdrawnAmount3", expectedWithdrawnAmount3);
+        console2.log("psm.shares(user1)       ", psm.shares(user1));
+        console2.log("psm.shares(user2)       ", psm.shares(user2));
+
+        _checkPsmInvariant();
+
+        assertApproxEqAbs(
+            (usdc.balanceOf(user1) + usdc.balanceOf(user2)) * 1e12
+                + (sDai.balanceOf(user2) * rateProvider.getConversionRate() / 1e27)
+                + psm.getPsmTotalValue(),
+            totalValue,
+            1
+        );
+
+        // console.log("---- END ----");
+
+        // console2.log("depositAmount1          ", depositAmount1);
+        // console2.log("depositAmount2          ", depositAmount2);
+        // console2.log("depositAmount3          ", depositAmount3);
+        // console2.log("withdrawAmount1         ", withdrawAmount1);
+        // console2.log("withdrawAmount2         ", withdrawAmount2);
+        // console2.log("withdrawAmount3         ", withdrawAmount3);
+        // console2.log("sDaiBalance             ", sDai.balanceOf(address(psm)));
+        // console2.log("sDaiBalance(user1)      ", sDai.balanceOf(address(user1)));
+        // console2.log("sDaiBalance(user2)      ", sDai.balanceOf(address(user2)));
+        // console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
+        // console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
+        // console2.log("expectedWithdrawnAmount3", expectedWithdrawnAmount3);
+        // console2.log("psm.shares(user1)       ", psm.shares(user1));
+        // console2.log("psm.shares(user2)       ", psm.shares(user2));
+
+        assertEq(usdc.balanceOf(user1),        expectedWithdrawnAmount1);
+        assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
+        assertEq(usdc.balanceOf(address(psm)), totalUsdc - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2));
+
+        assertApproxEqAbs(sDai.balanceOf(user2),        expectedWithdrawnAmount3,                  2);
+        assertApproxEqAbs(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3, 2);
+
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+
+        assertApproxEqAbs(
+            psm.shares(user2),
+            (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100),
+            2
+        );
+
+        assertApproxEqAbs(
+            psm.totalShares(),
+            totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100),
+            2
+        );
     }
 
     function _checkPsmInvariant() internal view {
-        uint256 totalSharesValue = psm.convertToAssets(psm.totalShares());
+        uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
         uint256 totalAssetsValue =
             sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
             + usdc.balanceOf(address(psm)) * 1e12;
 
-        assertEq(totalSharesValue, totalAssetsValue);
+        assertApproxEqAbs(totalSharesValue, totalAssetsValue, 1);
     }
 
     function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
         internal view returns (uint256 withdrawAmount)
     {
         uint256 balance    = asset.balanceOf(address(psm));
-        uint256 userAssets = psm.convertToAssets(psm.shares(user));
+        uint256 userAssets = psm.convertToAssetValue(psm.shares(user));
 
         if (address(asset) == address(usdc)) {
             userAssets /= 1e12;
         }
 
+        if (address(asset) == address(sDai)) {
+            userAssets = userAssets * 1e27 / rateProvider.getConversionRate();
+        }
+
         withdrawAmount = userAssets < balance        ? userAssets : balance;
         withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
+
+        console2.log("convertToAssets", psm.convertToAssetValue(1e18));
+        console2.log("balance        ", balance);
+        console2.log("userAssets     ", userAssets);
+        console2.log("amount         ", amount);
+        console2.log("withdrawAmount ", withdrawAmount);
     }
 
     // function test_withdraw_changeExchangeRate_smallBalances_nonRoundingCode() public {
@@ -348,7 +445,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.expectRevert("SafeERC20/transfer-failed");
     //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
-    //     console2.log("First CTA", psm.convertToAssets(100e18));
+    //     console2.log("First CTA", psm.convertToAssetValue(100e18));
 
     //     // Rounds down here and transfers 100e6 USDC
     //     psm.withdraw(address(usdc), maxUsdcShares);
@@ -362,7 +459,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     assertEq(psm.shares(user1), 100e18 - maxUsdcShares);
     //     assertEq(psm.shares(user2), 125e18);
 
-    //     console2.log("Second CTA", psm.convertToAssets(100e18));
+    //     console2.log("Second CTA", psm.convertToAssetValue(100e18));
 
     //     psm.withdraw(address(sDai), 100e18 - maxUsdcShares);
 
@@ -379,7 +476,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.stopPrank();
     //     vm.startPrank(user2);
 
-    //     console2.log("Third CTA", psm.convertToAssets(100e18));
+    //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
     //     psm.withdraw(address(sDai), 125e18);
@@ -451,14 +548,14 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.expectRevert("SafeERC20/transfer-failed");
     //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
-    //     console2.log("First CTA", psm.convertToAssets(100_000_000e18));
+    //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     // Rounds down here and transfers 100_000_000e6 USDC
     //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
-    //     console2.log("maxUsdcShares value", psm.convertToAssets(maxUsdcShares));
+    //     console2.log("maxUsdcShares value", psm.convertToAssetValue(maxUsdcShares));
 
     //     assertEq(sDai.balanceOf(user1),        0);
     //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18);
@@ -469,7 +566,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     assertEq(psm.shares(user1), 100_000_000e18 - maxUsdcShares);
     //     assertEq(psm.shares(user2), 125_000_000e18);
 
-    //     console2.log("Second CTA", psm.convertToAssets(100_000_000e18));
+    //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
 
@@ -486,7 +583,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.stopPrank();
     //     vm.startPrank(user2);
 
-    //     console2.log("Third CTA", psm.convertToAssets(100e18));
+    //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
     //     psm.withdraw(address(sDai), 125_000_000e18);
@@ -560,14 +657,14 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.expectRevert("SafeERC20/transfer-failed");
     //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
-    //     console2.log("First CTA", psm.convertToAssets(100_000_000e18));
+    //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     // Rounds down here and transfers 100_000_000e6 USDC
     //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
-    //     console2.log("maxUsdcShares value", psm.convertToAssets(maxUsdcShares));
+    //     console2.log("maxUsdcShares value", psm.convertToAssetValue(maxUsdcShares));
 
     //     assertEq(sDai.balanceOf(user1),        0);
     //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18);
@@ -576,7 +673,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     assertEq(psm.shares(user1), 100_000_000e18 - maxUsdcShares);
     //     assertEq(psm.shares(user2), 125_000_000e18);
 
-    //     console2.log("Second CTA", psm.convertToAssets(100_000_000e18));
+    //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
 
@@ -593,7 +690,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     vm.stopPrank();
     //     vm.startPrank(user2);
 
-    //     console2.log("Third CTA", psm.convertToAssets(100e18));
+    //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
     //     psm.withdraw(address(sDai), 125_000_000e18);
@@ -669,7 +766,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     // vm.expectRevert("SafeERC20/transfer-failed");
     //     // psm.withdraw(address(usdc), maxUsdcShares + 1);
 
-    //     console2.log("First CTA", psm.convertToAssets(100e18));
+    //     console2.log("First CTA", psm.convertToAssetValue(100e18));
 
     //     // maxUsdcShares = 89.99999e18;
 
@@ -685,7 +782,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     // assertEq(psm.shares(user1), 100e18 - maxUsdcShares);
     //     // assertEq(psm.shares(user2), 125e18);
 
-    //     console2.log("Second CTA", psm.convertToAssets(100e18));
+    //     console2.log("Second CTA", psm.convertToAssetValue(100e18));
 
     //     // psm.withdraw(address(sDai), 100e18 - maxUsdcShares);
 
@@ -702,7 +799,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     // vm.stopPrank();
     //     // vm.startPrank(user2);
 
-    //     // console2.log("Third CTA", psm.convertToAssets(100e18));
+    //     // console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // // Withdraw shares originally worth $100 to compare yield with user1
     //     // psm.withdraw(address(sDai), 100e18);

@@ -179,7 +179,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        assertEq(psm.convertToAssets(psm.shares(user1)), 225e18);
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 225e18);
 
         rateProvider.__setConversionRate(1.5e27);
 
@@ -199,8 +199,8 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user2),               100e18);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.convertToAssets(psm.shares(user1)), 250e18);
-        assertEq(psm.convertToAssets(psm.shares(user2)), 0);
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
+        assertEq(psm.convertToAssetValue(psm.shares(user2)), 0);
 
         assertEq(psm.getPsmTotalValue(), 250e18);
 
@@ -222,8 +222,8 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.shares(user2), 135e18);
 
         // User 1 earned $25 on 225, User 2 has earned nothing
-        assertEq(psm.convertToAssets(psm.shares(user1)), 250e18);
-        assertEq(psm.convertToAssets(psm.shares(user2)), 150e18);
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
+        assertEq(psm.convertToAssetValue(psm.shares(user2)), 150e18);
 
         assertEq(psm.getPsmTotalValue(), 400e18);
     }

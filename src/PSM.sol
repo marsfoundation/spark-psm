@@ -100,19 +100,14 @@ contract PSM {
             ? assetBalance
             : maxAssetsToWithdraw;
 
-        // Convert asset to 1e18 precision denominated in value of asset0 then convert to shares.
-        uint256 sharesToBurn = convertToShares(_getAssetValue(asset, assetsToWithdraw));
+        // TODO: Investigate whether _getBurnableShares is worth using
+        uint256 sharesToBurn = convertToShares(asset, assetsToWithdraw);
 
-        // If the asset amount is higher than the user's share balance, burn all shares and withdraw
-        // the maximum amount of assets.
-        // Sometimes this will burn some more shares than the user owns of the underlying asset.
-        // E.g., Anything below 1-e6 worth of USDC will burn those shares and withdraw 0 USDC.
         if (sharesToBurn > shares[msg.sender]) {
-            sharesToBurn     = shares[msg.sender];
-            assetsToWithdraw = _getAssetsByValue(asset, convertToAssets(sharesToBurn));
+            assetsToWithdraw = convertToAssets(asset, shares[msg.sender]);
+            sharesToBurn     = convertToShares(asset, assetsToWithdraw);
         }
 
-        // Above logic allows for unchecked to be used.
         unchecked {
             shares[msg.sender] -= sharesToBurn;
             totalShares        -= sharesToBurn;
@@ -133,12 +128,21 @@ contract PSM {
         return assetValue;
     }
 
-    function convertToAssets(uint256 numShares) public view returns (uint256) {
+    function convertToShares(address asset, uint256 assets) public view returns (uint256) {
+        return convertToShares(_getAssetValue(asset, assets));
+    }
+
+    function convertToAssetValue(uint256 numShares) public view returns (uint256) {
         uint256 totalShares_ = totalShares;
+
         if (totalShares_ != 0) {
             return numShares * getPsmTotalValue() / totalShares_;
         }
         return numShares;
+    }
+
+    function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
+        return _getAssetsByValue(asset, convertToAssetValue(numShares));
     }
 
     /**********************************************************************************************/
@@ -201,6 +205,20 @@ contract PSM {
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
         // NOte: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
+    }
+
+    function _getBurnableShares(address asset, uint256 assets)
+        public view returns (uint256 sharesToBurn)
+    {
+        uint256 totalValue = getPsmTotalValue();
+
+        sharesToBurn = totalValue == 0 ? assets : assets * totalShares / totalValue;
+
+        if (asset == address(asset0)) {
+            return sharesToBurn * 1e18 / asset0Precision;
+        }
+
+        return sharesToBurn * 1e18 / asset1Precision;
     }
 
 }
