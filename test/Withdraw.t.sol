@@ -259,22 +259,37 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
         assertEq(usdc.balanceOf(address(psm)), totalUsdc - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2));
 
-        assertApproxEqAbs(sDai.balanceOf(user2),        expectedWithdrawnAmount3,                  2);
-        assertApproxEqAbs(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3, 2);
+        assertApproxEqAbs(sDai.balanceOf(user2),        expectedWithdrawnAmount3,                  1);
+        assertApproxEqAbs(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3, 1);
 
         assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
 
         assertApproxEqAbs(
             psm.shares(user2),
             (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100),
-            2
+            1
         );
 
         assertApproxEqAbs(
             psm.totalShares(),
             totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100),
-            2
+            1
         );
+
+        // -- TODO: Get these to work, rounding assertions proving always rounding down
+
+        // assertLe(sDai.balanceOf(user2),        expectedWithdrawnAmount3);
+        // assertGe(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3);
+
+        // assertLe(
+        //     psm.shares(user2),
+        //     (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100)
+        // );
+
+        // assertLe(
+        //     psm.totalShares(),
+        //     totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100)
+        // );
     }
 
     function _checkPsmInvariant() internal view {
