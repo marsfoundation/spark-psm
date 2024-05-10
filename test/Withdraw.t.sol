@@ -176,13 +176,6 @@ contract PSMWithdrawTests is PSMTestBase {
         withdrawAmount2 = bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
         withdrawAmount3 = bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
 
-        // depositAmount1  = 0;
-        // depositAmount2  = 0;
-        // depositAmount3  = 50000000004;
-        // withdrawAmount1 = 0;
-        // withdrawAmount2 = 0;
-        // withdrawAmount3 = 50000000001;
-
         _deposit(user1, address(usdc), depositAmount1);
         _deposit(user2, address(usdc), depositAmount2);
         _deposit(user2, address(sDai), depositAmount3);
@@ -262,23 +255,6 @@ contract PSMWithdrawTests is PSMTestBase {
             1
         );
 
-        // console.log("---- END ----");
-
-        // console2.log("depositAmount1          ", depositAmount1);
-        // console2.log("depositAmount2          ", depositAmount2);
-        // console2.log("depositAmount3          ", depositAmount3);
-        // console2.log("withdrawAmount1         ", withdrawAmount1);
-        // console2.log("withdrawAmount2         ", withdrawAmount2);
-        // console2.log("withdrawAmount3         ", withdrawAmount3);
-        // console2.log("sDaiBalance             ", sDai.balanceOf(address(psm)));
-        // console2.log("sDaiBalance(user1)      ", sDai.balanceOf(address(user1)));
-        // console2.log("sDaiBalance(user2)      ", sDai.balanceOf(address(user2)));
-        // console2.log("expectedWithdrawnAmount1", expectedWithdrawnAmount1);
-        // console2.log("expectedWithdrawnAmount2", expectedWithdrawnAmount2);
-        // console2.log("expectedWithdrawnAmount3", expectedWithdrawnAmount3);
-        // console2.log("psm.shares(user1)       ", psm.shares(user1));
-        // console2.log("psm.shares(user2)       ", psm.shares(user2));
-
         assertEq(usdc.balanceOf(user1),        expectedWithdrawnAmount1);
         assertEq(usdc.balanceOf(user2),        expectedWithdrawnAmount2);
         assertEq(usdc.balanceOf(address(psm)), totalUsdc - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2));
@@ -313,16 +289,17 @@ contract PSMWithdrawTests is PSMTestBase {
     function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
         internal view returns (uint256 withdrawAmount)
     {
+        // TODO: See if convertToAssets can be used
         uint256 balance    = asset.balanceOf(address(psm));
-        uint256 userAssets = psm.convertToAssets(address(asset), psm.shares(user));
+        uint256 userAssets = psm.convertToAssetValue(psm.shares(user));
 
         if (address(asset) == address(usdc)) {
             userAssets /= 1e12;
         }
 
-        // if (address(asset) == address(sDai)) {
-        //     userAssets = userAssets * 1e27 / rateProvider.getConversionRate();
-        // }
+        if (address(asset) == address(sDai)) {
+            userAssets = userAssets * 1e27 / rateProvider.getConversionRate();
+        }
 
         // Return the min of
         withdrawAmount = userAssets < balance        ? userAssets : balance;
