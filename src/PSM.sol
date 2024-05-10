@@ -207,6 +207,8 @@ contract PSM {
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
     }
 
+    // Rounds down to the lowest number of shares that can be burned to get the same amount of
+    // assets to prevent rounding errors.
     function _getBurnableShares(address asset, uint256 assets)
         public view returns (uint256 sharesToBurn)
     {
