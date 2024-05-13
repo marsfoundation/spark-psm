@@ -82,7 +82,7 @@ contract PSM {
     function deposit(address asset, uint256 assetsToDeposit) external {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
-        // Convert asset to 1e18 precision denominated in value of asset0 then convert to shares.
+        // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
         uint256 newShares = convertToShares(_getAssetValue(asset, assetsToDeposit));
 
         shares[msg.sender] += newShares;
@@ -207,20 +207,21 @@ contract PSM {
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
     }
 
-    // Rounds down to the lowest number of shares that can be burned to get the same amount of
-    // assets to prevent rounding errors.
-    function _getBurnableShares(address asset, uint256 assets)
-        public view returns (uint256 sharesToBurn)
-    {
-        uint256 totalValue = getPsmTotalValue();
+    // TODO: Investigate if this should be used.
+    // // Rounds down to the lowest number of shares that can be burned to get the same amount of
+    // // assets to prevent rounding errors.
+    // function _getBurnableShares(address asset, uint256 assets)
+    //     public view returns (uint256 sharesToBurn)
+    // {
+    //     uint256 totalValue = getPsmTotalValue();
 
-        sharesToBurn = totalValue == 0 ? assets : assets * totalShares / totalValue;
+    //     sharesToBurn = totalValue == 0 ? assets : assets * totalShares / totalValue;
 
-        if (asset == address(asset0)) {
-            return sharesToBurn * 1e18 / asset0Precision;
-        }
+    //     if (asset == address(asset0)) {
+    //         return sharesToBurn * 1e18 / asset0Precision;
+    //     }
 
-        return sharesToBurn * 1e18 / asset1Precision;
-    }
+    //     return sharesToBurn * 1e18 / asset1Precision;
+    // }
 
 }
