@@ -30,7 +30,7 @@ contract PSMTestBase is Test {
     uint256 public constant SDAI_TOKEN_MAX = 1e30;
 
     function setUp() public virtual {
-        sDai = new MockERC20("sDai",  "sDai",  18);
+        sDai = new MockERC20("sDai", "sDai", 18);
         usdc = new MockERC20("usdc", "usdc", 6);
 
         rateProvider = new MockRateProvider();
@@ -54,6 +54,12 @@ contract PSMTestBase is Test {
         MockERC20(asset).mint(user, amount);
         MockERC20(asset).approve(address(psm), amount);
         psm.deposit(asset, amount);
+        vm.stopPrank();
+    }
+
+    function _withdraw(address user, address asset, uint256 amount) internal {
+        vm.prank(user);
+        psm.withdraw(asset, amount);
         vm.stopPrank();
     }
 
