@@ -11,9 +11,12 @@ interface IRateProviderLike {
 
 // TODO: Add events and corresponding tests
 // TODO: Determine what admin functionality we want (fees?)
+// TODO: Refactor into inheritance structure
 // TODO: Add interface with natspec and inherit
 // TODO: Prove that we're always rounding against user
-// TODO: Frontrunning attack
+// TODO: Frontrunning attack, donation attack, virtual balances?
+// TODO: Figure out how to optimize require checks for assets in view functions
+// TODO: Discuss if we should add ERC20 functionality
 contract PSM {
 
     using SafeERC20 for IERC20;
@@ -204,7 +207,7 @@ contract PSM {
     }
 
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
-        // NOte: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
+        // NOTE: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
     }
 
