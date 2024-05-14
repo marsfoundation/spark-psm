@@ -7,6 +7,8 @@ import { PSM } from "../src/PSM.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
+// TODO: Add failure modes tests
+
 contract PSMConvertToSharesTests is PSMTestBase {
 
     function test_convertToShares_noValue() public view {

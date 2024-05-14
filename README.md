@@ -7,7 +7,7 @@
 [foundry]: https://getfoundry.sh/
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
-PSM contract to convert sDAI to stablecoins on L2s.
+PSM contract to convert between a token and it's yield-bearing counterpart.
 
 ## Usage
 

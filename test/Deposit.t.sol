@@ -14,7 +14,7 @@ contract PSMDepositTests is PSMTestBase {
 
     function test_deposit_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.deposit(address(0), 100e6);
+        psm.deposit(makeAddr("new-asset"), 100e6);
     }
 
     // TODO: Add balance/approve failure tests
@@ -42,7 +42,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)),        100e6);
 
         assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1),  100e18);
+        assertEq(psm.shares(user1), 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -70,7 +70,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(), 125e18);
-        assertEq(psm.shares(user1),  125e18);
+        assertEq(psm.shares(user1), 125e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -91,7 +91,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(sDai.allowance(user1, address(psm)), 100e18);
         assertEq(sDai.balanceOf(user1),               100e18);
-        assertEq(sDai.balanceOf(address(psm)),       0);
+        assertEq(sDai.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(), 100e18);
         assertEq(psm.shares(user1), 100e18);

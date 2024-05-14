@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { console2 } from "forge-std/console2.sol";
-
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
@@ -14,7 +12,7 @@ interface IRateProviderLike {
 // TODO: Add events and corresponding tests
 // TODO: Determine what admin functionality we want (fees?)
 // TODO: Add interface with natspec and inherit
-// TODO: Discuss rounding up/down
+// TODO: Prove that we're always rounding against user
 // TODO: Frontrunning attack
 contract PSM {
 
@@ -91,21 +89,22 @@ contract PSM {
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
     }
 
-    function withdraw(address asset, uint256 maxAssetsToWithdraw) external {
+    function withdraw(address asset, uint256 maxAssetsToWithdraw)
+        external returns (uint256 assetsWithdrawn)
+    {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
         uint256 assetBalance = IERC20(asset).balanceOf(address(this));
 
-        uint256 assetsToWithdraw = assetBalance < maxAssetsToWithdraw
+        assetsWithdrawn = assetBalance < maxAssetsToWithdraw
             ? assetBalance
             : maxAssetsToWithdraw;
 
-        // TODO: Investigate whether _getBurnableShares is worth using
-        uint256 sharesToBurn = convertToShares(asset, assetsToWithdraw);
+        uint256 sharesToBurn = convertToShares(asset, assetsWithdrawn);
 
         if (sharesToBurn > shares[msg.sender]) {
-            assetsToWithdraw = convertToAssets(asset, shares[msg.sender]);
-            sharesToBurn     = convertToShares(asset, assetsToWithdraw);
+            assetsWithdrawn = convertToAssets(asset, shares[msg.sender]);
+            sharesToBurn    = convertToShares(asset, assetsWithdrawn);
         }
 
         unchecked {
@@ -113,7 +112,7 @@ contract PSM {
             totalShares        -= sharesToBurn;
         }
 
-        IERC20(asset).safeTransfer(msg.sender, assetsToWithdraw);
+        IERC20(asset).safeTransfer(msg.sender, assetsWithdrawn);
     }
 
     /**********************************************************************************************/
@@ -129,6 +128,7 @@ contract PSM {
     }
 
     function convertToShares(address asset, uint256 assets) public view returns (uint256) {
+        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
         return convertToShares(_getAssetValue(asset, assets));
     }
 
@@ -142,6 +142,7 @@ contract PSM {
     }
 
     function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
+        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
         return _getAssetsByValue(asset, convertToAssetValue(numShares));
     }
 
@@ -206,22 +207,5 @@ contract PSM {
         // NOte: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
     }
-
-    // TODO: Investigate if this should be used.
-    // // Rounds down to the lowest number of shares that can be burned to get the same amount of
-    // // assets to prevent rounding errors.
-    // function _getBurnableShares(address asset, uint256 assets)
-    //     public view returns (uint256 sharesToBurn)
-    // {
-    //     uint256 totalValue = getPsmTotalValue();
-
-    //     sharesToBurn = totalValue == 0 ? assets : assets * totalShares / totalValue;
-
-    //     if (asset == address(asset0)) {
-    //         return sharesToBurn * 1e18 / asset0Precision;
-    //     }
-
-    //     return sharesToBurn * 1e18 / asset1Precision;
-    // }
 
 }

@@ -16,7 +16,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     function test_withdraw_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.withdraw(address(0), 100e6);
+        psm.withdraw(makeAddr("new-asset"), 100e6);
     }
 
     // TODO: Add balance/approve failure tests
@@ -33,7 +33,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(usdc), 100e6);
+        uint256 amount = psm.withdraw(address(usdc), 100e6);
+
+        assertEq(amount, 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -56,7 +58,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(sDai), 80e18);
+        uint256 amount = psm.withdraw(address(sDai), 80e18);
+
+        assertEq(amount, 80e18);
 
         assertEq(sDai.balanceOf(user1),        80e18);
         assertEq(sDai.balanceOf(address(psm)), 0);
@@ -83,7 +87,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(usdc), 100e6);
+        uint256 amount = psm.withdraw(address(usdc), 100e6);
+
+        assertEq(amount, 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -97,7 +103,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(sDai), 100e18);
+        amount = psm.withdraw(address(sDai), 100e18);
+
+        assertEq(amount, 100e18);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -124,7 +132,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        psm.withdraw(address(usdc), 125e6);
+        uint256 amount = psm.withdraw(address(usdc), 125e6);
+
+        assertEq(amount, 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -147,7 +157,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user2);
-        psm.withdraw(address(usdc), 225e6);
+        uint256 amount = psm.withdraw(address(usdc), 225e6);
+
+        assertEq(amount, 200e6);
 
         assertEq(usdc.balanceOf(user2),        200e6);  // Gets highest amount possible
         assertEq(usdc.balanceOf(address(psm)), 100e6);
@@ -193,7 +205,9 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(usdc, user1, withdrawAmount1);
 
         vm.prank(user1);
-        psm.withdraw(address(usdc), withdrawAmount1);
+        uint256 amount = psm.withdraw(address(usdc), withdrawAmount1);
+
+        assertEq(amount, expectedWithdrawnAmount1);
 
         _checkPsmInvariant();
 
@@ -214,7 +228,9 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
 
         vm.prank(user2);
-        psm.withdraw(address(usdc), withdrawAmount2);
+        amount = psm.withdraw(address(usdc), withdrawAmount2);
+
+        assertEq(amount, expectedWithdrawnAmount2);
 
         _checkPsmInvariant();
 
@@ -243,7 +259,9 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(sDai, user2, withdrawAmount3);
 
         vm.prank(user2);
-        psm.withdraw(address(sDai), withdrawAmount3);
+        amount = psm.withdraw(address(sDai), withdrawAmount3);
+
+        assertApproxEqAbs(amount, expectedWithdrawnAmount3, 1);
 
         _checkPsmInvariant();
 
