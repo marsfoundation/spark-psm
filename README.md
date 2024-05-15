@@ -7,7 +7,9 @@
 [foundry]: https://getfoundry.sh/
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
-PSM contract to convert between a token and it's yield-bearing counterpart.
+PSM contracts to either:
+- Convert between a token and it's yield-bearing counterpart.
+- Convert one to one between directly correlated assets.
 
 ## Usage
 

@@ -104,7 +104,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(sDai.allowance(user1, address(psm)), 0);
         assertEq(sDai.balanceOf(user1),               0);
-        assertEq(sDai.balanceOf(address(psm)),       100e18);
+        assertEq(sDai.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(), 225e18);
         assertEq(psm.shares(user1), 225e18);
