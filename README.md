@@ -8,8 +8,8 @@
 [foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
 
 PSM contracts to either:
-- Convert between a token and it's yield-bearing counterpart.
-- Convert one to one between directly correlated assets.
+- Convert between a tokenization of an asset (ex. USDC) and a yield-bearing version of the asset (ex. sDAI).
+- Convert one to one between directly correlated assets (ex. USDC-DAI).
 
 ## Usage
 
