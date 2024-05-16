@@ -21,36 +21,70 @@ contract PSM {
 
     using SafeERC20 for IERC20;
 
-    // NOTE: Assumption is made that asset1 is the yield-bearing counterpart of asset0.
-    //       Examples: asset0 = USDC and asset1 = sDAI, asset0 = WETH and asset1 = wstETH.
+    // NOTE: Assumption is made that asset2 is the yield-bearing counterpart of asset0 and asset1.
+    //       Examples: asset0 = USDC, asset1 = DAI, asset2 = sDAI
     IERC20 public immutable asset0;
     IERC20 public immutable asset1;
+    IERC20 public immutable asset2;
 
     address public immutable rateProvider;
 
     uint256 public immutable asset0Precision;
     uint256 public immutable asset1Precision;
+    uint256 public immutable asset2Precision;
 
     uint256 public totalShares;
 
     mapping(address user => uint256 shares) public shares;
 
-    constructor(address asset0_, address asset1_, address rateProvider_) {
+    constructor(address asset0_, address asset1_, address asset2_, address rateProvider_) {
         require(asset0_       != address(0), "PSM/invalid-asset0");
         require(asset1_       != address(0), "PSM/invalid-asset1");
+        require(asset2_       != address(0), "PSM/invalid-asset1");
         require(rateProvider_ != address(0), "PSM/invalid-rateProvider");
 
-        asset0       = IERC20(asset0_);
-        asset1       = IERC20(asset1_);
+        asset0 = IERC20(asset0_);
+        asset1 = IERC20(asset1_);
+        asset2 = IERC20(asset2_);
+
         rateProvider = rateProvider_;
 
         asset0Precision = 10 ** IERC20(asset0_).decimals();
         asset1Precision = 10 ** IERC20(asset1_).decimals();
+        asset2Precision = 10 ** IERC20(asset1_).decimals();
     }
 
     /**********************************************************************************************/
     /*** Swap functions                                                                         ***/
     /**********************************************************************************************/
+
+    function swap(address assetIn, address assetOut, uint256 amountIn, uint256 minAmountOut, address receiver) external {
+        uint256 amountOut = _getAmountOut(assetIn, assetOut, amountIn);
+
+        require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
+
+        IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(assetOut).safeTransfer(receiver, amountOut);
+    }
+
+    function _getAmountOut(address assetIn, address assetOut, uint256 amountIn) internal view returns (uint256) {
+        if (assetIn == address(asset0)) {
+            if      (assetOut == address(asset1)) return previewStableSwap(amountIn, asset0Precision, asset1Precision);
+            else if (assetOut == address(asset2)) return previewSwapToAsset2(asset0Precision, amountIn);
+        }
+
+        else if (assetIn == address(asset1)) {
+            if      (assetOut == address(asset0)) return previewStableSwap(amountIn, asset1Precision, asset0Precision);
+            else if (assetOut == address(asset2)) return previewSwapToAsset2(asset1Precision, amountIn);
+        }
+
+        else if (assetIn == address(asset2)) {
+            if      (assetOut == address(asset0)) return previewSwapFromAsset2(asset0Precision, amountIn);
+            else if (assetOut == address(asset1)) return previewSwapFromAsset2(asset1Precision, amountIn);
+        }
+
+        revert("PSM/invalid-asset");
+    }
 
     function swapAssetZeroToOne(uint256 amountIn, uint256 minAmountOut, address receiver) external {
         require(amountIn != 0,          "PSM/invalid-amountIn");
@@ -162,20 +196,36 @@ contract PSM {
     /*** Swap preview functions                                                                 ***/
     /**********************************************************************************************/
 
-    function previewSwapAssetZeroToOne(uint256 amountIn) public view returns (uint256) {
+    function previewSwapToAsset2(uint256 assetPrecision, uint256 amountIn)
+        public view returns (uint256)
+    {
         return amountIn
             * 1e27
-            * asset1Precision
+            * asset2Precision
             / IRateProviderLike(rateProvider).getConversionRate()
-            / asset0Precision;
+            / assetPrecision;
     }
 
-    function previewSwapAssetOneToZero(uint256 amountIn) public view returns (uint256) {
+    function previewSwapFromAsset2(uint256 assetPrecision, uint256 amountIn)
+        public view returns (uint256)
+    {
         return amountIn
             * IRateProviderLike(rateProvider).getConversionRate()
-            * asset0Precision
+            * assetPrecision
             / 1e27
-            / asset1Precision;
+            / asset2Precision;
+    }
+
+    function previewStableSwap(
+        uint256 amountIn,
+        uint256 assetInPrecision,
+        uint256 assetOutPrecision
+    )
+        public view returns (uint256)
+    {
+        return amountIn
+            * assetInPrecision
+            / assetOutPrecision;
     }
 
     /**********************************************************************************************/
