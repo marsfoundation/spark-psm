@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "../src/PSM.sol";
+import { PSM } from "src/PSM.sol";
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
@@ -38,7 +38,7 @@ contract PSMTestBase is Test {
         // NOTE: Using 1.25 for easy two way conversions
         rateProvider.__setConversionRate(1.25e27);
 
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM(address(usdc), address(sDai), address(rateProvider), 1000);
 
         vm.label(address(sDai), "sDAI");
         vm.label(address(usdc), "USDC");
