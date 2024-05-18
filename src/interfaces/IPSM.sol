@@ -3,8 +3,21 @@ pragma solidity ^0.8.13;
 
 interface IPSM {
 
+    /**
+     *  @dev  Emitted when an asset is deposited into the PSM.
+     *  @param user   User that deposited into the PSM.
+     *  @param asset  Address of the asset deposited.
+     *  @param amount Amount of the asset deposited.
+     */
     event AssetDeposited(address indexed user, address indexed asset, uint256 amount);
-    event AssetWithdrawn(address indexed user, address indexed asset, uint256 amount);
+
+    /**
+     *  @dev  Emitted when an asset is withdrawn from the PSM.
+     *  @param user   User that deposited into the PSM.
+     *  @param asset  Address of the asset deposited.
+     *  @param amount Amount of the asset deposited.
+     */
+    event AssetWithdrawn(address indexed user, address indexed asset, uint256 maxAssetsToWithdraw, uint256 amount);
 
     /**
      *  @dev   Deposits a specified amount of a given asset into the PSM. Must be one of the
