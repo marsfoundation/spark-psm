@@ -16,9 +16,6 @@ interface IRateProviderLike {
 // TODO: Refactor into inheritance structure
 // TODO: Add interface with natspec and inherit
 // TODO: Prove that we're always rounding against user
-// TODO: Frontrunning attack, donation attack, virtual balances?
-// TODO: Figure out how to optimize require checks for assets in view functions
-// TODO: Discuss if we should add ERC20 functionality
 contract PSM {
 
     using SafeERC20 for IERC20;
@@ -146,9 +143,11 @@ contract PSM {
 
         sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
 
+        // TODO: Refactor this section to not use convertToAssets because of redundant check
+        // TODO: This can cause an underflow in shares, refactor to use full shares balance?
         if (sharesToBurn > shares[msg.sender]) {
             assetsWithdrawn = convertToAssets(asset, shares[msg.sender]);
-            sharesToBurn    = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));  // TODO: This can cause an underflow, refactor to use full shares balance?
+            sharesToBurn    = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
         }
     }
 

@@ -357,7 +357,7 @@ contract PSMWithdrawTests is PSMTestBase {
             userAssets = userAssets * 1e27 / rateProvider.getConversionRate();
         }
 
-        // Return the min of
+        // Return the min of assets, balance, and amount
         withdrawAmount = userAssets < balance        ? userAssets : balance;
         withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
     }
