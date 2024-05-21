@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { console2 } from "forge-std/console2.sol";
-
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
@@ -144,7 +142,7 @@ contract PSM {
         sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
 
         // TODO: Refactor this section to not use convertToAssets because of redundant check
-        // TODO: This can cause an underflow in shares, refactor to use full shares balance?
+        // TODO: Can this cause an underflow in shares? Refactor to use full shares balance?
         if (sharesToBurn > shares[msg.sender]) {
             assetsWithdrawn = convertToAssets(asset, shares[msg.sender]);
             sharesToBurn    = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
