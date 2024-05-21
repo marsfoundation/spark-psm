@@ -112,7 +112,7 @@ contract InflationAttackTests is PSMTestBase {
         // TODO: Should this be an admin contract instead of address(0)?
         assertEq(usdc.balanceOf(address(psm)), 9_993_337.774818e6);
 
-        // Front runner loses 999k USDC, first depositor loses 4k USDC
+        // Front runner loses 9.99m USDC, first depositor loses 4k USDC
         assertEq(usdc.balanceOf(firstDepositor), 19_996_668.887408e6);
         assertEq(usdc.balanceOf(frontRunner),    9_993.337774e6);
     }

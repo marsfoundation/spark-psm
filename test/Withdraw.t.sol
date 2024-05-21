@@ -13,6 +13,9 @@ contract PSMWithdrawTests is PSMTestBase {
 
     address user1 = makeAddr("user1");
     address user2 = makeAddr("user2");
+    address burn  = address(0);
+
+    uint256 BURN_AMOUNT = 1000;
 
     function test_withdraw_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
@@ -28,20 +31,24 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
         assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18);
+        assertEq(psm.shares(user1), 100e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
         uint256 amount = psm.withdraw(address(usdc), 100e6);
 
-        assertEq(amount, 100e6);
+        // Burn amount causes shares to round down by one since shares are 99.999...
+        assertEq(amount, 100e6 - 1);
 
-        assertEq(usdc.balanceOf(user1),        100e6);
-        assertEq(usdc.balanceOf(address(psm)), 0);
+        assertEq(usdc.balanceOf(user1),        100e6 - 1);
+        assertEq(usdc.balanceOf(address(psm)), 1);
 
-        assertEq(psm.totalShares(), 0);
-        assertEq(psm.shares(user1), 0);
+        // User still has left over shares from rounding on 1e6
+        assertEq(psm.totalShares(), 1e12);
+        assertEq(psm.shares(user1), 1e12 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -53,20 +60,25 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)), 80e18);
 
         assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18);
+        assertEq(psm.shares(user1), 100e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
+
+        // This is the amount that this user will not be able to withdraw
+        assertEq(psm.convertToAssets(address(sDai), BURN_AMOUNT), 800);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
         uint256 amount = psm.withdraw(address(sDai), 80e18);
 
-        assertEq(amount, 80e18);
+        assertEq(amount, 80e18 - 800);
 
-        assertEq(sDai.balanceOf(user1),        80e18);
-        assertEq(sDai.balanceOf(address(psm)), 0);
+        assertEq(sDai.balanceOf(user1),        80e18 - 800);
+        assertEq(sDai.balanceOf(address(psm)), 800);
 
-        assertEq(psm.totalShares(), 0);
+        assertEq(psm.totalShares(), BURN_AMOUNT);
         assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -82,7 +94,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18);
+        assertEq(psm.shares(user1), 225e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -98,23 +111,28 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 125e18);
-        assertEq(psm.shares(user1), 125e18);
+        assertEq(psm.shares(user1), 125e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
+
+        // This is the amount that this user will not be able to withdraw
+        assertEq(psm.convertToAssets(address(sDai), BURN_AMOUNT), 800);
 
         vm.prank(user1);
         amount = psm.withdraw(address(sDai), 100e18);
 
-        assertEq(amount, 100e18);
+        assertEq(amount, 100e18 - 800);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        assertEq(sDai.balanceOf(user1),        100e18);
-        assertEq(sDai.balanceOf(address(psm)), 0);
+        assertEq(sDai.balanceOf(user1),        100e18 - 800);
+        assertEq(sDai.balanceOf(address(psm)), 800);
 
-        assertEq(psm.totalShares(), 0);
+        assertEq(psm.totalShares(), BURN_AMOUNT);
         assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -127,7 +145,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
         assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18);
+        assertEq(psm.shares(user1), 225e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -140,7 +159,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)), 0);
 
         assertEq(psm.totalShares(), 125e18);  // Only burns $100 of shares
-        assertEq(psm.shares(user1), 125e18);
+        assertEq(psm.shares(user1), 125e18 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
     }
 
     function test_withdraw_amountHigherThanUserShares() public {
@@ -178,11 +198,10 @@ contract PSMWithdrawTests is PSMTestBase {
     )
         public
     {
-        // NOTE: Not covering zero cases, 1e-2 at 1e6 used as min for now so exact values can
-        //       be asserted
-        depositAmount1 = bound(depositAmount1, 0, USDC_TOKEN_MAX);
-        depositAmount2 = bound(depositAmount2, 0, USDC_TOKEN_MAX);
-        depositAmount3 = bound(depositAmount3, 0, SDAI_TOKEN_MAX);
+        // NOTE: Deposits revert if deposit amount is less than the burn amount
+        depositAmount1 = bound(depositAmount1, BURN_AMOUNT, USDC_TOKEN_MAX);
+        depositAmount2 = bound(depositAmount2, BURN_AMOUNT, USDC_TOKEN_MAX);
+        depositAmount3 = bound(depositAmount3, BURN_AMOUNT, SDAI_TOKEN_MAX);
 
         withdrawAmount1 = bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
         withdrawAmount2 = bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
@@ -198,7 +217,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user1),        0);
         assertEq(usdc.balanceOf(address(psm)), totalUsdc);
 
-        assertEq(psm.shares(user1), depositAmount1 * 1e12);
+        assertEq(psm.shares(user1), depositAmount1 * 1e12 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
         assertEq(psm.totalShares(), totalValue);
 
         uint256 expectedWithdrawnAmount1
@@ -220,8 +240,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user2),        0);
         assertEq(usdc.balanceOf(address(psm)), totalUsdc - expectedWithdrawnAmount1);
 
-        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12 - BURN_AMOUNT);
         assertEq(psm.shares(user2), depositAmount2 * 1e12 + depositAmount3 * 125/100);  // Includes sDAI deposit
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
         assertEq(psm.totalShares(), totalValue - expectedWithdrawnAmount1 * 1e12);
 
         uint256 expectedWithdrawnAmount2
@@ -246,7 +267,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(sDai.balanceOf(user2),        0);
         assertEq(sDai.balanceOf(address(psm)), depositAmount3);
 
-        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertEq(
             psm.shares(user2),
@@ -280,7 +302,8 @@ contract PSMWithdrawTests is PSMTestBase {
         assertApproxEqAbs(sDai.balanceOf(user2),        expectedWithdrawnAmount3,                  1);
         assertApproxEqAbs(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3, 1);
 
-        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
+        assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12 - BURN_AMOUNT);
+        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         assertApproxEqAbs(
             psm.shares(user2),
