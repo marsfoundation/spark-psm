@@ -9,6 +9,7 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
+    // TODO: Decide if DAI test is needed
     function test_inflationAttack_noInitialBurnAmount() public {
         psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider), 0);
 

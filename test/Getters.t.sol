@@ -196,6 +196,7 @@ contract PSMHarnessTests is PSMTestBase {
 
 }
 
+// TODO: Update for three assets
 contract GetPsmTotalValueTests is PSMTestBase {
 
     function test_getPsmTotalValue_balanceChanges() public {

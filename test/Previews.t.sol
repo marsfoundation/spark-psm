@@ -5,98 +5,117 @@ import "forge-std/Test.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-// contract PSMPreviewFunctionTests is PSMTestBase {
+contract PSMPreviewSwapFailureTests is PSMTestBase {
 
-//     function test_previewSwapAssetZeroToOne() public {
-//         assertEq(psm.previewSwapAssetZeroToOne(1), 0.8e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(2), 1.6e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(3), 2.4e12);
+    function test_previewSwap_invalidAssetIn() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.previewSwap(makeAddr("other-token"), address(usdc), 1);
+    }
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1e6), 0.8e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(2e6), 1.6e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(3e6), 2.4e18);
+    function test_previewSwap_invalidAssetOut() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.previewSwap(address(usdc), makeAddr("other-token"), 1);
+    }
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1.000001e6), 0.8000008e18);
+}
 
-//         rateProvider.__setConversionRate(1.6e27);
+// TODO: Determine if 10 billion is too low of an upper bound for sDAI swaps,
+//       if exchange rate lower bound should be raised (applies to swap tests too).
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1), 0.625e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(2), 1.25e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(3), 1.875e12);
+contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1e6), 0.625e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(2e6), 1.25e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(3e6), 1.875e18);
+    function test_previewSwap_daiToUsdc() public view {
+        assertEq(psm.previewSwap(address(dai), address(usdc), 1e12 - 1), 0);
+        assertEq(psm.previewSwap(address(dai), address(usdc), 1e12),     1);
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1.000001e6), 0.625000625e18);
+        assertEq(psm.previewSwap(address(dai), address(usdc), 1e18), 1e6);
+    }
 
-//         rateProvider.__setConversionRate(0.8e27);
+    function testFuzz_previewSwap_daiToUsdc(uint256 amountIn) public view {
+        amountIn = _bound(amountIn, 0, DAI_TOKEN_MAX);
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1), 1.25e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(2), 2.5e12);
-//         assertEq(psm.previewSwapAssetZeroToOne(3), 3.75e12);
+        assertEq(psm.previewSwap(address(dai), address(usdc), amountIn), amountIn / 1e12);
+    }
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1e6), 1.25e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(2e6), 2.5e18);
-//         assertEq(psm.previewSwapAssetZeroToOne(3e6), 3.75e18);
+    function test_previewSwap_daiToSDai() public view {
+        assertEq(psm.previewSwap(address(dai), address(sDai), 1e18), 0.8e18);
+    }
 
-//         assertEq(psm.previewSwapAssetZeroToOne(1.000001e6), 1.25000125e18);
-//     }
+    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 exchangeRate) public {
+        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
 
-//     function test_previewSwapAssetOneToZero() public {
-//         assertEq(psm.previewSwapAssetOneToZero(1), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(2), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(3), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(4), 0);
+        rateProvider.__setConversionRate(exchangeRate);
 
-//         // 1e-6 with 18 decimal precision
-//         assertEq(psm.previewSwapAssetOneToZero(1e12), 1);
-//         assertEq(psm.previewSwapAssetOneToZero(2e12), 2);
-//         assertEq(psm.previewSwapAssetOneToZero(3e12), 3);
-//         assertEq(psm.previewSwapAssetOneToZero(4e12), 5);
+        uint256 amountOut = amountIn * 1e27 / exchangeRate;
 
-//         assertEq(psm.previewSwapAssetOneToZero(1e18), 1.25e6);
-//         assertEq(psm.previewSwapAssetOneToZero(2e18), 2.5e6);
-//         assertEq(psm.previewSwapAssetOneToZero(3e18), 3.75e6);
-//         assertEq(psm.previewSwapAssetOneToZero(4e18), 5e6);
+        assertEq(psm.previewSwap(address(dai), address(sDai), amountIn), amountOut);
+    }
 
-//         assertEq(psm.previewSwapAssetOneToZero(1.000001e18), 1.250001e6);
+}
 
-//         rateProvider.__setConversionRate(1.6e27);
+contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
 
-//         assertEq(psm.previewSwapAssetOneToZero(1), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(2), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(3), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(4), 0);
+    function test_previewSwap_usdcToDai() public view {
+        assertEq(psm.previewSwap(address(usdc), address(dai), 1e6),  1e18);
+    }
 
-//         // 1e-6 with 18 decimal precision
-//         assertEq(psm.previewSwapAssetOneToZero(1e12), 1);
-//         assertEq(psm.previewSwapAssetOneToZero(2e12), 3);
-//         assertEq(psm.previewSwapAssetOneToZero(3e12), 4);
-//         assertEq(psm.previewSwapAssetOneToZero(4e12), 6);
+    function testFuzz_previewSwap_usdcToDai(uint256 amountIn) public view {
+        amountIn = _bound(amountIn, 0, USDC_TOKEN_MAX);
 
-//         assertEq(psm.previewSwapAssetOneToZero(1e18), 1.6e6);
-//         assertEq(psm.previewSwapAssetOneToZero(2e18), 3.2e6);
-//         assertEq(psm.previewSwapAssetOneToZero(3e18), 4.8e6);
-//         assertEq(psm.previewSwapAssetOneToZero(4e18), 6.4e6);
+        assertEq(psm.previewSwap(address(usdc), address(dai), amountIn), amountIn * 1e12);
+    }
 
-//         rateProvider.__setConversionRate(0.8e27);
+    function test_previewSwap_usdcToSDai() public view {
+        assertEq(psm.previewSwap(address(usdc), address(sDai), 1e6), 0.8e18);
+    }
 
-//         assertEq(psm.previewSwapAssetOneToZero(1), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(2), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(3), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(4), 0);
+    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 exchangeRate) public {
+        amountIn = _bound(amountIn, 0, USDC_TOKEN_MAX);
 
-//         // 1e-6 with 18 decimal precision
-//         assertEq(psm.previewSwapAssetOneToZero(1e12), 0);
-//         assertEq(psm.previewSwapAssetOneToZero(2e12), 1);
-//         assertEq(psm.previewSwapAssetOneToZero(3e12), 2);
-//         assertEq(psm.previewSwapAssetOneToZero(4e12), 3);
+        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
 
-//         assertEq(psm.previewSwapAssetOneToZero(1e18), 0.8e6);
-//         assertEq(psm.previewSwapAssetOneToZero(2e18), 1.6e6);
-//         assertEq(psm.previewSwapAssetOneToZero(3e18), 2.4e6);
-//         assertEq(psm.previewSwapAssetOneToZero(4e18), 3.2e6);
-//     }
+        rateProvider.__setConversionRate(exchangeRate);
 
-// }
+        uint256 amountOut = amountIn * 1e27 * 1e12 / exchangeRate;
+
+        assertEq(psm.previewSwap(address(usdc), address(sDai), amountIn), amountOut);
+    }
+
+}
+
+contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
+
+    function test_previewSwap_sDaiToDai() public view {
+        assertEq(psm.previewSwap(address(sDai), address(dai), 1e18),  1.25e18);
+    }
+
+    function testFuzz_previewSwap_sDaiToDai(uint256 amountIn, uint256 exchangeRate) public {
+        amountIn     = _bound(amountIn,     1,       10_000_000_000e6);  // Using 10 billion for conversion rates
+        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+
+        rateProvider.__setConversionRate(exchangeRate);
+
+        uint256 amountOut = amountIn * exchangeRate / 1e27;
+
+        assertEq(psm.previewSwap(address(sDai), address(dai), amountIn), amountOut);
+    }
+
+    function test_previewSwap_sDaiToUsdc() public view {
+        assertEq(psm.previewSwap(address(sDai), address(usdc), 1e18), 1.25e6);
+    }
+
+    function testFuzz_previewSwap_sDaiToUsdc(uint256 amountIn, uint256 exchangeRate) public {
+        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
+
+        rateProvider.__setConversionRate(exchangeRate);
+
+        uint256 amountOut = amountIn * exchangeRate / 1e27 / 1e12;
+
+        assertEq(psm.previewSwap(address(sDai), address(usdc), amountIn), amountOut);
+    }
+
+}
+
