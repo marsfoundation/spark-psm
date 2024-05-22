@@ -7,6 +7,8 @@ import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
 
+import { IPSM } from "src/interfaces/IPSM.sol";
+
 interface IRateProviderLike {
     function getConversionRate() external view returns (uint256);
 }
@@ -14,9 +16,8 @@ interface IRateProviderLike {
 // TODO: Add events and corresponding tests
 // TODO: Determine what admin functionality we want (fees?)
 // TODO: Refactor into inheritance structure
-// TODO: Add interface with natspec and inherit
 // TODO: Prove that we're always rounding against user
-contract PSM {
+contract PSM is IPSM {
 
     using SafeERC20 for IERC20;
 
@@ -71,7 +72,8 @@ contract PSM {
         address assetOut,
         uint256 amountIn,
         uint256 minAmountOut,
-        address receiver
+        address receiver,
+        uint16  referralCode
     )
         external
     {
@@ -84,14 +86,16 @@ contract PSM {
 
         IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
         IERC20(assetOut).safeTransfer(receiver, amountOut);
+
+        emit Swap(assetIn, assetOut, msg.sender, receiver, amountIn, amountOut, referralCode);
     }
 
     /**********************************************************************************************/
     /*** Liquidity provision functions                                                          ***/
     /**********************************************************************************************/
 
-    function deposit(address asset, uint256 assetsToDeposit)
-        external returns (uint256 newShares)
+    function deposit(address asset, uint256 assetsToDeposit, uint16 referralCode)
+        external override returns (uint256 newShares)
     {
         newShares = previewDeposit(asset, assetsToDeposit);
 
@@ -106,10 +110,12 @@ contract PSM {
         totalShares        += newShares;
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
+
+        emit Deposit(asset, msg.sender, assetsToDeposit, newShares, referralCode);
     }
 
-    function withdraw(address asset, uint256 maxAssetsToWithdraw)
-        external returns (uint256 assetsWithdrawn)
+    function withdraw(address asset, uint256 maxAssetsToWithdraw, uint16 referralCode)
+        external override returns (uint256 assetsWithdrawn)
     {
         uint256 sharesToBurn;
 
@@ -121,13 +127,15 @@ contract PSM {
         }
 
         IERC20(asset).safeTransfer(msg.sender, assetsWithdrawn);
+
+        emit Withdraw(asset, msg.sender, assetsWithdrawn, sharesToBurn, referralCode);
     }
 
     /**********************************************************************************************/
     /*** Deposit/withdraw preview functions                                                     ***/
     /**********************************************************************************************/
 
-    function previewDeposit(address asset, uint256 assets) public view returns (uint256) {
+    function previewDeposit(address asset, uint256 assets) public view override returns (uint256) {
         require(_isValidAsset(asset), "PSM/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
@@ -135,7 +143,7 @@ contract PSM {
     }
 
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
-        public view returns (uint256 sharesToBurn, uint256 assetsWithdrawn)
+        public view override returns (uint256 sharesToBurn, uint256 assetsWithdrawn)
     {
         require(_isValidAsset(asset), "PSM/invalid-asset");
 
@@ -160,7 +168,7 @@ contract PSM {
     /**********************************************************************************************/
 
     function previewSwap(address assetIn, address assetOut, uint256 amountIn)
-        public view returns (uint256 amountOut)
+        public view override returns (uint256 amountOut)
     {
         if (assetIn == address(asset0)) {
             if      (assetOut == address(asset1)) return _previewOneToOneSwap(amountIn, asset0Precision, asset1Precision);
@@ -184,7 +192,9 @@ contract PSM {
     /*** Conversion functions                                                                   ***/
     /**********************************************************************************************/
 
-    function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
+    function convertToAssets(address asset, uint256 numShares)
+        public view override returns (uint256)
+    {
         require(_isValidAsset(asset), "PSM/invalid-asset");
 
         uint256 assetValue = convertToAssetValue(numShares);
@@ -199,7 +209,7 @@ contract PSM {
             / IRateProviderLike(rateProvider).getConversionRate();
     }
 
-    function convertToAssetValue(uint256 numShares) public view returns (uint256) {
+    function convertToAssetValue(uint256 numShares) public view override returns (uint256) {
         uint256 totalShares_ = totalShares;
 
         if (totalShares_ != 0) {
@@ -208,7 +218,7 @@ contract PSM {
         return numShares;
     }
 
-    function convertToShares(uint256 assetValue) public view returns (uint256) {
+    function convertToShares(uint256 assetValue) public view override returns (uint256) {
         uint256 totalValue = getPsmTotalValue();
         if (totalValue != 0) {
             return assetValue * totalShares / totalValue;
@@ -216,7 +226,7 @@ contract PSM {
         return assetValue;
     }
 
-    function convertToShares(address asset, uint256 assets) public view returns (uint256) {
+    function convertToShares(address asset, uint256 assets) public view override returns (uint256) {
         require(_isValidAsset(asset), "PSM/invalid-asset");
         return convertToShares(_getAssetValue(asset, assets));
     }
@@ -225,7 +235,7 @@ contract PSM {
     /*** Asset value functions                                                                  ***/
     /**********************************************************************************************/
 
-    function getPsmTotalValue() public view returns (uint256) {
+    function getPsmTotalValue() public view override returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))
             +  _getAsset2Value(asset2.balanceOf(address(this)));

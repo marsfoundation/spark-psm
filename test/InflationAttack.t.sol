@@ -65,10 +65,10 @@ contract InflationAttackTests is PSMTestBase {
         sDai.approve(address(psm), 800);
 
         vm.expectRevert(stdError.arithmeticError);
-        psm.deposit(address(sDai), 799);
+        psm.deposit(address(sDai), 799, 0);
 
         // 800 sDAI = 1000 shares
-        psm.deposit(address(sDai), 800);
+        psm.deposit(address(sDai), 800, 0);
     }
 
     function test_inflationAttack_useInitialBurnAmount() public {

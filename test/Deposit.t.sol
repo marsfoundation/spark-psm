@@ -17,7 +17,7 @@ contract PSMDepositTests is PSMTestBase {
 
     function test_deposit_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.deposit(makeAddr("new-asset"), 100e6);
+        psm.deposit(makeAddr("new-asset"), 100e6, 0);
     }
 
     // TODO: Add balance/approve failure tests
@@ -39,7 +39,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(usdc), 100e6);
+        psm.deposit(address(usdc), 100e6, 0);
 
         assertEq(usdc.allowance(user1, address(psm)), 0);
         assertEq(usdc.balanceOf(user1),               0);
@@ -69,7 +69,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), 100e18);
+        psm.deposit(address(sDai), 100e18, 0);
 
         assertEq(sDai.allowance(user1, address(psm)), 0);
         assertEq(sDai.balanceOf(user1),               0);
@@ -89,7 +89,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        psm.deposit(address(usdc), 100e6);
+        psm.deposit(address(usdc), 100e6, 0);
 
         sDai.mint(user1, 100e18);
         sDai.approve(address(psm), 100e18);
@@ -106,7 +106,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), 100e18);
+        psm.deposit(address(sDai), 100e18, 0);
 
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
@@ -132,7 +132,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), usdcAmount);
 
-        psm.deposit(address(usdc), usdcAmount);
+        psm.deposit(address(usdc), usdcAmount, 0);
 
         sDai.mint(user1, sDaiAmount);
         sDai.approve(address(psm), sDaiAmount);
@@ -149,7 +149,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), sDaiAmount);
+        psm.deposit(address(sDai), sDaiAmount, 0);
 
         assertEq(usdc.balanceOf(address(psm)), usdcAmount);
 
@@ -171,12 +171,12 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        psm.deposit(address(usdc), 100e6);
+        psm.deposit(address(usdc), 100e6, 0);
 
         sDai.mint(user1, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        psm.deposit(address(sDai), 100e18);
+        psm.deposit(address(sDai), 100e18, 0);
 
         vm.stopPrank();
 
@@ -217,7 +217,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.getPsmTotalValue(), 250e18);
 
-        psm.deposit(address(sDai), 100e18);
+        psm.deposit(address(sDai), 100e18, 0);
 
         assertEq(psm.shares(user2), 135e18);
 

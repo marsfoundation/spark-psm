@@ -22,22 +22,22 @@ contract PSMSwapFailureTests is PSMTestBase {
 
     function test_swap_amountZero() public {
         vm.expectRevert("PSM/invalid-amountIn");
-        psm.swap(address(usdc), address(sDai), 0, 0, receiver);
+        psm.swap(address(usdc), address(sDai), 0, 0, receiver, 0);
     }
 
     function test_swap_receiverZero() public {
         vm.expectRevert("PSM/invalid-receiver");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, address(0));
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, address(0), 0);
     }
 
     function test_swap_invalid_assetIn() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.swap(makeAddr("other-token"), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(makeAddr("other-token"), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_invalid_assetOut() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.swap(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_minAmountOutBoundary() public {
@@ -52,9 +52,9 @@ contract PSMSwapFailureTests is PSMTestBase {
         assertEq(expectedAmountOut, 80e18);
 
         vm.expectRevert("PSM/amountOut-too-low");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18 + 1, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18 + 1, receiver, 0);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_insufficientApproveBoundary() public {
@@ -65,11 +65,11 @@ contract PSMSwapFailureTests is PSMTestBase {
         usdc.approve(address(psm), 100e6 - 1);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
 
         usdc.approve(address(psm), 100e6);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_insufficientUserBalanceBoundary() public {
@@ -80,11 +80,11 @@ contract PSMSwapFailureTests is PSMTestBase {
         usdc.approve(address(psm), 100e6);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
 
         usdc.mint(swapper, 1);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver);
+        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_insufficientPsmBalanceBoundary() public {
@@ -99,9 +99,9 @@ contract PSMSwapFailureTests is PSMTestBase {
         assertEq(expectedAmountOut, 100.0000008e18);  // More than balance of sDAI
 
         vm.expectRevert("SafeERC20/transfer-failed");
-        psm.swap(address(usdc), address(sDai), 125e6 + 1, 100e18, receiver);
+        psm.swap(address(usdc), address(sDai), 125e6 + 1, 100e18, receiver, 0);
 
-        psm.swap(address(usdc), address(sDai), 125e6, 100e18, receiver);
+        psm.swap(address(usdc), address(sDai), 125e6, 100e18, receiver, 0);
     }
 
 }
@@ -142,7 +142,7 @@ contract PSMSuccessTestsBase is PSMTestBase {
         assertEq(assetOut.balanceOf(receiver),     0);
         assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance);
 
-        psm.swap(address(assetIn), address(assetOut), amountIn, amountOut, receiver);
+        psm.swap(address(assetIn), address(assetOut), amountIn, amountOut, receiver, 0);
 
         assertEq(assetIn.allowance(swapper, address(psm)), 0);
 
