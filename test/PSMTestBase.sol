@@ -48,7 +48,6 @@ contract PSMTestBase is Test {
         vm.label(address(sDai), "sDAI");
     }
 
-    // TODO: Refactor for three assets
     function _getPsmValue() internal view returns (uint256) {
         return (sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
             + usdc.balanceOf(address(psm)) * 1e12
