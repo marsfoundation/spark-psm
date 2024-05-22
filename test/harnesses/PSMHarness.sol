@@ -29,4 +29,8 @@ contract PSMHarness is PSM {
         return _getAsset1Value(amount);
     }
 
+    function getAsset2Value(uint256 amount) external view returns (uint256) {
+        return _getAsset2Value(amount);
+    }
+
 }

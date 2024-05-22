@@ -248,14 +248,13 @@ contract PSM {
     }
 
     function _getAssetsByValue(address asset, uint256 assetValue) internal view returns (uint256) {
-        if (asset == address(asset0)) {
-            return assetValue * asset0Precision / 1e18;
-        }
+        if      (asset == address(asset0)) return assetValue * asset0Precision / 1e18;
+        else if (asset == address(asset1)) return assetValue * asset1Precision / 1e18;
 
         // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
         return assetValue
             * 1e9
-            * asset1Precision
+            * asset2Precision
             / IRateProviderLike(rateProvider).getConversionRate();
     }
 
