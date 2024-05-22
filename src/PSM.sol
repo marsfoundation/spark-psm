@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
+import { console2 } from "forge-std/console2.sol";
+
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
@@ -18,15 +20,17 @@ contract PSM {
 
     using SafeERC20 for IERC20;
 
-    // NOTE: Assumption is made that asset1 is the yield-bearing counterpart of asset0.
-    //       Examples: asset0 = USDC and asset1 = sDAI, asset0 = WETH and asset1 = wstETH.
+    // NOTE: Assumption is made that asset2 is the yield-bearing counterpart of asset0 and asset1.
+    //       Examples: asset0 = USDC, asset1 = DAI, asset2 = sDAI
     IERC20 public immutable asset0;
     IERC20 public immutable asset1;
+    IERC20 public immutable asset2;
 
     address public immutable rateProvider;
 
     uint256 public immutable asset0Precision;
     uint256 public immutable asset1Precision;
+    uint256 public immutable asset2Precision;
     uint256 public immutable initialBurnAmount;
 
     uint256 public totalShares;
@@ -36,19 +40,25 @@ contract PSM {
     constructor(
         address asset0_,
         address asset1_,
+        address asset2_,
         address rateProvider_,
         uint256 initialBurnAmount_
     ) {
         require(asset0_       != address(0), "PSM/invalid-asset0");
         require(asset1_       != address(0), "PSM/invalid-asset1");
+        require(asset2_       != address(0), "PSM/invalid-asset2");
         require(rateProvider_ != address(0), "PSM/invalid-rateProvider");
 
-        asset0       = IERC20(asset0_);
-        asset1       = IERC20(asset1_);
+        asset0 = IERC20(asset0_);
+        asset1 = IERC20(asset1_);
+        asset2 = IERC20(asset2_);
+
         rateProvider = rateProvider_;
 
-        asset0Precision   = 10 ** IERC20(asset0_).decimals();
-        asset1Precision   = 10 ** IERC20(asset1_).decimals();
+        asset0Precision = 10 ** IERC20(asset0_).decimals();
+        asset1Precision = 10 ** IERC20(asset1_).decimals();
+        asset2Precision = 10 ** IERC20(asset2_).decimals();
+
         initialBurnAmount = initialBurnAmount_;
     }
 
@@ -56,28 +66,24 @@ contract PSM {
     /*** Swap functions                                                                         ***/
     /**********************************************************************************************/
 
-    function swapAssetZeroToOne(uint256 amountIn, uint256 minAmountOut, address receiver) external {
+    function swap(
+        address assetIn,
+        address assetOut,
+        uint256 amountIn,
+        uint256 minAmountOut,
+        address receiver
+    )
+        external
+    {
         require(amountIn != 0,          "PSM/invalid-amountIn");
         require(receiver != address(0), "PSM/invalid-receiver");
 
-        uint256 amountOut = previewSwapAssetZeroToOne(amountIn);
+        uint256 amountOut = previewSwap(assetIn, assetOut, amountIn);
 
         require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
 
-        asset0.safeTransferFrom(msg.sender, address(this), amountIn);
-        asset1.safeTransfer(receiver, amountOut);
-    }
-
-    function swapAssetOneToZero(uint256 amountIn, uint256 minAmountOut, address receiver) external {
-        require(amountIn != 0,          "PSM/invalid-amountIn");
-        require(receiver != address(0), "PSM/invalid-receiver");
-
-        uint256 amountOut = previewSwapAssetOneToZero(amountIn);
-
-        require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
-
-        asset1.safeTransferFrom(msg.sender, address(this), amountIn);
-        asset0.safeTransfer(receiver, amountOut);
+        IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(assetOut).safeTransfer(receiver, amountOut);
     }
 
     /**********************************************************************************************/
@@ -153,20 +159,25 @@ contract PSM {
     /*** Swap preview functions                                                                 ***/
     /**********************************************************************************************/
 
-    function previewSwapAssetZeroToOne(uint256 amountIn) public view returns (uint256) {
-        return amountIn
-            * 1e27
-            * asset1Precision
-            / IRateProviderLike(rateProvider).getConversionRate()
-            / asset0Precision;
-    }
+    function previewSwap(address assetIn, address assetOut, uint256 amountIn)
+        public view returns (uint256 amountOut)
+    {
+        if (assetIn == address(asset0)) {
+            if      (assetOut == address(asset1)) return _previewOneToOneSwap(amountIn, asset0Precision, asset1Precision);
+            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, asset0Precision);
+        }
 
-    function previewSwapAssetOneToZero(uint256 amountIn) public view returns (uint256) {
-        return amountIn
-            * IRateProviderLike(rateProvider).getConversionRate()
-            * asset0Precision
-            / 1e27
-            / asset1Precision;
+        else if (assetIn == address(asset1)) {
+            if      (assetOut == address(asset0)) return _previewOneToOneSwap(amountIn, asset1Precision, asset0Precision);
+            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, asset1Precision);
+        }
+
+        else if (assetIn == address(asset2)) {
+            if      (assetOut == address(asset0)) return _previewSwapFromAsset2(amountIn, asset0Precision);
+            else if (assetOut == address(asset1)) return _previewSwapFromAsset2(amountIn, asset1Precision);
+        }
+
+        revert("PSM/invalid-asset");
     }
 
     /**********************************************************************************************/
@@ -204,6 +215,7 @@ contract PSM {
     /*** Asset value functions                                                                  ***/
     /**********************************************************************************************/
 
+    // TODO: Refactor for three assets
     function getPsmTotalValue() public view returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             + _getAsset1Value(asset1.balanceOf(address(this)));
@@ -252,6 +264,38 @@ contract PSM {
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
         // NOTE: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
         return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
+    }
+
+    function _previewSwapToAsset2(uint256 amountIn, uint256 assetInPrecision)
+        internal view returns (uint256)
+    {
+        return amountIn
+            * 1e27
+            * asset2Precision
+            / IRateProviderLike(rateProvider).getConversionRate()
+            / assetInPrecision;
+    }
+
+    function _previewSwapFromAsset2(uint256 amountIn, uint256 assetInPrecision)
+        internal view returns (uint256)
+    {
+        return amountIn
+            * IRateProviderLike(rateProvider).getConversionRate()
+            * assetInPrecision
+            / 1e27
+            / asset2Precision;
+    }
+
+    function _previewOneToOneSwap(
+        uint256 amountIn,
+        uint256 assetInPrecision,
+        uint256 assetOutPrecision
+    )
+        internal pure returns (uint256)
+    {
+        return amountIn
+            * assetOutPrecision
+            / assetInPrecision;
     }
 
 }
