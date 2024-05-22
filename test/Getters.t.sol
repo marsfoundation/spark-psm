@@ -148,17 +148,22 @@ contract PSMHarnessTests is PSMTestBase {
 
 }
 
-// TODO: Update for three assets
 contract GetPsmTotalValueTests is PSMTestBase {
 
     function test_getPsmTotalValue_balanceChanges() public {
-        assertEq(psm.getPsmTotalValue(), 0);
-
-        usdc.mint(address(psm), 1e6);
+        dai.mint(address(psm), 1e18);
 
         assertEq(psm.getPsmTotalValue(), 1e18);
 
+        usdc.mint(address(psm), 1e6);
+
+        assertEq(psm.getPsmTotalValue(), 2e18);
+
         sDai.mint(address(psm), 1e18);
+
+        assertEq(psm.getPsmTotalValue(), 3.25e18);
+
+        dai.burn(address(psm), 1e18);
 
         assertEq(psm.getPsmTotalValue(), 2.25e18);
 
@@ -174,54 +179,62 @@ contract GetPsmTotalValueTests is PSMTestBase {
     function test_getPsmTotalValue_conversionRateChanges() public {
         assertEq(psm.getPsmTotalValue(), 0);
 
+        dai.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 2.25e18);
+        assertEq(psm.getPsmTotalValue(), 3.25e18);
 
         rateProvider.__setConversionRate(1.5e27);
 
-        assertEq(psm.getPsmTotalValue(), 2.5e18);
+        assertEq(psm.getPsmTotalValue(), 3.5e18);
 
         rateProvider.__setConversionRate(0.8e27);
 
-        assertEq(psm.getPsmTotalValue(), 1.8e18);
+        assertEq(psm.getPsmTotalValue(), 2.8e18);
     }
 
     function test_getPsmTotalValue_bothChange() public {
         assertEq(psm.getPsmTotalValue(), 0);
 
+        dai.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 2.25e18);
+        assertEq(psm.getPsmTotalValue(), 3.25e18);
 
         rateProvider.__setConversionRate(1.5e27);
 
-        assertEq(psm.getPsmTotalValue(), 2.5e18);
+        assertEq(psm.getPsmTotalValue(), 3.5e18);
 
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 4e18);
+        assertEq(psm.getPsmTotalValue(), 5e18);
     }
 
     function testFuzz_getPsmTotalValue(
+        uint256 daiAmount,
         uint256 usdcAmount,
         uint256 sDaiAmount,
         uint256 conversionRate
     )
         public
     {
-        usdcAmount      = _bound(usdcAmount,     0,         USDC_TOKEN_MAX);
-        sDaiAmount      = _bound(sDaiAmount,     0,         SDAI_TOKEN_MAX);
-        conversionRate  = _bound(conversionRate, 0.0001e27, 1000e27);
+        daiAmount      = _bound(daiAmount,      0,         DAI_TOKEN_MAX);
+        usdcAmount     = _bound(usdcAmount,     0,         USDC_TOKEN_MAX);
+        sDaiAmount     = _bound(sDaiAmount,     0,         SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
 
+        dai.mint(address(psm),  daiAmount);
         usdc.mint(address(psm), usdcAmount);
         sDai.mint(address(psm), sDaiAmount);
 
         rateProvider.__setConversionRate(conversionRate);
 
-        assertEq(psm.getPsmTotalValue(), (usdcAmount * 1e12) + (sDaiAmount * conversionRate / 1e27));
+        assertEq(
+            psm.getPsmTotalValue(),
+            daiAmount + (usdcAmount * 1e12) + (sDaiAmount * conversionRate / 1e27)
+        );
     }
 
 }
