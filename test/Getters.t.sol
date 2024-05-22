@@ -146,54 +146,6 @@ contract PSMHarnessTests is PSMTestBase {
         psmHarness.getAssetValue(address(0), 1);
     }
 
-    function test_getAssetsByValue() public view {
-        assertEq(psmHarness.getAssetsByValue(address(dai), 1), 1);
-        assertEq(psmHarness.getAssetsByValue(address(dai), 2), 2);
-        assertEq(psmHarness.getAssetsByValue(address(dai), 3), 3);
-
-        assertEq(psmHarness.getAssetsByValue(address(dai), 1e18), 1e18);
-        assertEq(psmHarness.getAssetsByValue(address(dai), 2e18), 2e18);
-        assertEq(psmHarness.getAssetsByValue(address(dai), 3e18), 3e18);
-
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 1), 0);
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 2), 0);
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 3), 0);
-
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 1e18), 1e6);
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 2e18), 2e6);
-        assertEq(psmHarness.getAssetsByValue(address(usdc), 3e18), 3e6);
-
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 1), 0);
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 2), 1);
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 3), 2);
-
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 1e18), 0.8e18);
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 2e18), 1.6e18);
-        assertEq(psmHarness.getAssetsByValue(address(sDai), 3e18), 2.4e18);
-    }
-
-    function testFuzz_getAssetsByValue_asset0(uint256 amount) public view {
-        amount = _bound(amount, 0, DAI_TOKEN_MAX);
-
-        assertEq(psmHarness.getAssetsByValue(address(dai), amount), amount);
-    }
-
-    function testFuzz_getAssetsByValue_asset1(uint256 amount) public view {
-        amount = _bound(amount, 0, USDC_TOKEN_MAX);
-
-        assertEq(psmHarness.getAssetsByValue(address(usdc), amount), amount / 1e12);
-    }
-
-    function testFuzz_getAssetsByValue_asset2(uint256 conversionRate, uint256 amount) public {
-        // NOTE: 0.0001e27 considered lower bound for overflow considerations
-        conversionRate = bound(conversionRate, 0.0001e27, 1000e27);
-        amount         = bound(amount,         0,         SDAI_TOKEN_MAX);
-
-        rateProvider.__setConversionRate(conversionRate);
-
-        assertEq(psmHarness.getAssetsByValue(address(sDai), amount), amount * 1e27 / conversionRate);
-    }
-
 }
 
 // TODO: Update for three assets
@@ -219,7 +171,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
         assertEq(psm.getPsmTotalValue(), 0);
     }
 
-    function test_getPsmTotalValue_exchangeRateChanges() public {
+    function test_getPsmTotalValue_conversionRateChanges() public {
         assertEq(psm.getPsmTotalValue(), 0);
 
         usdc.mint(address(psm), 1e6);

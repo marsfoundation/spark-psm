@@ -362,7 +362,7 @@ contract PSMWithdrawTests is PSMTestBase {
         withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
     }
 
-    // function test_withdraw_changeExchangeRate_smallBalances_nonRoundingCode() public {
+    // function test_withdraw_changeConversionRate_smallBalances_nonRoundingCode() public {
     //     _deposit(user1, address(usdc), 100e6);
     //     _deposit(user2, address(sDai), 100e18);
 
@@ -465,7 +465,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     assertEq((user2ResultingValue - 125e18) * 1e18 / 125e18, 0.111111118518518567e18);
     // }
 
-    // function test_withdraw_changeExchangeRate_bigBalances_roundingCode() public {
+    // function test_withdraw_changeConversionRate_bigBalances_roundingCode() public {
     //     _deposit(user1, address(usdc), 100_000_000e6);
     //     _deposit(user2, address(sDai), 100_000_000e18);
 
@@ -574,7 +574,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     assertEq((user2ResultingValue - 125_000_000e18) * 1e18 / 125_000_000e18, 0.111111111111111111e18);
     // }
 
-    // function test_withdraw_changeExchangeRate_bigBalances_nonRoundingCode() public {
+    // function test_withdraw_changeConversionRate_bigBalances_nonRoundingCode() public {
     //     _deposit(user1, address(usdc), 100_000_000e6);
     //     _deposit(user2, address(sDai), 100_000_000e18);
 

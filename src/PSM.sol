@@ -186,7 +186,17 @@ contract PSM {
 
     function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
         require(_isValidAsset(asset), "PSM/invalid-asset");
-        return _getAssetsByValue(asset, convertToAssetValue(numShares));
+
+        uint256 assetValue = convertToAssetValue(numShares);
+
+        if      (asset == address(asset0)) return assetValue * asset0Precision / 1e18;
+        else if (asset == address(asset1)) return assetValue * asset1Precision / 1e18;
+
+        // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
+        return assetValue
+            * 1e9
+            * asset2Precision
+            / IRateProviderLike(rateProvider).getConversionRate();
     }
 
     function convertToAssetValue(uint256 numShares) public view returns (uint256) {
@@ -245,17 +255,6 @@ contract PSM {
         else if (asset == address(asset1)) return _getAsset1Value(amount);
         else if (asset == address(asset2)) return _getAsset2Value(amount);
         else revert("PSM/invalid-asset");
-    }
-
-    function _getAssetsByValue(address asset, uint256 assetValue) internal view returns (uint256) {
-        if      (asset == address(asset0)) return assetValue * asset0Precision / 1e18;
-        else if (asset == address(asset1)) return assetValue * asset1Precision / 1e18;
-
-        // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
-        return assetValue
-            * 1e9
-            * asset2Precision
-            / IRateProviderLike(rateProvider).getConversionRate();
     }
 
     function _getAsset0Value(uint256 amount) internal view returns (uint256) {

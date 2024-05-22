@@ -164,7 +164,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function test_deposit_multiUser_changeExchangeRate() public {
+    function test_deposit_multiUser_changeConversionRate() public {
         usdc.mint(user1, 100e6);
 
         vm.startPrank(user1);

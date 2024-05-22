@@ -41,13 +41,13 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(dai), address(sDai), 1e18), 0.8e18);
     }
 
-    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 exchangeRate) public {
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
+    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 / exchangeRate;
+        uint256 amountOut = amountIn * 1e27 / conversionRate;
 
         assertEq(psm.previewSwap(address(dai), address(sDai), amountIn), amountOut);
     }
@@ -70,15 +70,15 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(usdc), address(sDai), 1e6), 0.8e18);
     }
 
-    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 exchangeRate) public {
+    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
         amountIn = _bound(amountIn, 0, USDC_TOKEN_MAX);
 
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 * 1e12 / exchangeRate;
+        uint256 amountOut = amountIn * 1e27 * 1e12 / conversionRate;
 
         assertEq(psm.previewSwap(address(usdc), address(sDai), amountIn), amountOut);
     }
@@ -91,13 +91,13 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(sDai), address(dai), 1e18),  1.25e18);
     }
 
-    function testFuzz_previewSwap_sDaiToDai(uint256 amountIn, uint256 exchangeRate) public {
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+    function testFuzz_previewSwap_sDaiToDai(uint256 amountIn, uint256 conversionRate) public {
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * exchangeRate / 1e27;
+        uint256 amountOut = amountIn * conversionRate / 1e27;
 
         assertEq(psm.previewSwap(address(sDai), address(dai), amountIn), amountOut);
     }
@@ -106,13 +106,13 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(sDai), address(usdc), 1e18), 1.25e6);
     }
 
-    function testFuzz_previewSwap_sDaiToUsdc(uint256 amountIn, uint256 exchangeRate) public {
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
+    function testFuzz_previewSwap_sDaiToUsdc(uint256 amountIn, uint256 conversionRate) public {
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * exchangeRate / 1e27 / 1e12;
+        uint256 amountOut = amountIn * conversionRate / 1e27 / 1e12;
 
         assertEq(psm.previewSwap(address(sDai), address(usdc), amountIn), amountOut);
     }

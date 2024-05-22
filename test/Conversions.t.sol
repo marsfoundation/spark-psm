@@ -217,6 +217,56 @@ contract PSMConvertToAssetValueTests is PSMTestBase {
 
 }
 
-contract PSMConvertToAssetsTests is PSMTestBase {}
+contract PSMConvertToAssetsTests is PSMTestBase {
+
+    function test_convertToAssets() public view {
+        assertEq(psm.convertToAssets(address(dai), 1), 1);
+        assertEq(psm.convertToAssets(address(dai), 2), 2);
+        assertEq(psm.convertToAssets(address(dai), 3), 3);
+
+        assertEq(psm.convertToAssets(address(dai), 1e18), 1e18);
+        assertEq(psm.convertToAssets(address(dai), 2e18), 2e18);
+        assertEq(psm.convertToAssets(address(dai), 3e18), 3e18);
+
+        assertEq(psm.convertToAssets(address(usdc), 1), 0);
+        assertEq(psm.convertToAssets(address(usdc), 2), 0);
+        assertEq(psm.convertToAssets(address(usdc), 3), 0);
+
+        assertEq(psm.convertToAssets(address(usdc), 1e18), 1e6);
+        assertEq(psm.convertToAssets(address(usdc), 2e18), 2e6);
+        assertEq(psm.convertToAssets(address(usdc), 3e18), 3e6);
+
+        assertEq(psm.convertToAssets(address(sDai), 1), 0);
+        assertEq(psm.convertToAssets(address(sDai), 2), 1);
+        assertEq(psm.convertToAssets(address(sDai), 3), 2);
+
+        assertEq(psm.convertToAssets(address(sDai), 1e18), 0.8e18);
+        assertEq(psm.convertToAssets(address(sDai), 2e18), 1.6e18);
+        assertEq(psm.convertToAssets(address(sDai), 3e18), 2.4e18);
+    }
+
+    function testFuzz_convertToAssets_asset0(uint256 amount) public view {
+        amount = _bound(amount, 0, DAI_TOKEN_MAX);
+
+        assertEq(psm.convertToAssets(address(dai), amount), amount);
+    }
+
+    function testFuzz_convertToAssets_asset1(uint256 amount) public view {
+        amount = _bound(amount, 0, USDC_TOKEN_MAX);
+
+        assertEq(psm.convertToAssets(address(usdc), amount), amount / 1e12);
+    }
+
+    function testFuzz_convertToAssets_asset2(uint256 conversionRate, uint256 amount) public {
+        // NOTE: 0.0001e27 considered lower bound for overflow considerations
+        conversionRate = bound(conversionRate, 0.0001e27, 1000e27);
+        amount         = bound(amount,         0,         SDAI_TOKEN_MAX);
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        assertEq(psm.convertToAssets(address(sDai), amount), amount * 1e27 / conversionRate);
+    }
+
+}
 
 

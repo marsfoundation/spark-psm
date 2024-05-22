@@ -17,10 +17,6 @@ contract PSMHarness is PSM {
         return _getAssetValue(asset, amount);
     }
 
-    function getAssetsByValue(address asset, uint256 assetValue) external view returns (uint256) {
-        return _getAssetsByValue(asset, assetValue);
-    }
-
     function getAsset0Value(uint256 amount) external view returns (uint256) {
         return _getAsset0Value(amount);
     }

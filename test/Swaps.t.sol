@@ -196,7 +196,7 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
 
     function testFuzz_swap_daiToSDai(
         uint256 amountIn,
-        uint256 exchangeRate,
+        uint256 conversionRate,
         address fuzzSwapper,
         address fuzzReceiver
     ) public {
@@ -204,12 +204,12 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);             // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 / exchangeRate;
+        uint256 amountOut = amountIn * 1e27 / conversionRate;
 
         _swapTest(dai, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
@@ -250,7 +250,7 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
 
     function testFuzz_swap_usdcToSDai(
         uint256 amountIn,
-        uint256 exchangeRate,
+        uint256 conversionRate,
         address fuzzSwapper,
         address fuzzReceiver
     ) public {
@@ -258,12 +258,12 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 * 1e12 / exchangeRate;
+        uint256 amountOut = amountIn * 1e27 * 1e12 / conversionRate;
 
         _swapTest(usdc, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
@@ -290,7 +290,7 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
 
     function testFuzz_swap_sDaiToDai(
         uint256 amountIn,
-        uint256 exchangeRate,
+        uint256 conversionRate,
         address fuzzSwapper,
         address fuzzReceiver
     ) public {
@@ -298,19 +298,19 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * exchangeRate / 1e27;
+        uint256 amountOut = amountIn * conversionRate / 1e27;
 
         _swapTest(sDai, dai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
     function testFuzz_swap_sDaiToUsdc(
         uint256 amountIn,
-        uint256 exchangeRate,
+        uint256 conversionRate,
         address fuzzSwapper,
         address fuzzReceiver
     ) public {
@@ -318,12 +318,12 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn     = _bound(amountIn,     1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        exchangeRate = _bound(exchangeRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
+        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(exchangeRate);
+        rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * exchangeRate / 1e27 / 1e12;
+        uint256 amountOut = amountIn * conversionRate / 1e27 / 1e12;
 
         _swapTest(sDai, usdc, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
