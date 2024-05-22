@@ -155,21 +155,21 @@ contract PSMHarnessTests is PSMTestBase {
         assertEq(psmHarness.getAssetsByValue(address(dai), 2e18), 2e18);
         assertEq(psmHarness.getAssetsByValue(address(dai), 3e18), 3e18);
 
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 1), 0);
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 2), 0);
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 3), 0);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 1), 0);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 2), 0);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 3), 0);
 
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 1e18), 1e6);
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 2e18), 2e6);
-        // assertEq(psmHarness.getAssetsByValue(address(usdc), 3e18), 3e6);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 1e18), 1e6);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 2e18), 2e6);
+        assertEq(psmHarness.getAssetsByValue(address(usdc), 3e18), 3e6);
 
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 1), 0);
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 2), 1);
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 3), 2);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 1), 0);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 2), 1);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 3), 2);
 
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 1e18), 0.8e18);
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 2e18), 1.6e18);
-        // assertEq(psmHarness.getAssetsByValue(address(sDai), 3e18), 2.4e18);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 1e18), 0.8e18);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 2e18), 1.6e18);
+        assertEq(psmHarness.getAssetsByValue(address(sDai), 3e18), 2.4e18);
     }
 
     function testFuzz_getAssetsByValue_asset0(uint256 amount) public view {
