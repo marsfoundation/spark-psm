@@ -239,15 +239,9 @@ contract PSM {
     function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
         uint256 totalValue = getPsmTotalValue();
         if (totalValue != 0) {
-            return _divRoundUp(assetValue * totalShares, totalValue);
+            return ((assetValue * totalShares) + totalValue - 1) / totalValue;
         }
         return assetValue;
-    }
-
-    function _divRoundUp(uint256 numerator_, uint256 divisor_)
-        internal pure returns (uint256 result_)
-    {
-        result_ = (numerator_ + divisor_ - 1) / divisor_;
     }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
