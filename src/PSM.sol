@@ -225,7 +225,6 @@ contract PSM {
     /*** Asset value functions                                                                  ***/
     /**********************************************************************************************/
 
-    // TODO: Refactor for three assets
     function getPsmTotalValue() public view returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))
