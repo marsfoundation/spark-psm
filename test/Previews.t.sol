@@ -29,6 +29,8 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(dai), address(usdc), 1e12),     1);
 
         assertEq(psm.previewSwap(address(dai), address(usdc), 1e18), 1e6);
+        assertEq(psm.previewSwap(address(dai), address(usdc), 2e18), 2e6);
+        assertEq(psm.previewSwap(address(dai), address(usdc), 3e18), 3e6);
     }
 
     function testFuzz_previewSwap_daiToUsdc(uint256 amountIn) public view {
@@ -39,6 +41,8 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
 
     function test_previewSwap_daiToSDai() public view {
         assertEq(psm.previewSwap(address(dai), address(sDai), 1e18), 0.8e18);
+        assertEq(psm.previewSwap(address(dai), address(sDai), 2e18), 1.6e18);
+        assertEq(psm.previewSwap(address(dai), address(sDai), 3e18), 2.4e18);
     }
 
     function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
@@ -57,7 +61,9 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
 contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
 
     function test_previewSwap_usdcToDai() public view {
-        assertEq(psm.previewSwap(address(usdc), address(dai), 1e6),  1e18);
+        assertEq(psm.previewSwap(address(usdc), address(dai), 1e6), 1e18);
+        assertEq(psm.previewSwap(address(usdc), address(dai), 2e6), 2e18);
+        assertEq(psm.previewSwap(address(usdc), address(dai), 3e6), 3e18);
     }
 
     function testFuzz_previewSwap_usdcToDai(uint256 amountIn) public view {
@@ -68,6 +74,8 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
 
     function test_previewSwap_usdcToSDai() public view {
         assertEq(psm.previewSwap(address(usdc), address(sDai), 1e6), 0.8e18);
+        assertEq(psm.previewSwap(address(usdc), address(sDai), 2e6), 1.6e18);
+        assertEq(psm.previewSwap(address(usdc), address(sDai), 3e6), 2.4e18);
     }
 
     function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
@@ -88,7 +96,9 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
 contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
 
     function test_previewSwap_sDaiToDai() public view {
-        assertEq(psm.previewSwap(address(sDai), address(dai), 1e18),  1.25e18);
+        assertEq(psm.previewSwap(address(sDai), address(dai), 1e18), 1.25e18);
+        assertEq(psm.previewSwap(address(sDai), address(dai), 2e18), 2.5e18);
+        assertEq(psm.previewSwap(address(sDai), address(dai), 3e18), 3.75e18);
     }
 
     function testFuzz_previewSwap_sDaiToDai(uint256 amountIn, uint256 conversionRate) public {
@@ -104,6 +114,8 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
 
     function test_previewSwap_sDaiToUsdc() public view {
         assertEq(psm.previewSwap(address(sDai), address(usdc), 1e18), 1.25e6);
+        assertEq(psm.previewSwap(address(sDai), address(usdc), 2e18), 2.5e6);
+        assertEq(psm.previewSwap(address(sDai), address(usdc), 3e18), 3.75e6);
     }
 
     function testFuzz_previewSwap_sDaiToUsdc(uint256 amountIn, uint256 conversionRate) public {
