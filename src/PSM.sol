@@ -128,7 +128,7 @@ contract PSM {
     /**********************************************************************************************/
 
     function previewDeposit(address asset, uint256 assets) public view returns (uint256) {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
         return convertToShares(_getAssetValue(asset, assets));
@@ -137,7 +137,7 @@ contract PSM {
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
         public view returns (uint256 sharesToBurn, uint256 assetsWithdrawn)
     {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM/invalid-asset");
 
         uint256 assetBalance = IERC20(asset).balanceOf(address(this));
 
@@ -185,7 +185,7 @@ contract PSM {
     /**********************************************************************************************/
 
     function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM/invalid-asset");
         return _getAssetsByValue(asset, convertToAssetValue(numShares));
     }
 
@@ -207,7 +207,7 @@ contract PSM {
     }
 
     function convertToShares(address asset, uint256 assets) public view returns (uint256) {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM/invalid-asset");
         return convertToShares(_getAssetValue(asset, assets));
     }
 
@@ -218,7 +218,8 @@ contract PSM {
     // TODO: Refactor for three assets
     function getPsmTotalValue() public view returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
-            + _getAsset1Value(asset1.balanceOf(address(this)));
+            +  _getAsset1Value(asset1.balanceOf(address(this)))
+            +  _getAsset2Value(asset2.balanceOf(address(this)));
     }
 
     /**********************************************************************************************/
@@ -240,9 +241,10 @@ contract PSM {
     }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
-        return asset == address(asset0)
-            ? _getAsset0Value(amount)
-            : _getAsset1Value(amount);
+        if      (asset == address(asset0)) return _getAsset0Value(amount);
+        else if (asset == address(asset1)) return _getAsset1Value(amount);
+        else if (asset == address(asset2)) return _getAsset2Value(amount);
+        else revert("PSM/invalid-asset");
     }
 
     function _getAssetsByValue(address asset, uint256 assetValue) internal view returns (uint256) {
@@ -262,8 +264,16 @@ contract PSM {
     }
 
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / asset1Precision;
+    }
+
+    function _getAsset2Value(uint256 amount) internal view returns (uint256) {
         // NOTE: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
-        return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset1Precision;
+        return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset2Precision;
+    }
+
+    function _isValidAsset(address asset) internal view returns (bool) {
+        return asset == address(asset0) || asset == address(asset1) || asset == address(asset2);
     }
 
     function _previewSwapToAsset2(uint256 amountIn, uint256 assetInPrecision)
