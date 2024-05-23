@@ -1,4 +1,4 @@
-# Spark PSM
+# ⚡ Spark PSM ⚡
 
 ![Foundry CI](https://github.com/marsfoundation/spark-psm/actions/workflows/ci.yml/badge.svg)
 [![Foundry][foundry-badge]][foundry]
