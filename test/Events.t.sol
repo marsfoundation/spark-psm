@@ -17,6 +17,8 @@ contract PSMEventTests is PSMTestBase {
         uint16  referralCode
     );
 
+    event InitialSharesBurned(address indexed user, uint256 sharesBurned);
+
     event Deposit(
         address indexed asset,
         address indexed user,
@@ -24,8 +26,6 @@ contract PSMEventTests is PSMTestBase {
         uint256 sharesMinted,
         uint16  referralCode
     );
-
-    event InitialSharesBurned(address indexed user, uint256 sharesBurned);
 
     event Withdraw(
         address indexed asset,

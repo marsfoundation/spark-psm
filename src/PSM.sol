@@ -18,6 +18,10 @@ contract PSM is IPSM {
 
     using SafeERC20 for IERC20;
 
+    uint256 internal immutable _asset0Precision;
+    uint256 internal immutable _asset1Precision;
+    uint256 internal immutable _asset2Precision;
+
     // NOTE: Assumption is made that asset2 is the yield-bearing counterpart of asset0 and asset1.
     //       Examples: asset0 = USDC, asset1 = DAI, asset2 = sDAI
     IERC20 public immutable asset0;
@@ -26,9 +30,6 @@ contract PSM is IPSM {
 
     address public immutable rateProvider;
 
-    uint256 public immutable asset0Precision;
-    uint256 public immutable asset1Precision;
-    uint256 public immutable asset2Precision;
     uint256 public immutable initialBurnAmount;
 
     uint256 public totalShares;
@@ -53,9 +54,9 @@ contract PSM is IPSM {
 
         rateProvider = rateProvider_;
 
-        asset0Precision = 10 ** IERC20(asset0_).decimals();
-        asset1Precision = 10 ** IERC20(asset1_).decimals();
-        asset2Precision = 10 ** IERC20(asset2_).decimals();
+        _asset0Precision = 10 ** IERC20(asset0_).decimals();
+        _asset1Precision = 10 ** IERC20(asset1_).decimals();
+        _asset2Precision = 10 ** IERC20(asset2_).decimals();
 
         initialBurnAmount = initialBurnAmount_;
     }
@@ -170,18 +171,18 @@ contract PSM is IPSM {
         public view override returns (uint256 amountOut)
     {
         if (assetIn == address(asset0)) {
-            if      (assetOut == address(asset1)) return _previewOneToOneSwap(amountIn, asset0Precision, asset1Precision);
-            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, asset0Precision);
+            if      (assetOut == address(asset1)) return _previewOneToOneSwap(amountIn, _asset0Precision, _asset1Precision);
+            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, _asset0Precision);
         }
 
         else if (assetIn == address(asset1)) {
-            if      (assetOut == address(asset0)) return _previewOneToOneSwap(amountIn, asset1Precision, asset0Precision);
-            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, asset1Precision);
+            if      (assetOut == address(asset0)) return _previewOneToOneSwap(amountIn, _asset1Precision, _asset0Precision);
+            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, _asset1Precision);
         }
 
         else if (assetIn == address(asset2)) {
-            if      (assetOut == address(asset0)) return _previewSwapFromAsset2(amountIn, asset0Precision);
-            else if (assetOut == address(asset1)) return _previewSwapFromAsset2(amountIn, asset1Precision);
+            if      (assetOut == address(asset0)) return _previewSwapFromAsset2(amountIn, _asset0Precision);
+            else if (assetOut == address(asset1)) return _previewSwapFromAsset2(amountIn, _asset1Precision);
         }
 
         revert("PSM/invalid-asset");
@@ -198,13 +199,13 @@ contract PSM is IPSM {
 
         uint256 assetValue = convertToAssetValue(numShares);
 
-        if      (asset == address(asset0)) return assetValue * asset0Precision / 1e18;
-        else if (asset == address(asset1)) return assetValue * asset1Precision / 1e18;
+        if      (asset == address(asset0)) return assetValue * _asset0Precision / 1e18;
+        else if (asset == address(asset1)) return assetValue * _asset1Precision / 1e18;
 
         // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
         return assetValue
             * 1e9
-            * asset2Precision
+            * _asset2Precision
             / IRateProviderLike(rateProvider).getConversionRate();
     }
 
@@ -260,16 +261,19 @@ contract PSM is IPSM {
     }
 
     function _getAsset0Value(uint256 amount) internal view returns (uint256) {
-        return amount * 1e18 / asset0Precision;
+        return amount * 1e18 / _asset0Precision;
     }
 
     function _getAsset1Value(uint256 amount) internal view returns (uint256) {
-        return amount * 1e18 / asset1Precision;
+        return amount * 1e18 / _asset1Precision;
     }
 
     function _getAsset2Value(uint256 amount) internal view returns (uint256) {
-        // NOTE: Multiplying by 1e18 and dividing by 1e9 cancels to 1e9 in denominator
-        return amount * IRateProviderLike(rateProvider).getConversionRate() / 1e9 / asset2Precision;
+        // NOTE: Multiplying by 1e18 and dividing by 1e27 cancels to 1e9 in denominator
+        return amount
+            * IRateProviderLike(rateProvider).getConversionRate()
+            / 1e9
+            / _asset2Precision;
     }
 
     function _isValidAsset(address asset) internal view returns (bool) {
@@ -281,7 +285,7 @@ contract PSM is IPSM {
     {
         return amountIn
             * 1e27
-            * asset2Precision
+            * _asset2Precision
             / IRateProviderLike(rateProvider).getConversionRate()
             / assetInPrecision;
     }
@@ -293,7 +297,7 @@ contract PSM is IPSM {
             * IRateProviderLike(rateProvider).getConversionRate()
             * assetInPrecision
             / 1e27
-            / asset2Precision;
+            / _asset2Precision;
     }
 
     function _previewOneToOneSwap(
