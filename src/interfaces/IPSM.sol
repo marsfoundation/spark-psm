@@ -46,6 +46,13 @@ interface IPSM {
     );
 
     /**
+     *  @dev   Emitted when shares are burned from the first depositor's balance in the PSM.
+     *  @param user         Address of the user that burned the shares.
+     *  @param sharesBurned Number of shares burned from the user.
+     */
+    event InitialSharesBurned(address indexed user, uint256 sharesBurned);
+
+    /**
      *  @dev   Emitted when an asset is withdrawn from the PSM.
      *  @param asset           Address of the asset withdrawn.
      *  @param user            Address of the user that withdrew the asset.

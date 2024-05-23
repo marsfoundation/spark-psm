@@ -11,7 +11,6 @@ interface IRateProviderLike {
     function getConversionRate() external view returns (uint256);
 }
 
-// TODO: Add events and corresponding tests
 // TODO: Determine what admin functionality we want (fees?)
 // TODO: Refactor into inheritance structure
 // TODO: Prove that we're always rounding against user
@@ -102,6 +101,8 @@ contract PSM is IPSM {
             totalShares        += initialBurnAmount;
 
             newShares -= initialBurnAmount;
+
+            emit InitialSharesBurned(msg.sender, initialBurnAmount);
         }
 
         shares[msg.sender] += newShares;
