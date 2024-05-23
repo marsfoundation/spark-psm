@@ -50,12 +50,12 @@ Defines the function to get the conversion rate between yield-bearing and non-yi
 
 #### Swap Functions
 
-- **`swap`**: Allows swapping of assets based on current conversion rates. Ensures the output amount meets the minimum required before executing the transfer and emitting the swap event.
+- **`swap`**: Allows swapping of assets based on current conversion rates. Ensures the output amount meets the minimum required before executing the transfer and emitting the swap event. Includes a referral code.
 
 #### Liquidity Provision Functions
 
-- **`deposit`**: Deposits assets into the PSM, minting new shares. Handles the initial burn amount for the first deposit to prevent inflation frontrunning.
-- **`withdraw`**: Withdraws assets from the PSM by burning shares. Ensures the user has sufficient shares for the withdrawal and adjusts the total shares accordingly.
+- **`deposit`**: Deposits assets into the PSM, minting new shares. Handles the initial burn amount for the first deposit to prevent inflation frontrunning. Includes a referral code.
+- **`withdraw`**: Withdraws assets from the PSM by burning shares. Ensures the user has sufficient shares for the withdrawal and adjusts the total shares accordingly. Includes a referral code.
 
 #### Preview Functions
 
