@@ -13,26 +13,11 @@ This repository contains the implementation of a Peg Stability Module (PSM) cont
 
 This overview provides the essential information needed to understand and interact with the PSM contract. For detailed implementation, refer to the contract code and `IPSM` interface documentation.
 
-## Test
-
-```bash
-forge test
-```
-## Usage
-
 ## Contracts
 
-### PSM Contract
-
-The core contract implementing the `IPSM` interface, providing functionality for swapping, depositing, and withdrawing assets.
-
-### IPSM Interface
-
-Defines the essential functions and events that the PSM contract implements.
-
-### IRateProviderLike Interface
-
-Defines the function to get the conversion rate between yield-bearing and non-yield-bearing assets.
+- **PSM Contract**: The core contract implementing the `IPSM` interface, providing functionality for swapping, depositing, and withdrawing assets.
+- **IPSM Interface**: Defines the essential functions and events that the PSM contract implements.
+- **IRateProviderLike Interface**: Defines the function to get the conversion rate between yield-bearing and non-yield-bearing assets.
 
 ## PSM Contract Details
 
@@ -82,5 +67,15 @@ NOTE: These functions do not round in the same way as preview functions, so they
 - **`Deposit`**: Emitted on asset deposits.
 - **`Withdraw`**: Emitted on asset withdrawals.
 
+## Test
+
+```bash
+forge test
+```
+
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
+
+<p align="center">
+  <img src="https://1827921443-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FjvdfbhgN5UCpMtP1l8r5%2Fuploads%2Fgit-blob-c029bb6c918f8c042400dbcef7102c4e5c1caf38%2Flogomark%20colour.svg?alt=media" height="150" />
+</p>
