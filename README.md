@@ -11,7 +11,13 @@
 
 This repository contains the implementation of a Peg Stability Module (PSM) contract, which facilitates the swapping, depositing, and withdrawing of three given assets to maintain stability and ensure the peg of involved assets. The PSM supports both yield-bearing and non-yield-bearing assets.
 
-This overview provides the essential information needed to understand and interact with the PSM contract. For detailed implementation, refer to the contract code and `IPSM` interface documentation.
+`asset0` and `asset1` are two ERC20 tokens that are directly correlated and are non-yield-bearing, referred to as "base assets". `asset2` is a yield-bearing version of both `asset0` and `asset1`. The PSM contract allows users to swap between these assets, deposit any of the assets to mint shares, and withdraw any of the assets by burning shares.
+
+The conversion between a base asset and `asset2` is provided by a rate provider contract. The rate provider returns the conversion rate between `asset2` and the base asset in 1e27 precision. The conversion between the base assets is one to one.
+
+The conversion rate between assets and shares is based on the total value of assets held by the PSM. The total value is calculated by converting the assets to their equivalent value in the base asset with 18 decimal precision. The shares represent the ownership of the underlying assets in the PSM. Since three assets are used, each with different precisions and values, they are converted to a common base asset-denominated value for share conversions.
+
+This README provides the essential information needed to understand and interact with the PSM contract. For detailed implementation, refer to the contract code and `IPSM` interface documentation.
 
 ## Contracts
 
@@ -76,7 +82,7 @@ forge test
 ```
 
 ***
-*The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
+*The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP.*
 
 <p align="center">
   <img src="https://1827921443-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FjvdfbhgN5UCpMtP1l8r5%2Fuploads%2Fgit-blob-c029bb6c918f8c042400dbcef7102c4e5c1caf38%2Flogomark%20colour.svg?alt=media" height="150" />
