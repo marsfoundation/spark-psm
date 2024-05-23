@@ -38,9 +38,7 @@ contract PSMConstructorTests is PSMTestBase {
         assertEq(address(psm.asset2()),       address(sDai));
         assertEq(address(psm.rateProvider()), address(rateProvider));
 
-        assertEq(psm.asset0Precision(), 10 ** dai.decimals());
-        assertEq(psm.asset1Precision(), 10 ** usdc.decimals());
-        assertEq(psm.asset2Precision(), 10 ** sDai.decimals());
+        assertEq(psm.initialBurnAmount(), 1000);
     }
 
 }
