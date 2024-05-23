@@ -89,8 +89,8 @@ interface IPSM {
     function asset1() external view returns (IERC20);
 
     /**
-     *  @dev    Returns the IERC20 interface representing asset2. This asset is the yield
-     *          bearing asset in the PSM (e.g., sDAI). This asset queries its value from the
+     *  @dev    Returns the IERC20 interface representing asset2. This asset is the yield-bearing
+     *          asset in the PSM (e.g., sDAI). The value of this asset is queried from the
      *          rate provider.
      *  @return The IERC20 interface of asset2.
      */
