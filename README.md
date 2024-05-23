@@ -67,7 +67,9 @@ NOTE: These functions do not round in the same way as preview functions, so they
 - **`Deposit`**: Emitted on asset deposits.
 - **`Withdraw`**: Emitted on asset withdrawals.
 
-## Test
+## Running Tests
+
+To run tests in this repo, run:
 
 ```bash
 forge test
