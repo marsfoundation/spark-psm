@@ -9,7 +9,9 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
-    function test_inflationAttack_noInitialBurnAmount() public {
+    // TODO: Add DOS attack test outlined here: https://github.com/marsfoundation/spark-psm/pull/2#pullrequestreview-2085880206
+
+    function test_inflationAttack_noInitialDeposit() public {
         psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
@@ -54,32 +56,19 @@ contract InflationAttackTests is PSMTestBase {
         assertEq(usdc.balanceOf(frontRunner),    15_000_000e6);
     }
 
-    function test_inflationAttack_useInitialBurnAmount_firstDepositOverflowBoundary() public {
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
-
-        address frontRunner = makeAddr("frontRunner");
-
-        vm.startPrank(frontRunner);
-        sDai.mint(frontRunner, 800);
-        sDai.approve(address(psm), 800);
-
-        vm.expectRevert(stdError.arithmeticError);
-        psm.deposit(address(sDai), 799);
-
-        // 800 sDAI = 1000 shares
-        psm.deposit(address(sDai), 800);
-    }
-
-    function test_inflationAttack_useInitialBurnAmount() public {
+    function test_inflationAttack_useInitialDeposit() public {
         psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
         address frontRunner    = makeAddr("frontRunner");
+        address deployer       = address(this);  // TODO: Update to use non-deployer receiver
+
+        _deposit(address(this), address(sDai), 800);  /// 1000 shares
 
         // Step 1: Front runner deposits 801 sDAI to get 1 share
 
-        // 1000 shares get burned, user is left with 1
-        _deposit(frontRunner, address(sDai), 801);
+        // User tries to do the same attack, depositing one sDAI for 1 share
+        _deposit(frontRunner, address(sDai), 1);
 
         assertEq(psm.shares(frontRunner), 1);
 
@@ -107,14 +96,12 @@ contract InflationAttackTests is PSMTestBase {
 
         _withdraw(firstDepositor, address(usdc), type(uint256).max);
         _withdraw(frontRunner,    address(usdc), type(uint256).max);
-
-        // Burnt shares have a claim on these
-        // TODO: Should this be an admin contract instead of address(0)?
-        assertEq(usdc.balanceOf(address(psm)), 9_993_337.774818e6);
+        _withdraw(deployer,       address(usdc), type(uint256).max);
 
         // Front runner loses 9.99m USDC, first depositor loses 4k USDC
         assertEq(usdc.balanceOf(firstDepositor), 19_996_668.887408e6);
         assertEq(usdc.balanceOf(frontRunner),    9_993.337774e6);
+        assertEq(usdc.balanceOf(deployer),       9_993_337.774818e6);
     }
 
 }
