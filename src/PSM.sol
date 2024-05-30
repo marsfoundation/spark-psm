@@ -33,11 +33,7 @@ contract PSM {
 
     mapping(address user => uint256 shares) public shares;
 
-    constructor(
-        address asset0_,
-        address asset1_,
-        address rateProvider_
-    ) {
+    constructor(address asset0_, address asset1_, address rateProvider_) {
         require(asset0_       != address(0), "PSM/invalid-asset0");
         require(asset1_       != address(0), "PSM/invalid-asset1");
         require(rateProvider_ != address(0), "PSM/invalid-rateProvider");
