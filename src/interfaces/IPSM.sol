@@ -32,13 +32,6 @@ interface IPSM {
     );
 
     /**
-     *  @dev   Emitted when shares are burned from the first depositor's balance in the PSM.
-     *  @param user         Address of the user that burned the shares.
-     *  @param sharesBurned Number of shares burned from the user.
-     */
-    event InitialSharesBurned(address indexed user, uint256 sharesBurned);
-
-    /**
      *  @dev   Emitted when an asset is deposited into the PSM.
      *  @param asset           Address of the asset deposited.
      *  @param user            Address of the user that deposited the asset.
@@ -102,13 +95,6 @@ interface IPSM {
      *  @return The address of the rate provider.
      */
     function rateProvider() external view returns (address);
-
-    /**
-     *  @dev    Returns the initial burn amount for shares. This value is set to prevent an inflation
-     *          frontrunning attack on the first depositor in the PSM. Recommended value is 1000.
-     *  @return The initial amount of shares to burn.
-     */
-    function initialBurnAmount() external view returns (uint256);
 
     /**
      *  @dev    Returns the total number of shares in the PSM. Shares represent ownership of the

@@ -25,6 +25,10 @@ This README provides the essential information needed to understand and interact
 - **IPSM Interface**: Defines the essential functions and events that the PSM contract implements.
 - **IRateProviderLike Interface**: Defines the function to get the conversion rate between yield-bearing and non-yield-bearing assets.
 
+## [CRITICAL]: First Depositor Attack Prevention on Deployment
+
+On the deployment of the PSM, the deployer **MUST make an initial deposit in order to protect the first depositor from getting attacked with a share inflation attack**. This is outlined further [here](https://github.com/marsfoundation/spark-automations/assets/44272939/9472a6d2-0361-48b0-b534-96a0614330d3). 1000 shares minted is determined to be sufficient to prevent this attack. Technical details related to this can be found in `test/InflationAttack.t.sol`. The deployment script [TODO] in this repo contains logic for the deployer to perform this initial deposit, so it is **HIGHLY RECOMMENDED** to use this deployment script when deploying the PSM. Reasoning for the technical implementation approach taken is outlined in more detail [here](https://github.com/marsfoundation/spark-psm/pull/2).
+
 ## PSM Contract Details
 
 ### State Variables and Immutables
@@ -33,7 +37,6 @@ This README provides the essential information needed to understand and interact
 - **`asset1`**: Another non-yield-bearing base asset that is directly correlated to `asset0` (e.g., DAI).
 - **`asset2`**: Yield-bearing version of both `asset0` and `asset1` (e.g., sDAI).
 - **`rateProvider`**: Contract that returns a conversion rate between and `asset2` and the base asset (e.g., sDAI to USD) in 1e27 precision.
-- **`initialBurnAmount`**: Initial shares burned to prevent an inflation frontrunning attack (more info on this [here](https://mixbytes.io/blog/overview-of-the-inflation-attack)).
 - **`totalShares`**: Total shares in the PSM. Shares represent the ownership of the underlying assets in the PSM.
 - **`shares`**: Mapping of user addresses to their shares.
 
@@ -45,7 +48,7 @@ This README provides the essential information needed to understand and interact
 
 #### Liquidity Provision Functions
 
-- **`deposit`**: Deposits assets into the PSM, minting new shares. Handles the initial burn amount for the first deposit to prevent inflation frontrunning. Includes a referral code.
+- **`deposit`**: Deposits assets into the PSM, minting new shares. Includes a referral code.
 - **`withdraw`**: Withdraws assets from the PSM by burning shares. Ensures the user has sufficient shares for the withdrawal and adjusts the total shares accordingly. Includes a referral code.
 
 #### Preview Functions
@@ -69,7 +72,6 @@ NOTE: These functions do not round in the same way as preview functions, so they
 ### Events
 
 - **`Swap`**: Emitted on asset swaps.
-- **`InitialSharesBurned`**: Emitted on the initial burn of shares.
 - **`Deposit`**: Emitted on asset deposits.
 - **`Withdraw`**: Emitted on asset withdrawals.
 

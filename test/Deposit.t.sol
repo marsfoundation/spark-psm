@@ -11,9 +11,6 @@ contract PSMDepositTests is PSMTestBase {
 
     address user1 = makeAddr("user1");
     address user2 = makeAddr("user2");
-    address burn  = address(0);
-
-    uint256 BURN_AMOUNT = 1000;
 
     function test_deposit_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
@@ -35,7 +32,6 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
-        assertEq(psm.shares(burn),  0);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -46,8 +42,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)),        100e6);
 
         assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
+        assertEq(psm.shares(user1), 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -65,7 +60,6 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
-        assertEq(psm.shares(burn),  0);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -76,8 +70,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(), 125e18);
-        assertEq(psm.shares(user1), 125e18 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
+        assertEq(psm.shares(user1), 125e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -101,8 +94,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
+        assertEq(psm.shares(user1), 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -115,16 +107,14 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);  // Only burn on first deposit
+        assertEq(psm.shares(user1), 225e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
     function testFuzz_deposit_usdcThenSDai(uint256 usdcAmount, uint256 sDaiAmount) public {
-        // NOTE: Deposits revert if deposit amount is less than the burn amount
-        usdcAmount = _bound(usdcAmount, BURN_AMOUNT, USDC_TOKEN_MAX);
-        sDaiAmount = _bound(sDaiAmount, BURN_AMOUNT, SDAI_TOKEN_MAX);
+        usdcAmount = _bound(usdcAmount, 0, USDC_TOKEN_MAX);
+        sDaiAmount = _bound(sDaiAmount, 0, SDAI_TOKEN_MAX);
 
         usdc.mint(user1, usdcAmount);
 
@@ -144,8 +134,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(), usdcAmount * 1e12);
-        assertEq(psm.shares(user1), usdcAmount * 1e12 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
+        assertEq(psm.shares(user1), usdcAmount * 1e12);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -158,8 +147,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        sDaiAmount);
 
         assertEq(psm.totalShares(), usdcAmount * 1e12 + sDaiAmount * 125/100);
-        assertEq(psm.shares(user1), usdcAmount * 1e12 + sDaiAmount * 125/100 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);  // Only burn on first deposit
+        assertEq(psm.shares(user1), usdcAmount * 1e12 + sDaiAmount * 125/100);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -187,12 +175,11 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18 - BURN_AMOUNT);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
+        assertEq(psm.shares(user1), 225e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 225e18 - BURN_AMOUNT);
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 225e18);
 
         rateProvider.__setConversionRate(1.5e27);
 
@@ -212,7 +199,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user2),               100e18);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18 - 1112);  // Burn amount conversion
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
         assertEq(psm.convertToAssetValue(psm.shares(user2)), 0);
 
         assertEq(psm.getPsmTotalValue(), 250e18);
@@ -231,12 +218,11 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(expectedShares, 135e18);
 
         assertEq(psm.totalShares(), 360e18);
-        assertEq(psm.shares(user1), 225e18 - BURN_AMOUNT);
+        assertEq(psm.shares(user1), 225e18);
         assertEq(psm.shares(user2), 135e18);
-        assertEq(psm.shares(burn),  BURN_AMOUNT);
 
         // User 1 earned $25 on 225, User 2 has earned nothing
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18 - 1112);
+        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
         assertEq(psm.convertToAssetValue(psm.shares(user2)), 150e18);
 
         assertEq(psm.getPsmTotalValue(), 400e18);

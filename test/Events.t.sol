@@ -17,8 +17,6 @@ contract PSMEventTests is PSMTestBase {
         uint16  referralCode
     );
 
-    event InitialSharesBurned(address indexed user, uint256 sharesBurned);
-
     event Deposit(
         address indexed asset,
         address indexed user,
@@ -38,8 +36,6 @@ contract PSMEventTests is PSMTestBase {
     address sender   = makeAddr("sender");
     address receiver = makeAddr("receiver");
 
-    uint256 BURN_AMOUNT = 1000;
-
     function test_deposit_events() public {
         vm.startPrank(sender);
 
@@ -47,15 +43,12 @@ contract PSMEventTests is PSMTestBase {
         dai.approve(address(psm), 100e18);
 
         vm.expectEmit();
-        emit InitialSharesBurned(sender, BURN_AMOUNT);
-        vm.expectEmit();
-        emit Deposit(address(dai), sender, 100e18, 100e18 - BURN_AMOUNT, 1);
+        emit Deposit(address(dai), sender, 100e18, 100e18, 1);
         psm.deposit(address(dai), 100e18, 1);
 
         usdc.mint(sender, 100e6);
         usdc.approve(address(psm), 100e6);
 
-        // Initial shares burned event not emitted
         vm.expectEmit();
         emit Deposit(address(usdc), sender, 100e6, 100e18, 2);  // Different code
         psm.deposit(address(usdc), 100e6, 2);
@@ -63,7 +56,6 @@ contract PSMEventTests is PSMTestBase {
         sDai.mint(sender, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        // Initial shares burned event not emitted
         vm.expectEmit();
         emit Deposit(address(sDai), sender, 100e18, 125e18, 3);  // Different code
         psm.deposit(address(sDai), 100e18, 3);
@@ -84,14 +76,9 @@ contract PSMEventTests is PSMTestBase {
         emit Withdraw(address(usdc), sender, 100e6, 100e18, 2);
         psm.withdraw(address(usdc), 100e6, 2);
 
-        // Amount of sDAI can't be withdrawn because of first deposit.
-        uint256 expectedAssetsWithdrawn = 100e18 - BURN_AMOUNT * 80/100;
-
-        // First depositors withdraw is for less than they specify because of burn amount.
-        // Amount emitted in the event is the resulting withdrawal and burn amounts.
         vm.expectEmit();
-        emit Withdraw(address(sDai), sender, expectedAssetsWithdrawn, 125e18 - BURN_AMOUNT, 3);
-        psm.withdraw(address(sDai), expectedAssetsWithdrawn, 3);
+        emit Withdraw(address(sDai), sender, 100e18, 125e18, 3);
+        psm.withdraw(address(sDai), 100e18, 3);
     }
 
     function test_swap_events() public {
