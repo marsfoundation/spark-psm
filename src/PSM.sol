@@ -14,6 +14,7 @@ interface IRateProviderLike {
 // TODO: Refactor into inheritance structure
 // TODO: Add interface with natspec and inherit
 // TODO: Prove that we're always rounding against user
+// TODO: Add receiver to deposit/withdraw
 contract PSM {
 
     using SafeERC20 for IERC20;
@@ -29,19 +30,12 @@ contract PSM {
     uint256 public immutable asset0Precision;
     uint256 public immutable asset1Precision;
     uint256 public immutable asset2Precision;
-    uint256 public immutable initialBurnAmount;
 
     uint256 public totalShares;
 
     mapping(address user => uint256 shares) public shares;
 
-    constructor(
-        address asset0_,
-        address asset1_,
-        address asset2_,
-        address rateProvider_,
-        uint256 initialBurnAmount_
-    ) {
+    constructor(address asset0_, address asset1_, address asset2_, address rateProvider_) {
         require(asset0_       != address(0), "PSM/invalid-asset0");
         require(asset1_       != address(0), "PSM/invalid-asset1");
         require(asset2_       != address(0), "PSM/invalid-asset2");
@@ -56,8 +50,6 @@ contract PSM {
         asset0Precision = 10 ** IERC20(asset0_).decimals();
         asset1Precision = 10 ** IERC20(asset1_).decimals();
         asset2Precision = 10 ** IERC20(asset2_).decimals();
-
-        initialBurnAmount = initialBurnAmount_;
     }
 
     /**********************************************************************************************/
@@ -92,13 +84,6 @@ contract PSM {
         external returns (uint256 newShares)
     {
         newShares = previewDeposit(asset, assetsToDeposit);
-
-        if (totalShares == 0 && initialBurnAmount != 0) {
-            shares[address(0)] += initialBurnAmount;
-            totalShares        += initialBurnAmount;
-
-            newShares -= initialBurnAmount;
-        }
 
         shares[msg.sender] += newShares;
         totalShares        += newShares;

@@ -11,27 +11,27 @@ contract PSMConstructorTests is PSMTestBase {
 
     function test_constructor_invalidAsset0() public {
         vm.expectRevert("PSM/invalid-asset0");
-        new PSM(address(0), address(usdc), address(sDai), address(rateProvider), 1000);
+        new PSM(address(0), address(usdc), address(sDai), address(rateProvider));
     }
 
     function test_constructor_invalidAsset1() public {
         vm.expectRevert("PSM/invalid-asset1");
-        new PSM(address(dai), address(0), address(sDai), address(rateProvider), 1000);
+        new PSM(address(dai), address(0), address(sDai), address(rateProvider));
     }
 
     function test_constructor_invalidAsset2() public {
         vm.expectRevert("PSM/invalid-asset2");
-        new PSM(address(dai), address(usdc), address(0), address(rateProvider), 1000);
+        new PSM(address(dai), address(usdc), address(0), address(rateProvider));
     }
 
     function test_constructor_invalidRateProvider() public {
         vm.expectRevert("PSM/invalid-rateProvider");
-        new PSM(address(dai), address(sDai), address(usdc), address(0), 1000);
+        new PSM(address(dai), address(sDai), address(usdc), address(0));
     }
 
     function test_constructor() public {
         // Deploy new PSM to get test coverage
-        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider), 1000);
+        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider));
 
         assertEq(address(psm.asset0()),       address(dai));
         assertEq(address(psm.asset1()),       address(usdc));

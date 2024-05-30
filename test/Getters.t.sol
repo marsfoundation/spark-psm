@@ -17,8 +17,7 @@ contract PSMHarnessTests is PSMTestBase {
             address(dai),
             address(usdc),
             address(sDai),
-            address(rateProvider),
-            1000
+            address(rateProvider)
         );
     }
 
