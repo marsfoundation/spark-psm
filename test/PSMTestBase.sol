@@ -38,7 +38,7 @@ contract PSMTestBase is Test {
         // NOTE: Using 1.25 for easy two way conversions
         rateProvider.__setConversionRate(1.25e27);
 
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider), 1000);
+        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         vm.label(address(sDai), "sDAI");
         vm.label(address(usdc), "USDC");

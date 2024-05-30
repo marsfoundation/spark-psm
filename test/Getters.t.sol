@@ -13,7 +13,7 @@ contract PSMHarnessTests is PSMTestBase {
 
     function setUp() public override {
         super.setUp();
-        psmHarness = new PSMHarness(address(usdc), address(sDai), address(rateProvider), 1000);
+        psmHarness = new PSMHarness(address(usdc), address(sDai), address(rateProvider));
     }
 
     function test_getAsset0Value() public view {

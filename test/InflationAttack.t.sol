@@ -10,7 +10,7 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 contract InflationAttackTests is PSMTestBase {
 
     function test_inflationAttack_noInitialBurnAmount() public {
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider), 0);
+        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
         address frontRunner    = makeAddr("frontRunner");
@@ -55,7 +55,7 @@ contract InflationAttackTests is PSMTestBase {
     }
 
     function test_inflationAttack_useInitialBurnAmount_firstDepositOverflowBoundary() public {
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider), 1000);
+        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         address frontRunner = makeAddr("frontRunner");
 
@@ -71,7 +71,7 @@ contract InflationAttackTests is PSMTestBase {
     }
 
     function test_inflationAttack_useInitialBurnAmount() public {
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider), 1000);
+        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
         address frontRunner    = makeAddr("frontRunner");
