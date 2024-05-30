@@ -16,13 +16,51 @@ contract PSMWithdrawTests is PSMTestBase {
     address receiver1 = makeAddr("receiver1");
     address receiver2 = makeAddr("receiver2");
 
+    function test_withdraw_zeroReceiver() public {
+        _deposit(address(usdc), user1, 100e6);
+
+        vm.expectRevert("PSM/invalid-receiver");
+        psm.withdraw(address(usdc), address(0), 100e6, 0);
+    }
+
+    function test_withdraw_zeroAmount() public {
+        _deposit(address(usdc), user1, 100e6);
+
+        vm.expectRevert("PSM/invalid-amount");
+        psm.withdraw(address(usdc), receiver1, 0, 0);
+    }
+
     function test_withdraw_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
         psm.withdraw(makeAddr("new-asset"), receiver1, 100e6, 0);
     }
 
-    // TODO: Add balance/approve failure tests
-    // TODO: Add tests for new requires
+    function test_withdraw_onlyDaiInPsm() public {
+        _deposit(address(dai), user1, 100e18);
+
+        assertEq(dai.balanceOf(user1),        0);
+        assertEq(dai.balanceOf(receiver1),    0);
+        assertEq(dai.balanceOf(address(psm)), 100e18);
+
+        assertEq(psm.totalShares(), 100e18);
+        assertEq(psm.shares(user1), 100e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        vm.prank(user1);
+        uint256 amount = psm.withdraw(address(dai), receiver1, 100e18, 0);
+
+        assertEq(amount, 100e18);
+
+        assertEq(dai.balanceOf(user1),        0);
+        assertEq(dai.balanceOf(receiver1),    100e18);
+        assertEq(dai.balanceOf(address(psm)), 0);
+
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+    }
 
     function test_withdraw_onlyUsdcInPsm() public {
         _deposit(address(usdc), user1, 100e6);
