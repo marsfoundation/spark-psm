@@ -21,7 +21,7 @@ contract InflationAttackTests is PSMTestBase {
         // Step 1: Front runner deposits 1 sDAI to get 1 share
 
         // Have to use sDai because 1 USDC mints 1e12 shares
-        _deposit(frontRunner, address(sDai), 1);
+        _deposit(address(sDai), frontRunner, 1);
 
         assertEq(psm.shares(frontRunner), 1);
 
@@ -38,7 +38,7 @@ contract InflationAttackTests is PSMTestBase {
         // Step 3: First depositor deposits 20 million USDC, only gets one share because rounding
         //         error gives them 1 instead of 2 shares, worth 15m USDC
 
-        _deposit(firstDepositor, address(usdc), 20_000_000e6);
+        _deposit(address(usdc), firstDepositor, 20_000_000e6);
 
         assertEq(psm.shares(firstDepositor), 1);
 
@@ -47,8 +47,8 @@ contract InflationAttackTests is PSMTestBase {
 
         // Step 4: Both users withdraw the max amount of funds they can
 
-        _withdraw(firstDepositor, address(usdc), type(uint256).max);
-        _withdraw(frontRunner,    address(usdc), type(uint256).max);
+        _withdraw(address(usdc), firstDepositor, type(uint256).max);
+        _withdraw(address(usdc), frontRunner,    type(uint256).max);
 
         assertEq(usdc.balanceOf(address(psm)), 0);
 
@@ -64,12 +64,12 @@ contract InflationAttackTests is PSMTestBase {
         address frontRunner    = makeAddr("frontRunner");
         address deployer       = address(this);  // TODO: Update to use non-deployer receiver
 
-        _deposit(address(this), address(sDai), 800);  /// 1000 shares
+        _deposit(address(sDai), address(this), 800);  /// 1000 shares
 
         // Step 1: Front runner deposits 801 sDAI to get 1 share
 
         // User tries to do the same attack, depositing one sDAI for 1 share
-        _deposit(frontRunner, address(sDai), 1);
+        _deposit(address(sDai), frontRunner, 1);
 
         assertEq(psm.shares(frontRunner), 1);
 
@@ -86,7 +86,7 @@ contract InflationAttackTests is PSMTestBase {
         // Step 3: First depositor deposits 20 million USDC, only gets one share because rounding
         //         error gives them 1 instead of 2 shares, worth 15m USDC
 
-        _deposit(firstDepositor, address(usdc), 20_000_000e6);
+        _deposit(address(usdc), firstDepositor, 20_000_000e6);
 
         assertEq(psm.shares(firstDepositor), 2001);
 
@@ -95,9 +95,9 @@ contract InflationAttackTests is PSMTestBase {
 
         // Step 4: Both users withdraw the max amount of funds they can
 
-        _withdraw(firstDepositor, address(usdc), type(uint256).max);
-        _withdraw(frontRunner,    address(usdc), type(uint256).max);
-        _withdraw(deployer,       address(usdc), type(uint256).max);
+        _withdraw(address(usdc), firstDepositor, type(uint256).max);
+        _withdraw(address(usdc), frontRunner,    type(uint256).max);
+        _withdraw(address(usdc), deployer,       type(uint256).max);
 
         // Front runner loses 9.99m USDC, first depositor loses 4k USDC
         assertEq(usdc.balanceOf(firstDepositor), 19_996_668.887408e6);

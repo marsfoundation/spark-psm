@@ -73,9 +73,9 @@ contract PSMConvertToAssetValueTests is PSMTestBase {
     }
 
     function test_convertToAssetValue() public {
-        _deposit(address(this), address(dai),  100e18);
-        _deposit(address(this), address(usdc), 100e6);
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(dai),  address(this), 100e18);
+        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(sDai), address(this), 80e18);
 
         assertEq(psm.convertToAssetValue(1e18), 1e18);
 
@@ -103,23 +103,23 @@ contract PSMConvertToSharesTests is PSMTestBase {
     function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
         _assertOneToOneConversion();
 
-        _deposit(address(this), address(usdc), 100e6);
+        _deposit(address(usdc), address(this), 100e6);
         _assertOneToOneConversion();
 
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(sDai), address(this), 80e18);
         _assertOneToOneConversion();
 
-        _withdraw(address(this), address(usdc), 100e6);
+        _withdraw(address(usdc), address(this), 100e6);
         _assertOneToOneConversion();
 
-        _withdraw(address(this), address(sDai), 80e18);
+        _withdraw(address(sDai), address(this), 80e18);
         _assertOneToOneConversion();
     }
 
     function test_convertToShares_updateSDaiValue() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
-        _deposit(address(this), address(usdc), 100e6);
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(sDai), address(this), 80e18);
 
         _assertOneToOneConversion();
 
@@ -173,23 +173,23 @@ contract PSMConvertToSharesWithDaiTests is PSMTestBase {
     function test_convertToShares_depositAndWithdrawDaiAndSDai_noChange() public {
         _assertOneToOneConversionDai();
 
-        _deposit(address(this), address(dai), 100e18);
+        _deposit(address(dai), address(this), 100e18);
         _assertOneToOneConversionDai();
 
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(sDai), address(this), 80e18);
         _assertOneToOneConversionDai();
 
-        _withdraw(address(this), address(dai), 100e18);
+        _withdraw(address(dai), address(this), 100e18);
         _assertOneToOneConversionDai();
 
-        _withdraw(address(this), address(sDai), 80e18);
+        _withdraw(address(sDai), address(this), 80e18);
         _assertOneToOneConversionDai();
     }
 
     function test_convertToShares_updateSDaiValue() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
-        _deposit(address(this), address(dai),  100e18);
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(dai),  address(this), 100e18);
+        _deposit(address(sDai), address(this), 80e18);
 
         _assertOneToOneConversionDai();
 
@@ -234,23 +234,23 @@ contract PSMConvertToSharesWithUsdcTests is PSMTestBase {
     function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
         _assertOneToOneConversionUsdc();
 
-        _deposit(address(this), address(usdc), 100e6);
+        _deposit(address(usdc), address(this), 100e6);
         _assertOneToOneConversionUsdc();
 
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(sDai), address(this), 80e18);
         _assertOneToOneConversionUsdc();
 
-        _withdraw(address(this), address(usdc), 100e6);
+        _withdraw(address(usdc), address(this), 100e6);
         _assertOneToOneConversionUsdc();
 
-        _withdraw(address(this), address(sDai), 80e18);
+        _withdraw(address(sDai), address(this), 80e18);
         _assertOneToOneConversionUsdc();
     }
 
     function test_convertToShares_updateSDaiValue() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
-        _deposit(address(this), address(usdc), 100e6);
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(sDai), address(this), 80e18);
 
         _assertOneToOneConversionUsdc();
 
@@ -299,23 +299,23 @@ contract PSMConvertToSharesWithSDaiTests is PSMTestBase {
     function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
         _assertOneToOneConversion();
 
-        _deposit(address(this), address(usdc), 100e6);
+        _deposit(address(usdc), address(this), 100e6);
         _assertStartingConversionSDai();
 
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(sDai), address(this), 80e18);
         _assertStartingConversionSDai();
 
-        _withdraw(address(this), address(usdc), 100e6);
+        _withdraw(address(usdc), address(this), 100e6);
         _assertStartingConversionSDai();
 
-        _withdraw(address(this), address(sDai), 80e18);
+        _withdraw(address(sDai), address(this), 80e18);
         _assertStartingConversionSDai();
     }
 
     function test_convertToShares_updateSDaiValue() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
-        _deposit(address(this), address(usdc), 100e6);
-        _deposit(address(this), address(sDai), 80e18);
+        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(sDai), address(this), 80e18);
 
         _assertStartingConversionSDai();
 

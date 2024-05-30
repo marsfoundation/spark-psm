@@ -9,15 +9,49 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMDepositTests is PSMTestBase {
 
-    address user1 = makeAddr("user1");
-    address user2 = makeAddr("user2");
+    address user1     = makeAddr("user1");
+    address user2     = makeAddr("user2");
+    address receiver1 = makeAddr("receiver1");
+    address receiver2 = makeAddr("receiver2");
 
     function test_deposit_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.deposit(makeAddr("new-asset"), 100e6, 0);
+        psm.deposit(makeAddr("new-asset"), user1, 100e6, 0);
     }
 
     // TODO: Add balance/approve failure tests
+    // TODO: Add assertions for return values
+    // TODO: Add tests for new requires
+
+    function test_deposit_firstDepositDai() public {
+        dai.mint(user1, 100e18);
+
+        vm.startPrank(user1);
+
+        dai.approve(address(psm), 100e18);
+
+        assertEq(dai.allowance(user1, address(psm)), 100e18);
+        assertEq(dai.balanceOf(user1),               100e18);
+        assertEq(dai.balanceOf(address(psm)),        0);
+
+        assertEq(psm.totalShares(),     0);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 0);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        psm.deposit(address(dai), receiver1, 100e18, 0);
+
+        assertEq(dai.allowance(user1, address(psm)), 0);
+        assertEq(dai.balanceOf(user1),               0);
+        assertEq(dai.balanceOf(address(psm)),        100e18);
+
+        assertEq(psm.totalShares(),     100e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 100e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+    }
 
     function test_deposit_firstDepositUsdc() public {
         usdc.mint(user1, 100e6);
@@ -30,19 +64,21 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(usdc.balanceOf(user1),               100e6);
         assertEq(usdc.balanceOf(address(psm)),        0);
 
-        assertEq(psm.totalShares(), 0);
-        assertEq(psm.shares(user1), 0);
+        assertEq(psm.totalShares(),     0);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 0);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(usdc), 100e6, 0);
+        psm.deposit(address(usdc), receiver1, 100e6, 0);
 
         assertEq(usdc.allowance(user1, address(psm)), 0);
         assertEq(usdc.balanceOf(user1),               0);
         assertEq(usdc.balanceOf(address(psm)),        100e6);
 
-        assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18);
+        assertEq(psm.totalShares(),     100e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -58,19 +94,21 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               100e18);
         assertEq(sDai.balanceOf(address(psm)),        0);
 
-        assertEq(psm.totalShares(), 0);
-        assertEq(psm.shares(user1), 0);
+        assertEq(psm.totalShares(),     0);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 0);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), 100e18, 0);
+        psm.deposit(address(sDai), receiver1, 100e18, 0);
 
         assertEq(sDai.allowance(user1, address(psm)), 0);
         assertEq(sDai.balanceOf(user1),               0);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.totalShares(), 125e18);
-        assertEq(psm.shares(user1), 125e18);
+        assertEq(psm.totalShares(),     125e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 125e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -82,7 +120,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        psm.deposit(address(usdc), 100e6, 0);
+        psm.deposit(address(usdc), receiver1, 100e6, 0);
 
         sDai.mint(user1, 100e18);
         sDai.approve(address(psm), 100e18);
@@ -93,12 +131,13 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               100e18);
         assertEq(sDai.balanceOf(address(psm)),        0);
 
-        assertEq(psm.totalShares(), 100e18);
-        assertEq(psm.shares(user1), 100e18);
+        assertEq(psm.totalShares(),     100e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), 100e18, 0);
+        psm.deposit(address(sDai), receiver1, 100e18, 0);
 
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
@@ -106,15 +145,19 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               0);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18);
+        assertEq(psm.totalShares(),     225e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 225e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function testFuzz_deposit_usdcThenSDai(uint256 usdcAmount, uint256 sDaiAmount) public {
-        usdcAmount = _bound(usdcAmount, 0, USDC_TOKEN_MAX);
-        sDaiAmount = _bound(sDaiAmount, 0, SDAI_TOKEN_MAX);
+    function testFuzz_deposit_usdcThenSDai(address receiver, uint256 usdcAmount, uint256 sDaiAmount) public {
+        vm.assume(receiver != address(0));
+
+        // Zero amounts revert
+        usdcAmount = _bound(usdcAmount, 1, USDC_TOKEN_MAX);
+        sDaiAmount = _bound(sDaiAmount, 1, SDAI_TOKEN_MAX);
 
         usdc.mint(user1, usdcAmount);
 
@@ -122,7 +165,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), usdcAmount);
 
-        psm.deposit(address(usdc), usdcAmount, 0);
+        psm.deposit(address(usdc), receiver, usdcAmount, 0);
 
         sDai.mint(user1, sDaiAmount);
         sDai.approve(address(psm), sDaiAmount);
@@ -133,12 +176,13 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               sDaiAmount);
         assertEq(sDai.balanceOf(address(psm)),        0);
 
-        assertEq(psm.totalShares(), usdcAmount * 1e12);
-        assertEq(psm.shares(user1), usdcAmount * 1e12);
+        assertEq(psm.totalShares(),    usdcAmount * 1e12);
+        assertEq(psm.shares(user1),    0);
+        assertEq(psm.shares(receiver), usdcAmount * 1e12);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        psm.deposit(address(sDai), sDaiAmount, 0);
+        psm.deposit(address(sDai), receiver, sDaiAmount, 0);
 
         assertEq(usdc.balanceOf(address(psm)), usdcAmount);
 
@@ -146,8 +190,9 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               0);
         assertEq(sDai.balanceOf(address(psm)),        sDaiAmount);
 
-        assertEq(psm.totalShares(), usdcAmount * 1e12 + sDaiAmount * 125/100);
-        assertEq(psm.shares(user1), usdcAmount * 1e12 + sDaiAmount * 125/100);
+        assertEq(psm.totalShares(),    usdcAmount * 1e12 + sDaiAmount * 125/100);
+        assertEq(psm.shares(user1),    0);
+        assertEq(psm.shares(receiver), usdcAmount * 1e12 + sDaiAmount * 125/100);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -159,12 +204,12 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        psm.deposit(address(usdc), 100e6, 0);
+        psm.deposit(address(usdc), receiver1, 100e6, 0);
 
         sDai.mint(user1, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        psm.deposit(address(sDai), 100e18, 0);
+        psm.deposit(address(sDai), receiver1, 100e18, 0);
 
         vm.stopPrank();
 
@@ -174,12 +219,13 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user1),               0);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 225e18);
+        assertEq(psm.totalShares(),     225e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 225e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 225e18);
+        assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 225e18);
 
         rateProvider.__setConversionRate(1.5e27);
 
@@ -199,14 +245,12 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(sDai.balanceOf(user2),               100e18);
         assertEq(sDai.balanceOf(address(psm)),        100e18);
 
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
-        assertEq(psm.convertToAssetValue(psm.shares(user2)), 0);
+        assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
+        assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 0);
 
         assertEq(psm.getPsmTotalValue(), 250e18);
 
-        psm.deposit(address(sDai), 100e18, 0);
-
-        assertEq(psm.shares(user2), 135e18);
+        psm.deposit(address(sDai), receiver2, 100e18, 0);
 
         assertEq(sDai.allowance(user2, address(psm)), 0);
         assertEq(sDai.balanceOf(user2),               0);
@@ -217,13 +261,15 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(expectedShares, 135e18);
 
-        assertEq(psm.totalShares(), 360e18);
-        assertEq(psm.shares(user1), 225e18);
-        assertEq(psm.shares(user2), 135e18);
+        assertEq(psm.totalShares(),     360e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(user2),     0);
+        assertEq(psm.shares(receiver1), 225e18);
+        assertEq(psm.shares(receiver2), 135e18);
 
-        // User 1 earned $25 on 225, User 2 has earned nothing
-        assertEq(psm.convertToAssetValue(psm.shares(user1)), 250e18);
-        assertEq(psm.convertToAssetValue(psm.shares(user2)), 150e18);
+        // Receiver 1 earned $25 on 225, Receiver 2 has earned nothing
+        assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
+        assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 150e18);
 
         assertEq(psm.getPsmTotalValue(), 400e18);
     }
