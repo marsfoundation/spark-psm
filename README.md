@@ -17,13 +17,12 @@ The conversion between a base asset and `asset2` is provided by a rate provider 
 
 The conversion rate between assets and shares is based on the total value of assets held by the PSM. The total value is calculated by converting the assets to their equivalent value in the base asset with 18 decimal precision. The shares represent the ownership of the underlying assets in the PSM. Since three assets are used, each with different precisions and values, they are converted to a common base asset-denominated value for share conversions.
 
-This README provides the essential information needed to understand and interact with the PSM contract. For detailed implementation, refer to the contract code and `IPSM` interface documentation.
+For detailed implementation, refer to the contract code and `IPSM` interface documentation.
 
 ## Contracts
 
-- **PSM Contract**: The core contract implementing the `IPSM` interface, providing functionality for swapping, depositing, and withdrawing assets.
-- **IPSM Interface**: Defines the essential functions and events that the PSM contract implements.
-- **IRateProviderLike Interface**: Defines the function to get the conversion rate between yield-bearing and non-yield-bearing assets.
+- **`src/PSM.sol`**: The core contract implementing the `IPSM` interface, providing functionality for swapping, depositing, and withdrawing assets.
+- **`src/interfaces/IPSM.sol`**: Defines the essential functions and events that the PSM contract implements.
 
 ## [CRITICAL]: First Depositor Attack Prevention on Deployment
 
