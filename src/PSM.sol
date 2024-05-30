@@ -45,8 +45,8 @@ contract PSM {
         asset1       = IERC20(asset1_);
         rateProvider = rateProvider_;
 
-        asset0Precision   = 10 ** IERC20(asset0_).decimals();
-        asset1Precision   = 10 ** IERC20(asset1_).decimals();
+        asset0Precision = 10 ** IERC20(asset0_).decimals();
+        asset1Precision = 10 ** IERC20(asset1_).decimals();
     }
 
     /**********************************************************************************************/
