@@ -223,7 +223,43 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 0);  // Burns the users full amount of shares
     }
 
-    function testFuzz_withdraw_multiUser(
+    // Adding this test to demonstrate that numbers are exact and correspond to assets deposits/withdrawals when withdrawals 
+    // aren't greater than the user's share balance. The next test doesn't constrain this, but there are rounding errors of
+    // up to 1e12 for USDC because of the difference in asset precision. Up to 1e12 shares can be burned for 0 USDC in some
+    // cases, but this is an intentional rounding error against the user.
+    function testFuzz_withdraw_multiUser_noFullShareBurns(
+        uint256 depositAmount1,
+        uint256 depositAmount2,
+        uint256 depositAmount3,
+        uint256 withdrawAmount1,
+        uint256 withdrawAmount2,
+        uint256 withdrawAmount3
+    )
+        public
+    {
+        // Zero amounts revert
+        depositAmount1 = bound(depositAmount1, 1, USDC_TOKEN_MAX);
+        depositAmount2 = bound(depositAmount2, 1, USDC_TOKEN_MAX);
+        depositAmount3 = bound(depositAmount3, 1, SDAI_TOKEN_MAX);
+
+        // Zero amounts revert
+        withdrawAmount1 = bound(withdrawAmount1, 1, USDC_TOKEN_MAX);
+        withdrawAmount2 = bound(withdrawAmount2, 1, depositAmount2);  // User can't burn up to 1e12 shares for 0 USDC in this case
+        withdrawAmount3 = bound(withdrawAmount3, 1, SDAI_TOKEN_MAX);
+
+        // Run with zero share tolerance because the rounding error shouldn't be introduced with the above constraints.
+        _runWithdrawFuzzTests(
+            0, 
+            depositAmount1, 
+            depositAmount2, 
+            depositAmount3, 
+            withdrawAmount1, 
+            withdrawAmount2, 
+            withdrawAmount3
+        );
+    }
+
+    function testFuzz_withdraw_multiUser_fullShareBurns(
         uint256 depositAmount1,
         uint256 depositAmount2,
         uint256 depositAmount3,
@@ -243,6 +279,32 @@ contract PSMWithdrawTests is PSMTestBase {
         withdrawAmount2 = bound(withdrawAmount2, 1, USDC_TOKEN_MAX);
         withdrawAmount3 = bound(withdrawAmount3, 1, SDAI_TOKEN_MAX);
 
+        // Run with 1e12 share tolerance because the rounding error will be introduced with the above constraints.
+        _runWithdrawFuzzTests(
+            1e12, 
+            depositAmount1, 
+            depositAmount2, 
+            depositAmount3, 
+            withdrawAmount1, 
+            withdrawAmount2, 
+            withdrawAmount3
+        );
+    }
+
+    // NOTE: For `assertApproxEqAbs` assertions, a difference calculation is used here instead of comparing 
+    // the two values because this approach inherently asserts that the shares remaining are lower than the 
+    // theoretical value, proving the PSM rounds agains the user.
+    function _runWithdrawFuzzTests(
+        uint256 usdcShareTolerance, 
+        uint256 depositAmount1,
+        uint256 depositAmount2,
+        uint256 depositAmount3,
+        uint256 withdrawAmount1,
+        uint256 withdrawAmount2,
+        uint256 withdrawAmount3
+    ) 
+        internal 
+    {
         _deposit(address(usdc), user1, depositAmount1);
         _deposit(address(usdc), user2, depositAmount2);
         _deposit(address(sDai), user2, depositAmount3);
@@ -272,6 +334,9 @@ contract PSMWithdrawTests is PSMTestBase {
             totalValue
         );
 
+        // NOTE: User 1 doesn't need a tolerance because their shares are 1e6 precision because they only
+        //       deposited USDC. User 2 has a tolerance because they deposited sDAI which has 1e18 precision
+        //       so there is a chance that the rounding will be off by up to 1e12.
         assertEq(usdc.balanceOf(user1),        0);
         assertEq(usdc.balanceOf(receiver1),    expectedWithdrawnAmount1);
         assertEq(usdc.balanceOf(user2),        0);
@@ -309,12 +374,17 @@ contract PSMWithdrawTests is PSMTestBase {
 
         assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
 
-        assertEq(
-            psm.shares(user2),
-            (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12)
+        assertApproxEqAbs(
+            ((depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12)) - psm.shares(user2),
+            0,
+            usdcShareTolerance
         );
 
-        assertEq(psm.totalShares(), totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12);
+        assertApproxEqAbs(
+            (totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12) - psm.totalShares(), 
+            0,
+            usdcShareTolerance
+        );
 
         uint256 expectedWithdrawnAmount3
             = _getExpectedWithdrawnAmount(sDai, user2, withdrawAmount3);
@@ -347,15 +417,15 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user1), (depositAmount1 - expectedWithdrawnAmount1) * 1e12);
 
         assertApproxEqAbs(
-            psm.shares(user2),
-            (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100),
-            1
+            ((depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100)) - psm.shares(user2),
+            0,
+            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sDAI calculations
         );
 
         assertApproxEqAbs(
-            psm.totalShares(),
-            totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100),
-            1
+            totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100) - psm.totalShares(),
+            0,
+            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sDAI calculations
         );
 
         // -- TODO: Get these to work, rounding assertions proving always rounding down
@@ -374,7 +444,7 @@ contract PSMWithdrawTests is PSMTestBase {
         // );
     }
 
-    function _checkPsmInvariant() internal {
+    function _checkPsmInvariant() internal view {
         uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
         uint256 totalAssetsValue =
             sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
