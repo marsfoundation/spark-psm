@@ -132,7 +132,7 @@ contract PSM {
 
         if (sharesToBurn > userShares) {
             assetsWithdrawn = convertToAssets(asset, userShares);
-            sharesToBurn    = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
+            sharesToBurn    = userShares;
         }
     }
 

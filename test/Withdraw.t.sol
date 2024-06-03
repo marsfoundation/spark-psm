@@ -168,7 +168,11 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 0);  // Burns the users full amount of shares
     }
 
-    function testFuzz_withdraw_multiUser(
+    // Adding this test to demonstrate that numbers are exact and correspond to assets deposits/withdrawals when withdrawals 
+    // aren't greater than the user's share balance. The next test doesn't constrain this, but there are rounding errors of
+    // up to 1e12 for USDC because of the difference in asset precision. Up to 1e12 shares can be burned for 0 USDC in some
+    // cases, but this is an intentional rounding error against the user.
+    function testFuzz_withdraw_multiUser_noFullShareBurns(
         uint256 depositAmount1,
         uint256 depositAmount2,
         uint256 depositAmount3,
@@ -184,9 +188,9 @@ contract PSMWithdrawTests is PSMTestBase {
         depositAmount2 = bound(depositAmount2, 0, USDC_TOKEN_MAX);
         depositAmount3 = bound(depositAmount3, 0, SDAI_TOKEN_MAX);
 
-        withdrawAmount1 = bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
-        withdrawAmount2 = bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
-        withdrawAmount3 = bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+        withdrawAmount1 = bound(withdrawAmount1, depositAmount1, USDC_TOKEN_MAX);
+        withdrawAmount2 = bound(withdrawAmount2, depositAmount2, USDC_TOKEN_MAX);
+        withdrawAmount3 = bound(withdrawAmount3, 0,              SDAI_TOKEN_MAX);
 
         _deposit(user1, address(usdc), depositAmount1);
         _deposit(user2, address(usdc), depositAmount2);
