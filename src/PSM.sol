@@ -108,11 +108,11 @@ contract PSM {
     /*** Deposit/withdraw preview functions                                                     ***/
     /**********************************************************************************************/
 
-    function previewDeposit(address asset, uint256 assets) public view returns (uint256) {
+    function previewDeposit(address asset, uint256 assetsToDeposit) public view returns (uint256) {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
-        return convertToShares(_getAssetValue(asset, assets));
+        return convertToShares(_getAssetValue(asset, assetsToDeposit));
     }
 
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
@@ -128,10 +128,10 @@ contract PSM {
 
         sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
 
-        // TODO: Refactor this section to not use convertToAssets because of redundant check
-        // TODO: Can this cause an underflow in shares? Refactor to use full shares balance?
-        if (sharesToBurn > shares[msg.sender]) {
-            assetsWithdrawn = convertToAssets(asset, shares[msg.sender]);
+        uint256 userShares = shares[msg.sender];
+
+        if (sharesToBurn > userShares) {
+            assetsWithdrawn = convertToAssets(asset, userShares);
             sharesToBurn    = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
         }
     }
@@ -203,15 +203,15 @@ contract PSM {
     function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
         uint256 totalValue = getPsmTotalValue();
         if (totalValue != 0) {
-            return _divRoundUp(assetValue * totalShares, totalValue);
+            return _divUp(assetValue * totalShares, totalValue);
         }
         return assetValue;
     }
 
-    function _divRoundUp(uint256 numerator_, uint256 divisor_)
-        internal pure returns (uint256 result_)
-    {
-        result_ = (numerator_ + divisor_ - 1) / divisor_;
+    function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        unchecked {
+            z = x != 0 ? ((x - 1) / y) + 1 : 0;
+        }
     }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {

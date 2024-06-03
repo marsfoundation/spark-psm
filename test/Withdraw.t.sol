@@ -310,7 +310,7 @@ contract PSMWithdrawTests is PSMTestBase {
         // );
     }
 
-    function _checkPsmInvariant() internal {
+    function _checkPsmInvariant() internal view {
         uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
         uint256 totalAssetsValue =
             sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
