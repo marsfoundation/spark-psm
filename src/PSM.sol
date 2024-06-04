@@ -41,6 +41,10 @@ contract PSM {
         require(asset2_       != address(0), "PSM/invalid-asset2");
         require(rateProvider_ != address(0), "PSM/invalid-rateProvider");
 
+        require(asset0_ != asset1_, "PSM/asset0-asset1-same");
+        require(asset0_ != asset2_, "PSM/asset0-asset2-same");
+        require(asset1_ != asset2_, "PSM/asset1-asset2-same");
+
         asset0 = IERC20(asset0_);
         asset1 = IERC20(asset1_);
         asset2 = IERC20(asset2_);
@@ -261,8 +265,8 @@ contract PSM {
     {
         return amountIn
             * 1e27
-            * asset2Precision
             / IRateProviderLike(rateProvider).getConversionRate()
+            * asset2Precision
             / assetInPrecision;
     }
 
@@ -271,8 +275,8 @@ contract PSM {
     {
         return amountIn
             * IRateProviderLike(rateProvider).getConversionRate()
-            * assetInPrecision
             / 1e27
+            * assetInPrecision
             / asset2Precision;
     }
 

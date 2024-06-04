@@ -40,6 +40,21 @@ contract PSMSwapFailureTests is PSMTestBase {
         psm.swap(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver);
     }
 
+    function test_swap_bothAsset0() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.swap(address(dai), address(dai), 100e6, 80e18, receiver);
+    }
+
+    function test_swap_bothAsset1() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.swap(address(usdc), address(usdc), 100e6, 80e18, receiver);
+    }
+
+    function test_swap_bothAsset2() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.swap(address(sDai), address(sDai), 100e6, 80e18, receiver);
+    }
+
     function test_swap_minAmountOutBoundary() public {
         usdc.mint(swapper, 100e6);
 
@@ -88,32 +103,40 @@ contract PSMSwapFailureTests is PSMTestBase {
     }
 
     function test_swap_insufficientPsmBalanceBoundary() public {
-        usdc.mint(swapper, 125e6 + 1);
+        // NOTE: Using 2 instead of 1 here because 1/1.25 rounds to 0, 2/1.25 rounds to 1
+        //       this is because the conversion rate is divided out before the precision conversion
+        //       is done.
+        usdc.mint(swapper, 125e6 + 2);
 
         vm.startPrank(swapper);
 
-        usdc.approve(address(psm), 125e6 + 1);
+        usdc.approve(address(psm), 125e6 + 2);
 
-        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 125e6 + 1);
+        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 125e6 + 2);
 
-        assertEq(expectedAmountOut, 100.0000008e18);  // More than balance of sDAI
+        assertEq(expectedAmountOut, 100.000001e18);  // More than balance of sDAI
 
         vm.expectRevert("SafeERC20/transfer-failed");
-        psm.swap(address(usdc), address(sDai), 125e6 + 1, 100e18, receiver);
+        psm.swap(address(usdc), address(sDai), 125e6 + 2, 100e18, receiver);
 
         psm.swap(address(usdc), address(sDai), 125e6, 100e18, receiver);
     }
 
 }
 
-contract PSMSuccessTestsBase is PSMTestBase {
+contract PSMSwapSuccessTestsBase is PSMTestBase {
+
+    address public swapper  = makeAddr("swapper");
+    address public receiver = makeAddr("receiver");
 
     function setUp() public override {
         super.setUp();
 
-        dai.mint(address(psm),  DAI_TOKEN_MAX);
-        usdc.mint(address(psm), USDC_TOKEN_MAX);
-        sDai.mint(address(psm), SDAI_TOKEN_MAX);
+        // Mint 100x higher than max amount for each token (max conversion rate)
+        // Covers both lower and upper bounds of conversion rate (1% to 10,000% are both 100x)
+        dai.mint(address(psm),  DAI_TOKEN_MAX  * 100);
+        usdc.mint(address(psm), USDC_TOKEN_MAX * 100);
+        sDai.mint(address(psm), SDAI_TOKEN_MAX * 100);
     }
 
     function _swapTest(
@@ -121,48 +144,41 @@ contract PSMSuccessTestsBase is PSMTestBase {
         MockERC20 assetOut,
         uint256 amountIn,
         uint256 amountOut,
-        address swapper,
-        address receiver
+        address swapper_,
+        address receiver_
     ) internal {
-        // 1 trillion of each token corresponds to MAX values
-        uint256 psmAssetInBalance  = 1_000_000_000_000 * 10 ** assetIn.decimals();
-        uint256 psmAssetOutBalance = 1_000_000_000_000 * 10 ** assetOut.decimals();
+        // 100 trillion of each token corresponds to original mint amount
+        uint256 psmAssetInBalance  = 100_000_000_000_000 * 10 ** assetIn.decimals();
+        uint256 psmAssetOutBalance = 100_000_000_000_000 * 10 ** assetOut.decimals();
 
-        assetIn.mint(swapper, amountIn);
+        assetIn.mint(swapper_, amountIn);
 
-        vm.startPrank(swapper);
+        vm.startPrank(swapper_);
 
         assetIn.approve(address(psm), amountIn);
 
-        assertEq(assetIn.allowance(swapper, address(psm)), amountIn);
+        assertEq(assetIn.allowance(swapper_, address(psm)), amountIn);
 
-        assertEq(assetIn.balanceOf(swapper),      amountIn);
+        assertEq(assetIn.balanceOf(swapper_),     amountIn);
         assertEq(assetIn.balanceOf(address(psm)), psmAssetInBalance);
 
-        assertEq(assetOut.balanceOf(receiver),     0);
+        assertEq(assetOut.balanceOf(receiver_),    0);
         assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance);
 
-        psm.swap(address(assetIn), address(assetOut), amountIn, amountOut, receiver);
+        psm.swap(address(assetIn), address(assetOut), amountIn, amountOut, receiver_);
 
-        assertEq(assetIn.allowance(swapper, address(psm)), 0);
+        assertEq(assetIn.allowance(swapper_, address(psm)), 0);
 
-        assertEq(assetIn.balanceOf(swapper),      0);
+        assertEq(assetIn.balanceOf(swapper_),     0);
         assertEq(assetIn.balanceOf(address(psm)), psmAssetInBalance + amountIn);
 
-        assertEq(assetOut.balanceOf(receiver),     amountOut);
+        assertEq(assetOut.balanceOf(receiver_),    amountOut);
         assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance - amountOut);
     }
 
 }
 
-contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
-
-    address public swapper  = makeAddr("swapper");
-    address public receiver = makeAddr("receiver");
-
-    /**********************************************************************************************/
-    /*** DAI assetIn tests                                                                      ***/
-    /**********************************************************************************************/
+contract PSMSwapDaiAssetInTests is PSMSwapSuccessTestsBase {
 
     function test_swap_daiToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapTest(dai, usdc, 100e18, 100e6, swapper, swapper);
@@ -204,9 +220,8 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
-
+        amountIn       = _bound(amountIn,       1,       DAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
         rateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * 1e27 / conversionRate;
@@ -214,9 +229,9 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         _swapTest(dai, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
-    /**********************************************************************************************/
-    /*** USDC assetIn tests                                                                     ***/
-    /**********************************************************************************************/
+}
+
+contract PSMSwapUsdcAssetInTests is PSMSwapSuccessTestsBase {
 
     function test_swap_usdcToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapTest(usdc, dai, 100e6, 100e18, swapper, swapper);
@@ -258,8 +273,8 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       USDC_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -268,9 +283,9 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         _swapTest(usdc, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
-    /**********************************************************************************************/
-    /*** sDAI assetIn tests                                                                     ***/
-    /**********************************************************************************************/
+}
+
+contract PSMSwapSDaiAssetInTests is PSMSwapSuccessTestsBase {
 
     function test_swap_sDaiToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapTest(sDai, dai, 100e18, 125e18, swapper, swapper);
@@ -298,8 +313,8 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -318,8 +333,8 @@ contract PSMSwapDaiAssetInTests is PSMSuccessTestsBase {
         vm.assume(fuzzReceiver != address(psm));
         vm.assume(fuzzReceiver != address(0));
 
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,       SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
