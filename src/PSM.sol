@@ -14,9 +14,7 @@ interface IRateProviderLike {
 // TODO: Refactor into inheritance structure
 // TODO: Add interface with natspec and inherit
 // TODO: Prove that we're always rounding against user
-// TODO: Frontrunning attack, donation attack, virtual balances?
-// TODO: Figure out how to optimize require checks for assets in view functions
-// TODO: Discuss if we should add ERC20 functionality
+// TODO: Add receiver to deposit/withdraw
 contract PSM {
 
     using SafeERC20 for IERC20;
@@ -80,11 +78,10 @@ contract PSM {
     /*** Liquidity provision functions                                                          ***/
     /**********************************************************************************************/
 
-    function deposit(address asset, uint256 assetsToDeposit) external {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
-
-        // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
-        uint256 newShares = convertToShares(_getAssetValue(asset, assetsToDeposit));
+    function deposit(address asset, uint256 assetsToDeposit)
+        external returns (uint256 newShares)
+    {
+        newShares = previewDeposit(asset, assetsToDeposit);
 
         shares[msg.sender] += newShares;
         totalShares        += newShares;
@@ -95,20 +92,9 @@ contract PSM {
     function withdraw(address asset, uint256 maxAssetsToWithdraw)
         external returns (uint256 assetsWithdrawn)
     {
-        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        uint256 sharesToBurn;
 
-        uint256 assetBalance = IERC20(asset).balanceOf(address(this));
-
-        assetsWithdrawn = assetBalance < maxAssetsToWithdraw
-            ? assetBalance
-            : maxAssetsToWithdraw;
-
-        uint256 sharesToBurn = convertToShares(asset, assetsWithdrawn);
-
-        if (sharesToBurn > shares[msg.sender]) {
-            assetsWithdrawn = convertToAssets(asset, shares[msg.sender]);
-            sharesToBurn    = convertToShares(asset, assetsWithdrawn);
-        }
+        ( sharesToBurn, assetsWithdrawn ) = previewWithdraw(asset, maxAssetsToWithdraw);
 
         unchecked {
             shares[msg.sender] -= sharesToBurn;
@@ -119,43 +105,35 @@ contract PSM {
     }
 
     /**********************************************************************************************/
-    /*** Conversion functions                                                                   ***/
+    /*** Deposit/withdraw preview functions                                                     ***/
     /**********************************************************************************************/
 
-    function convertToShares(uint256 assetValue) public view returns (uint256) {
-        uint256 totalValue = getPsmTotalValue();
-        if (totalValue != 0) {
-            return assetValue * totalShares / totalValue;
-        }
-        return assetValue;
-    }
-
-    function convertToShares(address asset, uint256 assets) public view returns (uint256) {
+    function previewDeposit(address asset, uint256 assetsToDeposit) public view returns (uint256) {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
-        return convertToShares(_getAssetValue(asset, assets));
+
+        // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
+        return convertToShares(_getAssetValue(asset, assetsToDeposit));
     }
 
-    function convertToAssetValue(uint256 numShares) public view returns (uint256) {
-        uint256 totalShares_ = totalShares;
-
-        if (totalShares_ != 0) {
-            return numShares * getPsmTotalValue() / totalShares_;
-        }
-        return numShares;
-    }
-
-    function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
+    function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
+        public view returns (uint256 sharesToBurn, uint256 assetsWithdrawn)
+    {
         require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
-        return _getAssetsByValue(asset, convertToAssetValue(numShares));
-    }
 
-    /**********************************************************************************************/
-    /*** Asset value functions                                                                  ***/
-    /**********************************************************************************************/
+        uint256 assetBalance = IERC20(asset).balanceOf(address(this));
 
-    function getPsmTotalValue() public view returns (uint256) {
-        return _getAsset0Value(asset0.balanceOf(address(this)))
-            + _getAsset1Value(asset1.balanceOf(address(this)));
+        assetsWithdrawn = assetBalance < maxAssetsToWithdraw
+            ? assetBalance
+            : maxAssetsToWithdraw;
+
+        sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
+
+        uint256 userShares = shares[msg.sender];
+
+        if (sharesToBurn > userShares) {
+            assetsWithdrawn = convertToAssets(asset, userShares);
+            sharesToBurn    = userShares;
+        }
     }
 
     /**********************************************************************************************/
@@ -179,15 +157,67 @@ contract PSM {
     }
 
     /**********************************************************************************************/
+    /*** Conversion functions                                                                   ***/
+    /**********************************************************************************************/
+
+    function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
+        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        return _getAssetsByValue(asset, convertToAssetValue(numShares));
+    }
+
+    function convertToAssetValue(uint256 numShares) public view returns (uint256) {
+        uint256 totalShares_ = totalShares;
+
+        if (totalShares_ != 0) {
+            return numShares * getPsmTotalValue() / totalShares_;
+        }
+        return numShares;
+    }
+
+    function convertToShares(uint256 assetValue) public view returns (uint256) {
+        uint256 totalValue = getPsmTotalValue();
+        if (totalValue != 0) {
+            return assetValue * totalShares / totalValue;
+        }
+        return assetValue;
+    }
+
+    function convertToShares(address asset, uint256 assets) public view returns (uint256) {
+        require(asset == address(asset0) || asset == address(asset1), "PSM/invalid-asset");
+        return convertToShares(_getAssetValue(asset, assets));
+    }
+
+    /**********************************************************************************************/
+    /*** Asset value functions                                                                  ***/
+    /**********************************************************************************************/
+
+    function getPsmTotalValue() public view returns (uint256) {
+        return _getAsset0Value(asset0.balanceOf(address(this)))
+            + _getAsset1Value(asset1.balanceOf(address(this)));
+    }
+
+    /**********************************************************************************************/
     /*** Internal helper functions                                                              ***/
     /**********************************************************************************************/
 
-    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
-        if (asset == address(asset0)) {
-            return _getAsset0Value(amount);
+    function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
+        uint256 totalValue = getPsmTotalValue();
+        if (totalValue != 0) {
+            return _divUp(assetValue * totalShares, totalValue);
         }
+        return assetValue;
+    }
 
-        return _getAsset1Value(amount);
+    function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        unchecked {
+            z = x != 0 ? ((x - 1) / y) + 1 : 0;
+        }
+    }
+
+    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
+        return asset == address(asset0)
+            ? _getAsset0Value(amount)
+            : _getAsset1Value(amount);
     }
 
     function _getAssetsByValue(address asset, uint256 assetValue) internal view returns (uint256) {
