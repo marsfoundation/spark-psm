@@ -164,7 +164,7 @@ contract PSM {
     }
 
     /**********************************************************************************************/
-    /*** Conversion functions                                                                   ***/
+    /*** Swap preview functions                                                                 ***/
     /**********************************************************************************************/
 
     function convertToAssets(address asset, uint256 numShares) public view returns (uint256) {
