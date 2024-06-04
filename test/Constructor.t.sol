@@ -26,7 +26,22 @@ contract PSMConstructorTests is PSMTestBase {
 
     function test_constructor_invalidRateProvider() public {
         vm.expectRevert("PSM/invalid-rateProvider");
-        new PSM(address(dai), address(sDai), address(usdc), address(0));
+        new PSM(address(dai), address(usdc), address(sDai), address(0));
+    }
+
+    function test_constructor_asset0Asset1Match() public {
+        vm.expectRevert("PSM/asset0-asset1-same");
+        new PSM(address(dai), address(dai), address(sDai), address(rateProvider));
+    }
+
+    function test_constructor_asset0Asset2Match() public {
+        vm.expectRevert("PSM/asset0-asset2-same");
+        new PSM(address(dai), address(usdc), address(dai), address(rateProvider));
+    }
+
+    function test_constructor_asset1Asset2Match() public {
+        vm.expectRevert("PSM/asset1-asset2-same");
+        new PSM(address(dai), address(usdc), address(usdc), address(rateProvider));
     }
 
     function test_constructor() public {
