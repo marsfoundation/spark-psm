@@ -26,13 +26,13 @@ contract PSMHarnessTests is PSMTestBase {
         assertEq(psmHarness.getAsset0Value(2), 2);
         assertEq(psmHarness.getAsset0Value(3), 3);
 
-        assertEq(psmHarness.getAsset0Value(100e6), 100e6);
-        assertEq(psmHarness.getAsset0Value(200e6), 200e6);
-        assertEq(psmHarness.getAsset0Value(300e6), 300e6);
+        assertEq(psmHarness.getAsset0Value(100e18), 100e18);
+        assertEq(psmHarness.getAsset0Value(200e18), 200e18);
+        assertEq(psmHarness.getAsset0Value(300e18), 300e18);
 
-        assertEq(psmHarness.getAsset0Value(100_000_000_000e6), 100_000_000_000e6);
-        assertEq(psmHarness.getAsset0Value(200_000_000_000e6), 200_000_000_000e6);
-        assertEq(psmHarness.getAsset0Value(300_000_000_000e6), 300_000_000_000e6);
+        assertEq(psmHarness.getAsset0Value(100_000_000_000e18), 100_000_000_000e18);
+        assertEq(psmHarness.getAsset0Value(200_000_000_000e18), 200_000_000_000e18);
+        assertEq(psmHarness.getAsset0Value(300_000_000_000e18), 300_000_000_000e18);
     }
 
     function testFuzz_getAsset0Value(uint256 amount) public view {

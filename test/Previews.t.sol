@@ -17,10 +17,22 @@ contract PSMPreviewSwapFailureTests is PSMTestBase {
         psm.previewSwap(address(usdc), makeAddr("other-token"), 1);
     }
 
-}
+    function test_previewSwap_bothAsset0() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.previewSwap(address(dai), address(dai), 1);
+    }
 
-// TODO: Determine if 10 billion is too low of an upper bound for sDAI swaps,
-//       if exchange rate lower bound should be raised (applies to swap tests too).
+    function test_previewSwap_bothAsset1() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.previewSwap(address(usdc), address(usdc), 1);
+    }
+
+    function test_previewSwap_bothAsset2() public {
+        vm.expectRevert("PSM/invalid-asset");
+        psm.previewSwap(address(sDai), address(sDai), 1);
+    }
+
+}
 
 contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
 
@@ -46,8 +58,8 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
     }
 
     function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,         DAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -78,15 +90,13 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwap(address(usdc), address(sDai), 3e6), 2.4e18);
     }
 
-    function testFuzz_previewSwap_daiToSDai(uint256 amountIn, uint256 conversionRate) public {
-        amountIn = _bound(amountIn, 0, USDC_TOKEN_MAX);
-
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
+    function testFuzz_previewSwap_usdcToSDai(uint256 amountIn, uint256 conversionRate) public {
+        amountIn       = _bound(amountIn,      1,         USDC_TOKEN_MAX);
+        conversionRate = bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 * 1e12 / conversionRate;
+        uint256 amountOut = amountIn * 1e27 / conversionRate * 1e12;
 
         assertEq(psm.previewSwap(address(usdc), address(sDai), amountIn), amountOut);
     }
@@ -102,8 +112,8 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
     }
 
     function testFuzz_previewSwap_sDaiToDai(uint256 amountIn, uint256 conversionRate) public {
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e6);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);           // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
@@ -119,8 +129,8 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
     }
 
     function testFuzz_previewSwap_sDaiToUsdc(uint256 amountIn, uint256 conversionRate) public {
-        amountIn       = _bound(amountIn,       1,       10_000_000_000e18);  // Using 10 billion for conversion rates
-        conversionRate = _bound(conversionRate, 0.01e27, 1000e27);            // 1% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 
