@@ -91,8 +91,8 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
     }
 
     function testFuzz_previewSwap_usdcToSDai(uint256 amountIn, uint256 conversionRate) public {
-        amountIn       = _bound(amountIn,      1,         USDC_TOKEN_MAX);
-        conversionRate = bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
+        amountIn       = _bound(amountIn,       1,         USDC_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
         rateProvider.__setConversionRate(conversionRate);
 

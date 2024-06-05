@@ -278,7 +278,7 @@ contract PSMSwapUsdcAssetInTests is PSMSwapSuccessTestsBase {
 
         rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountOut = amountIn * 1e27 * 1e12 / conversionRate;
+        uint256 amountOut = amountIn * 1e27 / conversionRate * 1e12;
 
         _swapTest(usdc, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }

@@ -168,7 +168,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 0);  // Burns the users full amount of shares
     }
 
-    // Adding this test to demonstrate that numbers are exact and correspond to assets deposits/withdrawals when withdrawals 
+    // Adding this test to demonstrate that numbers are exact and correspond to assets deposits/withdrawals when withdrawals
     // aren't greater than the user's share balance. The next test doesn't constrain this, but there are rounding errors of
     // up to 1e12 for USDC because of the difference in asset precision. Up to 1e12 shares can be burned for 0 USDC in some
     // cases, but this is an intentional rounding error against the user.
@@ -184,22 +184,22 @@ contract PSMWithdrawTests is PSMTestBase {
     {
         // NOTE: Not covering zero cases, 1e-2 at 1e6 used as min for now so exact values can
         //       be asserted
-        depositAmount1 = bound(depositAmount1, 0, USDC_TOKEN_MAX);
-        depositAmount2 = bound(depositAmount2, 0, USDC_TOKEN_MAX);
-        depositAmount3 = bound(depositAmount3, 0, SDAI_TOKEN_MAX);
+        depositAmount1 = _bound(depositAmount1, 0, USDC_TOKEN_MAX);
+        depositAmount2 = _bound(depositAmount2, 0, USDC_TOKEN_MAX);
+        depositAmount3 = _bound(depositAmount3, 0, SDAI_TOKEN_MAX);
 
-        withdrawAmount1 = bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
-        withdrawAmount2 = bound(withdrawAmount2, 0, depositAmount2);  // User can't burn up to 1e12 shares for 0 USDC in this case
-        withdrawAmount3 = bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+        withdrawAmount1 = _bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
+        withdrawAmount2 = _bound(withdrawAmount2, 0, depositAmount2);  // User can't burn up to 1e12 shares for 0 USDC in this case
+        withdrawAmount3 = _bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
 
         // Run with zero share tolerance because the rounding error shouldn't be introduced with the above constraints.
         _runWithdrawFuzzTests(
-            0, 
-            depositAmount1, 
-            depositAmount2, 
-            depositAmount3, 
-            withdrawAmount1, 
-            withdrawAmount2, 
+            0,
+            depositAmount1,
+            depositAmount2,
+            depositAmount3,
+            withdrawAmount1,
+            withdrawAmount2,
             withdrawAmount3
         );
     }
@@ -216,39 +216,39 @@ contract PSMWithdrawTests is PSMTestBase {
     {
         // NOTE: Not covering zero cases, 1e-2 at 1e6 used as min for now so exact values can
         //       be asserted
-        depositAmount1 = bound(depositAmount1, 0, USDC_TOKEN_MAX);
-        depositAmount2 = bound(depositAmount2, 0, USDC_TOKEN_MAX);
-        depositAmount3 = bound(depositAmount3, 0, SDAI_TOKEN_MAX);
+        depositAmount1 = _bound(depositAmount1, 0, USDC_TOKEN_MAX);
+        depositAmount2 = _bound(depositAmount2, 0, USDC_TOKEN_MAX);
+        depositAmount3 = _bound(depositAmount3, 0, SDAI_TOKEN_MAX);
 
-        withdrawAmount1 = bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
-        withdrawAmount2 = bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
-        withdrawAmount3 = bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
+        withdrawAmount1 = _bound(withdrawAmount1, 0, USDC_TOKEN_MAX);
+        withdrawAmount2 = _bound(withdrawAmount2, 0, USDC_TOKEN_MAX);
+        withdrawAmount3 = _bound(withdrawAmount3, 0, SDAI_TOKEN_MAX);
 
         // Run with 1e12 share tolerance because the rounding error will be introduced with the above constraints.
         _runWithdrawFuzzTests(
-            1e12, 
-            depositAmount1, 
-            depositAmount2, 
-            depositAmount3, 
-            withdrawAmount1, 
-            withdrawAmount2, 
+            1e12,
+            depositAmount1,
+            depositAmount2,
+            depositAmount3,
+            withdrawAmount1,
+            withdrawAmount2,
             withdrawAmount3
         );
     }
 
-    // NOTE: For `assertApproxEqAbs` assertions, a difference calculation is used here instead of comparing 
-    // the two values because this approach inherently asserts that the shares remaining are lower than the 
+    // NOTE: For `assertApproxEqAbs` assertions, a difference calculation is used here instead of comparing
+    // the two values because this approach inherently asserts that the shares remaining are lower than the
     // theoretical value, proving the PSM rounds agains the user.
     function _runWithdrawFuzzTests(
-        uint256 usdcShareTolerance, 
+        uint256 usdcShareTolerance,
         uint256 depositAmount1,
         uint256 depositAmount2,
         uint256 depositAmount3,
         uint256 withdrawAmount1,
         uint256 withdrawAmount2,
         uint256 withdrawAmount3
-    ) 
-        internal 
+    )
+        internal
     {
         _deposit(user1, address(usdc), depositAmount1);
         _deposit(user2, address(usdc), depositAmount2);
@@ -320,7 +320,7 @@ contract PSMWithdrawTests is PSMTestBase {
         );
 
         assertApproxEqAbs(
-            (totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12) - psm.totalShares(), 
+            (totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12) - psm.totalShares(),
             0,
             usdcShareTolerance
         );
