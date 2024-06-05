@@ -13,9 +13,10 @@ contract PSMTestBase is Test {
 
     PSM public psm;
 
-    // NOTE: Using sDAI and USDC as example assets
-    MockERC20 public sDai;
+    // NOTE: Using DAI, sDAI and USDC as example assets
+    MockERC20 public dai;
     MockERC20 public usdc;
+    MockERC20 public sDai;
 
     MockRateProvider public rateProvider;
 
@@ -28,25 +29,29 @@ contract PSMTestBase is Test {
     // 1,000,000,000,000 of each token
     uint256 public constant USDC_TOKEN_MAX = 1e18;
     uint256 public constant SDAI_TOKEN_MAX = 1e30;
+    uint256 public constant DAI_TOKEN_MAX  = 1e30;
 
     function setUp() public virtual {
-        sDai = new MockERC20("sDai", "sDai", 18);
+        dai  = new MockERC20("dai",  "dai",  18);
         usdc = new MockERC20("usdc", "usdc", 6);
+        sDai = new MockERC20("sDai", "sDai", 18);
 
         rateProvider = new MockRateProvider();
 
         // NOTE: Using 1.25 for easy two way conversions
         rateProvider.__setConversionRate(1.25e27);
 
-        psm = new PSM(address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider));
 
-        vm.label(address(sDai), "sDAI");
+        vm.label(address(dai),  "DAI");
         vm.label(address(usdc), "USDC");
+        vm.label(address(sDai), "sDAI");
     }
 
     function _getPsmValue() internal view returns (uint256) {
         return (sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
-            + usdc.balanceOf(address(psm)) * 1e12;
+            + usdc.balanceOf(address(psm)) * 1e12
+            + dai.balanceOf(address(psm));
     }
 
     function _deposit(address user, address asset, uint256 amount) internal {
