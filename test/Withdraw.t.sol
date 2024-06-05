@@ -293,7 +293,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     // NOTE: For `assertApproxEqAbs` assertions, a difference calculation is used here instead of comparing
     // the two values because this approach inherently asserts that the shares remaining are lower than the
-    // theoretical value, proving the PSM rounds agains the user.
+    // theoretical value, proving the PSM rounds against the user.
     function _runWithdrawFuzzTests(
         uint256 usdcShareTolerance,
         uint256 depositAmount1,
