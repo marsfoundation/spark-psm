@@ -56,8 +56,8 @@ contract PSMConvertToAssetsTests is PSMTestBase {
 
     function testFuzz_convertToAssets_asset2(uint256 conversionRate, uint256 amount) public {
         // NOTE: 0.0001e27 considered lower bound for overflow considerations
-        conversionRate = bound(conversionRate, 0.0001e27, 1000e27);
-        amount         = bound(amount,         0,         SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
+        amount         = _bound(amount,         0,         SDAI_TOKEN_MAX);
 
         rateProvider.__setConversionRate(conversionRate);
 
