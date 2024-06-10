@@ -7,7 +7,7 @@ import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-import { LPHandler } from "test/invariant/handlers/HandlerBase.sol";
+import { LPHandler } from "test/invariant/handlers/LpHandler.sol";
 
 contract PSMInvariantTests is PSMTestBase {
 
@@ -24,5 +24,8 @@ contract PSMInvariantTests is PSMTestBase {
     function invariant_A() public {
         assertEq(true, true);
         console.log("count", lpHandler.count());
+        console.log("lp1Shares", psm.shares(address(lpHandler.lps(0))));
+        console.log("lp2Shares", psm.shares(address(lpHandler.lps(1))));
+        console.log("lp3Shares", psm.shares(address(lpHandler.lps(2))));
     }
 }
