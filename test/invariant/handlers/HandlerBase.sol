@@ -36,4 +36,8 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
         return assets[_bound(indexSeed, 0, 2)];
     }
 
+    function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
+        hash_ = uint256(keccak256(abi.encode(number_, salt)));
+    }
+
 }
