@@ -58,13 +58,13 @@ contract PSMTestBase is Test {
         vm.startPrank(user);
         MockERC20(asset).mint(user, amount);
         MockERC20(asset).approve(address(psm), amount);
-        psm.deposit(asset, amount, 0);
+        psm.deposit(asset, amount);
         vm.stopPrank();
     }
 
     function _withdraw(address user, address asset, uint256 amount) internal {
         vm.prank(user);
-        psm.withdraw(asset, amount, 0);
+        psm.withdraw(asset, amount);
         vm.stopPrank();
     }
 
