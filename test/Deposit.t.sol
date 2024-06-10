@@ -16,17 +16,17 @@ contract PSMDepositTests is PSMTestBase {
 
     function test_deposit_zeroReceiver() public {
         vm.expectRevert("PSM3/invalid-receiver");
-        psm.deposit(address(usdc), address(0), 100e6, 0);
+        psm.deposit(address(usdc), address(0), 100e6);
     }
 
     function test_deposit_zeroAmount() public {
         vm.expectRevert("PSM3/invalid-amount");
-        psm.deposit(address(usdc), user1, 0, 0);
+        psm.deposit(address(usdc), user1, 0);
     }
 
     function test_deposit_notAsset0OrAsset1() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.deposit(makeAddr("new-asset"), user1, 100e6, 0);
+        psm.deposit(makeAddr("new-asset"), user1, 100e6);
     }
 
     function test_deposit_insufficientApproveBoundary() public {
@@ -37,11 +37,11 @@ contract PSMDepositTests is PSMTestBase {
         dai.approve(address(psm), 100e18 - 1);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.deposit(address(dai), user1, 100e18, 0);
+        psm.deposit(address(dai), user1, 100e18);
 
         dai.approve(address(psm), 100e18);
 
-        psm.deposit(address(dai), user1, 100e18, 0);
+        psm.deposit(address(dai), user1, 100e18);
     }
 
     function test_deposit_insufficientBalanceBoundary() public {
@@ -52,11 +52,11 @@ contract PSMDepositTests is PSMTestBase {
         dai.approve(address(psm), 100e18);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.deposit(address(dai), user1, 100e18, 0);
+        psm.deposit(address(dai), user1, 100e18);
 
         dai.mint(user1, 1);
 
-        psm.deposit(address(dai), user1, 100e18, 0);
+        psm.deposit(address(dai), user1, 100e18);
     }
 
     function test_deposit_firstDepositDai() public {
@@ -76,7 +76,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        uint256 newShares = psm.deposit(address(dai), receiver1, 100e18, 0);
+        uint256 newShares = psm.deposit(address(dai), receiver1, 100e18);
 
         assertEq(newShares, 100e18);
 
@@ -108,7 +108,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6, 0);
+        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6);
 
         assertEq(newShares, 100e18);
 
@@ -140,7 +140,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        uint256 newShares = psm.deposit(address(sDai), receiver1, 100e18, 0);
+        uint256 newShares = psm.deposit(address(sDai), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
@@ -162,7 +162,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6, 0);
+        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6);
 
         assertEq(newShares, 100e18);
 
@@ -181,7 +181,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, 100e18, 0);
+        newShares = psm.deposit(address(sDai), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
@@ -209,7 +209,7 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), usdcAmount);
 
-        uint256 newShares = psm.deposit(address(usdc), receiver1, usdcAmount, 0);
+        uint256 newShares = psm.deposit(address(usdc), receiver1, usdcAmount);
 
         assertEq(newShares, usdcAmount * 1e12);
 
@@ -228,7 +228,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, sDaiAmount, 0);
+        newShares = psm.deposit(address(sDai), receiver1, sDaiAmount);
 
         assertEq(newShares, sDaiAmount * 125/100);
 
@@ -252,14 +252,14 @@ contract PSMDepositTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6, 0);
+        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6);
 
         assertEq(newShares, 100e18);
 
         sDai.mint(user1, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, 100e18, 0);
+        newShares = psm.deposit(address(sDai), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
@@ -302,7 +302,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.getPsmTotalValue(), 250e18);
 
-        newShares = psm.deposit(address(sDai), receiver2, 100e18, 0);
+        newShares = psm.deposit(address(sDai), receiver2, 100e18);
 
         assertEq(newShares, 135e18);
 
