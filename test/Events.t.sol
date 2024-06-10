@@ -40,21 +40,21 @@ contract PSMEventTests is PSMTestBase {
         dai.mint(sender, 100e18);
         dai.approve(address(psm), 100e18);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Deposit(address(dai), sender, 100e18, 100e18);
         psm.deposit(address(dai), 100e18);
 
         usdc.mint(sender, 100e6);
         usdc.approve(address(psm), 100e6);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Deposit(address(usdc), sender, 100e6, 100e18);  // Different code
         psm.deposit(address(usdc), 100e6);
 
         sDai.mint(sender, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Deposit(address(sDai), sender, 100e18, 125e18);  // Different code
         psm.deposit(address(sDai), 100e18);
     }
@@ -66,15 +66,15 @@ contract PSMEventTests is PSMTestBase {
 
         vm.startPrank(sender);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Withdraw(address(dai), sender, 100e18, 100e18);
         psm.withdraw(address(dai), 100e18);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Withdraw(address(usdc), sender, 100e6, 100e18);
         psm.withdraw(address(usdc), 100e6);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Withdraw(address(sDai), sender, 100e18, 125e18);
         psm.withdraw(address(sDai), 100e18);
     }
@@ -106,7 +106,7 @@ contract PSMEventTests is PSMTestBase {
         MockERC20(assetIn).mint(sender, amountIn);
         MockERC20(assetIn).approve(address(psm), amountIn);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Swap(assetIn, assetOut, sender, receiver, amountIn, expectedAmountOut, referralCode);
         psm.swap(assetIn, assetOut, amountIn, 0, receiver, referralCode);
     }
