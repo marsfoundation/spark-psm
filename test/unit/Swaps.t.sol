@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "src/PSM.sol";
+import { PSM3 } from "src/PSM3.sol";
 
 import { MockERC20, PSMTestBase } from "test/PSMTestBase.sol";
 
@@ -21,37 +21,37 @@ contract PSMSwapFailureTests is PSMTestBase {
     }
 
     function test_swap_amountZero() public {
-        vm.expectRevert("PSM/invalid-amountIn");
+        vm.expectRevert("PSM3/invalid-amountIn");
         psm.swap(address(usdc), address(sDai), 0, 0, receiver, 0);
     }
 
     function test_swap_receiverZero() public {
-        vm.expectRevert("PSM/invalid-receiver");
+        vm.expectRevert("PSM3/invalid-receiver");
         psm.swap(address(usdc), address(sDai), 100e6, 80e18, address(0), 0);
     }
 
     function test_swap_invalid_assetIn() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.swap(makeAddr("other-token"), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_invalid_assetOut() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.swap(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_bothAsset0() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.swap(address(dai), address(dai), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_bothAsset1() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.swap(address(usdc), address(usdc), 100e6, 80e18, receiver, 0);
     }
 
     function test_swap_bothAsset2() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.swap(address(sDai), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
@@ -66,7 +66,7 @@ contract PSMSwapFailureTests is PSMTestBase {
 
         assertEq(expectedAmountOut, 80e18);
 
-        vm.expectRevert("PSM/amountOut-too-low");
+        vm.expectRevert("PSM3/amountOut-too-low");
         psm.swap(address(usdc), address(sDai), 100e6, 80e18 + 1, receiver, 0);
 
         psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);

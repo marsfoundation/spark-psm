@@ -41,7 +41,7 @@ contract PSMTestBase is Test {
         // NOTE: Using 1.25 for easy two way conversions
         rateProvider.__setConversionRate(1.25e27);
 
-        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
 
         vm.label(address(dai),  "DAI");
         vm.label(address(usdc), "USDC");
@@ -62,7 +62,7 @@ contract PSMTestBase is Test {
         vm.startPrank(user);
         MockERC20(asset).mint(user, amount);
         MockERC20(asset).approve(address(psm), amount);
-        psm.deposit(asset, receiver, amount, 0);
+        psm.deposit(asset, receiver, amount);
         vm.stopPrank();
     }
 
@@ -72,7 +72,7 @@ contract PSMTestBase is Test {
 
     function _withdraw(address asset, address user, address receiver, uint256 amount) internal {
         vm.prank(user);
-        psm.withdraw(asset, receiver, amount, 0);
+        psm.withdraw(asset, receiver, amount);
         vm.stopPrank();
     }
 

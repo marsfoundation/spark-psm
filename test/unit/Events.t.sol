@@ -14,7 +14,7 @@ contract PSMEventTests is PSMTestBase {
         address indexed receiver,
         uint256 amountIn,
         uint256 amountOut,
-        uint16  referralCode
+        uint256 referralCode
     );
 
     event Deposit(
@@ -22,8 +22,7 @@ contract PSMEventTests is PSMTestBase {
         address indexed user,
         address indexed receiver,
         uint256 assetsDeposited,
-        uint256 sharesMinted,
-        uint16  referralCode
+        uint256 sharesMinted
     );
 
     event Withdraw(
@@ -31,8 +30,7 @@ contract PSMEventTests is PSMTestBase {
         address indexed user,
         address indexed receiver,
         uint256 assetsWithdrawn,
-        uint256 sharesBurned,
-        uint16  referralCode
+        uint256 sharesBurned
     );
 
     address sender   = makeAddr("sender");
@@ -44,23 +42,23 @@ contract PSMEventTests is PSMTestBase {
         dai.mint(sender, 100e18);
         dai.approve(address(psm), 100e18);
 
-        vm.expectEmit();
-        emit Deposit(address(dai), sender, receiver, 100e18, 100e18, 1);
-        psm.deposit(address(dai), receiver, 100e18, 1);
+        vm.expectEmit(address(psm));
+        emit Deposit(address(dai), sender, receiver, 100e18, 100e18);
+        psm.deposit(address(dai), receiver, 100e18);
 
         usdc.mint(sender, 100e6);
         usdc.approve(address(psm), 100e6);
 
-        vm.expectEmit();
-        emit Deposit(address(usdc), sender, receiver, 100e6, 100e18, 2);  // Different code
-        psm.deposit(address(usdc), receiver, 100e6, 2);
+        vm.expectEmit(address(psm));
+        emit Deposit(address(usdc), sender, receiver, 100e6, 100e18);
+        psm.deposit(address(usdc), receiver, 100e6);
 
         sDai.mint(sender, 100e18);
         sDai.approve(address(psm), 100e18);
 
-        vm.expectEmit();
-        emit Deposit(address(sDai), sender, receiver, 100e18, 125e18, 3);  // Different code
-        psm.deposit(address(sDai), receiver, 100e18, 3);
+        vm.expectEmit(address(psm));
+        emit Deposit(address(sDai), sender, receiver, 100e18, 125e18);
+        psm.deposit(address(sDai), receiver, 100e18);
     }
 
     function test_withdraw_events() public {
@@ -70,17 +68,17 @@ contract PSMEventTests is PSMTestBase {
 
         vm.startPrank(sender);
 
-        vm.expectEmit();
-        emit Withdraw(address(dai), sender, receiver, 100e18, 100e18, 1);
-        psm.withdraw(address(dai), receiver, 100e18, 1);
+        vm.expectEmit(address(psm));
+        emit Withdraw(address(dai), sender, receiver, 100e18, 100e18);
+        psm.withdraw(address(dai), receiver, 100e18);
 
-        vm.expectEmit();
-        emit Withdraw(address(usdc), sender, receiver, 100e6, 100e18, 2);
-        psm.withdraw(address(usdc), receiver, 100e6, 2);
+        vm.expectEmit(address(psm));
+        emit Withdraw(address(usdc), sender, receiver, 100e6, 100e18);
+        psm.withdraw(address(usdc), receiver, 100e6);
 
-        vm.expectEmit();
-        emit Withdraw(address(sDai), sender, receiver, 100e18, 125e18, 3);
-        psm.withdraw(address(sDai), receiver, 100e18, 3);
+        vm.expectEmit(address(psm));
+        emit Withdraw(address(sDai), sender, receiver, 100e18, 125e18);
+        psm.withdraw(address(sDai), receiver, 100e18);
     }
 
     function test_swap_events() public {
@@ -110,7 +108,7 @@ contract PSMEventTests is PSMTestBase {
         MockERC20(assetIn).mint(sender, amountIn);
         MockERC20(assetIn).approve(address(psm), amountIn);
 
-        vm.expectEmit();
+        vm.expectEmit(address(psm));
         emit Swap(assetIn, assetOut, sender, receiver, amountIn, expectedAmountOut, referralCode);
         psm.swap(assetIn, assetOut, amountIn, 0, receiver, referralCode);
     }

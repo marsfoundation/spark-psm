@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "src/PSM.sol";
+import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
@@ -12,7 +12,7 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 contract PSMConvertToAssetsTests is PSMTestBase {
 
     function test_convertToAssets_invalidAsset() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.convertToAssets(makeAddr("new-asset"), 100);
     }
 
@@ -153,7 +153,7 @@ contract PSMConvertToSharesTests is PSMTestBase {
 contract PSMConvertToSharesFailureTests is PSMTestBase {
 
     function test_convertToShares_invalidAsset() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.convertToShares(makeAddr("new-asset"), 100);
     }
 
