@@ -11,10 +11,8 @@ interface IRateProviderLike {
     function getConversionRate() external view returns (uint256);
 }
 
-// TODO: Determine what admin functionality we want (fees?)
-// TODO: Refactor into inheritance structure
 // TODO: Prove that we're always rounding against user
-contract PSM is IPSM {
+contract PSM3 is IPSM {
 
     using SafeERC20 for IERC20;
 
