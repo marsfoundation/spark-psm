@@ -5,14 +5,14 @@ import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
 
-import { IPSM } from "src/interfaces/IPSM.sol";
+import { IPSM3 } from "src/interfaces/IPSM3.sol";
 
 interface IRateProviderLike {
     function getConversionRate() external view returns (uint256);
 }
 
 // TODO: Prove that we're always rounding against user
-contract PSM3 is IPSM {
+contract PSM3 is IPSM3 {
 
     using SafeERC20 for IERC20;
 
@@ -33,14 +33,14 @@ contract PSM3 is IPSM {
     mapping(address user => uint256 shares) public shares;
 
     constructor(address asset0_, address asset1_, address asset2_, address rateProvider_) {
-        require(asset0_       != address(0), "PSM/invalid-asset0");
-        require(asset1_       != address(0), "PSM/invalid-asset1");
-        require(asset2_       != address(0), "PSM/invalid-asset2");
-        require(rateProvider_ != address(0), "PSM/invalid-rateProvider");
+        require(asset0_       != address(0), "PSM3/invalid-asset0");
+        require(asset1_       != address(0), "PSM3/invalid-asset1");
+        require(asset2_       != address(0), "PSM3/invalid-asset2");
+        require(rateProvider_ != address(0), "PSM3/invalid-rateProvider");
 
-        require(asset0_ != asset1_, "PSM/asset0-asset1-same");
-        require(asset0_ != asset2_, "PSM/asset0-asset2-same");
-        require(asset1_ != asset2_, "PSM/asset1-asset2-same");
+        require(asset0_ != asset1_, "PSM3/asset0-asset1-same");
+        require(asset0_ != asset2_, "PSM3/asset0-asset2-same");
+        require(asset1_ != asset2_, "PSM3/asset1-asset2-same");
 
         asset0 = IERC20(asset0_);
         asset1 = IERC20(asset1_);
@@ -67,12 +67,12 @@ contract PSM3 is IPSM {
     )
         external
     {
-        require(amountIn != 0,          "PSM/invalid-amountIn");
-        require(receiver != address(0), "PSM/invalid-receiver");
+        require(amountIn != 0,          "PSM3/invalid-amountIn");
+        require(receiver != address(0), "PSM3/invalid-receiver");
 
         uint256 amountOut = previewSwap(assetIn, assetOut, amountIn);
 
-        require(amountOut >= minAmountOut, "PSM/amountOut-too-low");
+        require(amountOut >= minAmountOut, "PSM3/amountOut-too-low");
 
         IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
         IERC20(assetOut).safeTransfer(receiver, amountOut);
@@ -87,8 +87,8 @@ contract PSM3 is IPSM {
     function deposit(address asset, address receiver, uint256 assetsToDeposit, uint16 referralCode)
         external override returns (uint256 newShares)
     {
-        require(receiver != address(0), "PSM/invalid-receiver");
-        require(assetsToDeposit != 0,   "PSM/invalid-amount");
+        require(receiver != address(0), "PSM3/invalid-receiver");
+        require(assetsToDeposit != 0,   "PSM3/invalid-amount");
 
         newShares = previewDeposit(asset, assetsToDeposit);
 
@@ -103,8 +103,8 @@ contract PSM3 is IPSM {
     function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw, uint16 referralCode)
         external override returns (uint256 assetsWithdrawn)
     {
-        require(receiver != address(0),   "PSM/invalid-receiver");
-        require(maxAssetsToWithdraw != 0, "PSM/invalid-amount");
+        require(receiver != address(0),   "PSM3/invalid-receiver");
+        require(maxAssetsToWithdraw != 0, "PSM3/invalid-amount");
 
         uint256 sharesToBurn;
 
@@ -125,7 +125,7 @@ contract PSM3 is IPSM {
     /**********************************************************************************************/
 
     function previewDeposit(address asset, uint256 assetsToDeposit) public view returns (uint256) {
-        require(_isValidAsset(asset), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
         return convertToShares(_getAssetValue(asset, assetsToDeposit));
@@ -134,7 +134,7 @@ contract PSM3 is IPSM {
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
         public view override returns (uint256 sharesToBurn, uint256 assetsWithdrawn)
     {
-        require(_isValidAsset(asset), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         uint256 assetBalance = IERC20(asset).balanceOf(address(this));
 
@@ -174,7 +174,7 @@ contract PSM3 is IPSM {
             else if (assetOut == address(asset1)) return _previewSwapFromAsset2(amountIn, _asset1Precision);
         }
 
-        revert("PSM/invalid-asset");
+        revert("PSM3/invalid-asset");
     }
 
     /**********************************************************************************************/
@@ -184,7 +184,7 @@ contract PSM3 is IPSM {
     function convertToAssets(address asset, uint256 numShares)
         public view override returns (uint256)
     {
-        require(_isValidAsset(asset), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         uint256 assetValue = convertToAssetValue(numShares);
 
@@ -216,7 +216,7 @@ contract PSM3 is IPSM {
     }
 
     function convertToShares(address asset, uint256 assets) public view override returns (uint256) {
-        require(_isValidAsset(asset), "PSM/invalid-asset");
+        require(_isValidAsset(asset), "PSM3/invalid-asset");
         return convertToShares(_getAssetValue(asset, assets));
     }
 
@@ -252,7 +252,7 @@ contract PSM3 is IPSM {
         if      (asset == address(asset0)) return _getAsset0Value(amount);
         else if (asset == address(asset1)) return _getAsset1Value(amount);
         else if (asset == address(asset2)) return _getAsset2Value(amount);
-        else revert("PSM/invalid-asset");
+        else revert("PSM3/invalid-asset");
     }
 
     function _getAsset0Value(uint256 amount) internal view returns (uint256) {

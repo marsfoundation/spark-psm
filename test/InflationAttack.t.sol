@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "src/PSM.sol";
+import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
@@ -13,7 +13,7 @@ contract InflationAttackTests is PSMTestBase {
     // TODO: Decide if DAI test is needed
 
     function test_inflationAttack_noInitialDeposit() public {
-        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
         address frontRunner    = makeAddr("frontRunner");
@@ -60,7 +60,7 @@ contract InflationAttackTests is PSMTestBase {
     }
 
     function test_inflationAttack_useInitialDeposit() public {
-        psm = new PSM(address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
 
         address firstDepositor = makeAddr("firstDepositor");
         address frontRunner    = makeAddr("frontRunner");

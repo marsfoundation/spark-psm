@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "../src/PSM.sol";
+import { PSM3 } from "../src/PSM3.sol";
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
@@ -19,19 +19,19 @@ contract PSMWithdrawTests is PSMTestBase {
     function test_withdraw_zeroReceiver() public {
         _deposit(address(usdc), user1, 100e6);
 
-        vm.expectRevert("PSM/invalid-receiver");
+        vm.expectRevert("PSM3/invalid-receiver");
         psm.withdraw(address(usdc), address(0), 100e6, 0);
     }
 
     function test_withdraw_zeroAmount() public {
         _deposit(address(usdc), user1, 100e6);
 
-        vm.expectRevert("PSM/invalid-amount");
+        vm.expectRevert("PSM3/invalid-amount");
         psm.withdraw(address(usdc), receiver1, 0, 0);
     }
 
     function test_withdraw_notAsset0OrAsset1() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.withdraw(makeAddr("new-asset"), receiver1, 100e6, 0);
     }
 

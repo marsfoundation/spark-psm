@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "../src/PSM.sol";
+import { PSM3 } from "../src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
@@ -15,17 +15,17 @@ contract PSMDepositTests is PSMTestBase {
     address receiver2 = makeAddr("receiver2");
 
     function test_deposit_zeroReceiver() public {
-        vm.expectRevert("PSM/invalid-receiver");
+        vm.expectRevert("PSM3/invalid-receiver");
         psm.deposit(address(usdc), address(0), 100e6, 0);
     }
 
     function test_deposit_zeroAmount() public {
-        vm.expectRevert("PSM/invalid-amount");
+        vm.expectRevert("PSM3/invalid-amount");
         psm.deposit(address(usdc), user1, 0, 0);
     }
 
     function test_deposit_notAsset0OrAsset1() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.deposit(makeAddr("new-asset"), user1, 100e6, 0);
     }
 

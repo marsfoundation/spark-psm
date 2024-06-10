@@ -8,27 +8,27 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 contract PSMPreviewSwapFailureTests is PSMTestBase {
 
     function test_previewSwap_invalidAssetIn() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwap(makeAddr("other-token"), address(usdc), 1);
     }
 
     function test_previewSwap_invalidAssetOut() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwap(address(usdc), makeAddr("other-token"), 1);
     }
 
     function test_previewSwap_bothAsset0() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwap(address(dai), address(dai), 1);
     }
 
     function test_previewSwap_bothAsset1() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwap(address(usdc), address(usdc), 1);
     }
 
     function test_previewSwap_bothAsset2() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwap(address(sDai), address(sDai), 1);
     }
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
-interface IPSM {
+interface IPSM3 {
 
     // TODO: Determine priority for indexing
 
@@ -168,9 +168,9 @@ interface IPSM {
      *  @return assetsWithdrawn     Resulting amount of the asset withdrawn from the PSM.
      */
     function withdraw(
-        address asset, 
+        address asset,
         address receiver,
-        uint256 maxAssetsToWithdraw, 
+        uint256 maxAssetsToWithdraw,
         uint16 referralCode
     ) external returns (uint256 assetsWithdrawn);
 
