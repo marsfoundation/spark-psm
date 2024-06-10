@@ -7,13 +7,22 @@ import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
+import { LPHandler } from "test/invariant/handlers/HandlerBase.sol";
+
 contract PSMInvariantTests is PSMTestBase {
+
+    LPHandler public lpHandler;
 
     function setUp() public override {
         super.setUp();
+
+        lpHandler = new LPHandler(psm, dai, usdc, sDai, 3);
+
+        targetContract(address(lpHandler));
     }
 
     function invariant_A() public {
         assertEq(true, true);
+        console.log("count", lpHandler.count());
     }
 }
