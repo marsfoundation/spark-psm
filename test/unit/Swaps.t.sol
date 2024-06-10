@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "../src/PSM.sol";
+import { PSM } from "src/PSM.sol";
 
 import { MockERC20, PSMTestBase } from "test/PSMTestBase.sol";
 

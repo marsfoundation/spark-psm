@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM } from "src/PSM.sol";
+import { PSM3 } from "src/PSM3.sol";
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
@@ -11,7 +11,7 @@ import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
 
 contract PSMTestBase is Test {
 
-    PSM public psm;
+    PSM3 public psm;
 
     // NOTE: Using DAI, sDAI and USDC as example assets
     MockERC20 public dai;
