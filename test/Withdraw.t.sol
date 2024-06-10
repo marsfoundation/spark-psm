@@ -20,19 +20,19 @@ contract PSMWithdrawTests is PSMTestBase {
         _deposit(address(usdc), user1, 100e6);
 
         vm.expectRevert("PSM/invalid-receiver");
-        psm.withdraw(address(usdc), address(0), 100e6, 0);
+        psm.withdraw(address(usdc), address(0), 100e6);
     }
 
     function test_withdraw_zeroAmount() public {
         _deposit(address(usdc), user1, 100e6);
 
         vm.expectRevert("PSM/invalid-amount");
-        psm.withdraw(address(usdc), receiver1, 0, 0);
+        psm.withdraw(address(usdc), receiver1, 0);
     }
 
     function test_withdraw_notAsset0OrAsset1() public {
         vm.expectRevert("PSM/invalid-asset");
-        psm.withdraw(makeAddr("new-asset"), receiver1, 100e6, 0);
+        psm.withdraw(makeAddr("new-asset"), receiver1, 100e6);
     }
 
     function test_withdraw_onlyDaiInPsm() public {
@@ -48,7 +48,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(dai), receiver1, 100e18, 0);
+        uint256 amount = psm.withdraw(address(dai), receiver1, 100e18);
 
         assertEq(amount, 100e18);
 
@@ -75,7 +75,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(usdc), receiver1, 100e6, 0);
+        uint256 amount = psm.withdraw(address(usdc), receiver1, 100e6);
 
         assertEq(amount, 100e6);
 
@@ -102,7 +102,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(sDai), receiver1, 80e18, 0);
+        uint256 amount = psm.withdraw(address(sDai), receiver1, 80e18);
 
         assertEq(amount, 80e18);
 
@@ -134,7 +134,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(usdc), receiver1, 100e6, 0);
+        uint256 amount = psm.withdraw(address(usdc), receiver1, 100e6);
 
         assertEq(amount, 100e6);
 
@@ -152,7 +152,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        amount = psm.withdraw(address(sDai), receiver1, 100e18, 0);
+        amount = psm.withdraw(address(sDai), receiver1, 100e18);
 
         assertEq(amount, 100e18);
 
@@ -184,7 +184,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(usdc), receiver1, 125e6, 0);
+        uint256 amount = psm.withdraw(address(usdc), receiver1, 125e6);
 
         assertEq(amount, 100e6);
 
@@ -211,7 +211,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user2);
-        uint256 amount = psm.withdraw(address(usdc), receiver2, 225e6, 0);
+        uint256 amount = psm.withdraw(address(usdc), receiver2, 225e6);
 
         assertEq(amount, 200e6);
 
@@ -323,7 +323,7 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(usdc, user1, withdrawAmount1);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(usdc), receiver1, withdrawAmount1, 0);
+        uint256 amount = psm.withdraw(address(usdc), receiver1, withdrawAmount1);
 
         assertEq(amount, expectedWithdrawnAmount1);
 
@@ -351,7 +351,7 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
 
         vm.prank(user2);
-        amount = psm.withdraw(address(usdc), receiver2, withdrawAmount2, 0);
+        amount = psm.withdraw(address(usdc), receiver2, withdrawAmount2);
 
         assertEq(amount, expectedWithdrawnAmount2);
 
@@ -390,7 +390,7 @@ contract PSMWithdrawTests is PSMTestBase {
             = _getExpectedWithdrawnAmount(sDai, user2, withdrawAmount3);
 
         vm.prank(user2);
-        amount = psm.withdraw(address(sDai), receiver2, withdrawAmount3, 0);
+        amount = psm.withdraw(address(sDai), receiver2, withdrawAmount3);
 
         assertApproxEqAbs(amount, expectedWithdrawnAmount3, 1);
 
@@ -513,16 +513,16 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     // Original full balance reverts
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), 100e18, 0);
+    //     psm.withdraw(address(usdc), 100e18);
 
     //     // Boundary condition at 90.000001e18 shares
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), maxUsdcShares + 1, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
     //     console2.log("First CTA", psm.convertToAssetValue(100e18));
 
     //     // Rounds down here and transfers 100e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
@@ -535,7 +535,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     console2.log("Second CTA", psm.convertToAssetValue(100e18));
 
-    //     psm.withdraw(address(sDai), 100e18 - maxUsdcShares, 0);
+    //     psm.withdraw(address(sDai), 100e18 - maxUsdcShares);
 
     //     uint256 sDaiUser1Balance = 7.407406790123452675e18;
 
@@ -553,7 +553,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
-    //     psm.withdraw(address(sDai), 125e18, 0);
+    //     psm.withdraw(address(sDai), 125e18);
 
     //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
     //     assertEq(sDai.balanceOf(user2),        100e18 - sDaiUser1Balance - 1);
@@ -616,16 +616,16 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     // Original full balance reverts
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), 100_000_000e18, 0);
+    //     psm.withdraw(address(usdc), 100_000_000e18);
 
     //     // Boundary condition at 90.000001e18 shares
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), maxUsdcShares + 1, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
     //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     // Rounds down here and transfers 100_000_000e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
@@ -642,7 +642,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
 
-    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares, 0);
+    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
 
     //     uint256 sDaiUser1Balance = 7_407_407.407407407407407407e18;
 
@@ -660,7 +660,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
-    //     psm.withdraw(address(sDai), 125_000_000e18, 0);
+    //     psm.withdraw(address(sDai), 125_000_000e18);
 
     //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
     //     assertEq(sDai.balanceOf(user2),        100_000_000e18 - sDaiUser1Balance - 1);
@@ -725,16 +725,16 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     // Original full balance reverts
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), 100_000_000e18, 0);
+    //     psm.withdraw(address(usdc), 100_000_000e18);
 
     //     // Boundary condition at 90.000001e18 shares
     //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), maxUsdcShares + 1, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares + 1);
 
     //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
 
     //     // Rounds down here and transfers 100_000_000e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
@@ -749,7 +749,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
 
-    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares, 0);
+    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
 
     //     uint256 sDaiUser1Balance = 7_407_407.407406790123456790e18;
 
@@ -767,7 +767,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // Withdraw shares originally worth $100 to compare yield with user1
-    //     psm.withdraw(address(sDai), 125_000_000e18, 0);
+    //     psm.withdraw(address(sDai), 125_000_000e18);
 
     //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
     //     assertEq(sDai.balanceOf(user2),        100_000_000e18 - sDaiUser1Balance);
@@ -834,18 +834,18 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     // // Original full balance reverts
     //     // vm.expectRevert("SafeERC20/transfer-failed");
-    //     // psm.withdraw(address(usdc), 100e18, 0);
+    //     // psm.withdraw(address(usdc), 100e18);
 
     //     // // Boundary condition at 90.000001e18 shares
     //     // vm.expectRevert("SafeERC20/transfer-failed");
-    //     // psm.withdraw(address(usdc), maxUsdcShares + 1, 0);
+    //     // psm.withdraw(address(usdc), maxUsdcShares + 1);
 
     //     console2.log("First CTA", psm.convertToAssetValue(100e18));
 
     //     // maxUsdcShares = 89.99999e18;
 
     //     // Rounds down here and transfers 100e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares, 0);
+    //     psm.withdraw(address(usdc), maxUsdcShares);
 
     //     console2.log("\n\n\n");
 
@@ -858,7 +858,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     //     console2.log("Second CTA", psm.convertToAssetValue(100e18));
 
-    //     // psm.withdraw(address(sDai), 100e18 - maxUsdcShares, 0);
+    //     // psm.withdraw(address(sDai), 100e18 - maxUsdcShares);
 
     //     // uint256 sDaiUser1Balance = 7.407406790123452675e18;
 
@@ -876,7 +876,7 @@ contract PSMWithdrawTests is PSMTestBase {
     //     // console2.log("Third CTA", psm.convertToAssetValue(100e18));
 
     //     // // Withdraw shares originally worth $100 to compare yield with user1
-    //     // psm.withdraw(address(sDai), 100e18, 0);
+    //     // psm.withdraw(address(sDai), 100e18);
 
     //     // // assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
     //     // // assertEq(sDai.balanceOf(user2),        100e18 - sDaiUser1Balance - 1);

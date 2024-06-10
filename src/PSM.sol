@@ -65,9 +65,9 @@ contract PSM is IPSM {
         uint256 amountIn,
         uint256 minAmountOut,
         address receiver,
-        uint16  referralCode
+        uint256 referralCode
     )
-        external
+        external override
     {
         require(amountIn != 0,          "PSM/invalid-amountIn");
         require(receiver != address(0), "PSM/invalid-receiver");
@@ -86,7 +86,7 @@ contract PSM is IPSM {
     /*** Liquidity provision functions                                                          ***/
     /**********************************************************************************************/
 
-    function deposit(address asset, address receiver, uint256 assetsToDeposit, uint16 referralCode)
+    function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external override returns (uint256 newShares)
     {
         require(receiver != address(0), "PSM/invalid-receiver");
@@ -99,10 +99,10 @@ contract PSM is IPSM {
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
 
-        emit Deposit(asset, msg.sender, receiver, assetsToDeposit, newShares, referralCode);
+        emit Deposit(asset, msg.sender, receiver, assetsToDeposit, newShares);
     }
 
-    function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw, uint16 referralCode)
+    function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw)
         external override returns (uint256 assetsWithdrawn)
     {
         require(receiver != address(0),   "PSM/invalid-receiver");
@@ -119,14 +119,16 @@ contract PSM is IPSM {
 
         IERC20(asset).safeTransfer(receiver, assetsWithdrawn);
 
-        emit Withdraw(asset, msg.sender, receiver, assetsWithdrawn, sharesToBurn, referralCode);
+        emit Withdraw(asset, msg.sender, receiver, assetsWithdrawn, sharesToBurn);
     }
 
     /**********************************************************************************************/
     /*** Deposit/withdraw preview functions                                                     ***/
     /**********************************************************************************************/
 
-    function previewDeposit(address asset, uint256 assetsToDeposit) public view returns (uint256) {
+    function previewDeposit(address asset, uint256 assetsToDeposit)
+        public view override returns (uint256)
+    {
         require(_isValidAsset(asset), "PSM/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
@@ -180,7 +182,7 @@ contract PSM is IPSM {
     }
 
     /**********************************************************************************************/
-    /*** Swap preview functions                                                                 ***/
+    /*** Conversion functions                                                                   ***/
     /**********************************************************************************************/
 
     function convertToAssets(address asset, uint256 numShares)

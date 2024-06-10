@@ -28,7 +28,7 @@ interface IPSM {
         address indexed receiver,
         uint256 amountIn,
         uint256 amountOut,
-        uint16  referralCode
+        uint256 referralCode
     );
 
     /**
@@ -38,15 +38,13 @@ interface IPSM {
      *  @param receiver        Address of the receiver of the resulting shares from the deposit.
      *  @param assetsDeposited Amount of the asset deposited.
      *  @param sharesMinted    Number of shares minted to the user.
-     *  @param referralCode    Referral code for the deposit.
      */
     event Deposit(
         address indexed asset,
         address indexed user,
         address indexed receiver,
         uint256 assetsDeposited,
-        uint256 sharesMinted,
-        uint16  referralCode
+        uint256 sharesMinted
     );
 
     /**
@@ -56,15 +54,13 @@ interface IPSM {
      *  @param receiver        Address of the receiver of the withdrawn assets.
      *  @param assetsWithdrawn Amount of the asset withdrawn.
      *  @param sharesBurned    Number of shares burned from the user.
-     *  @param referralCode    Referral code for the withdrawal.
      */
     event Withdraw(
         address indexed asset,
         address indexed user,
         address indexed receiver,
         uint256 assetsWithdrawn,
-        uint256 sharesBurned,
-        uint16  referralCode
+        uint256 sharesBurned
     );
 
     /**********************************************************************************************/
@@ -136,7 +132,7 @@ interface IPSM {
         uint256 amountIn,
         uint256 minAmountOut,
         address receiver,
-        uint16  referralCode
+        uint256 referralCode
     ) external;
 
     /**********************************************************************************************/
@@ -150,10 +146,9 @@ interface IPSM {
      *  @param  asset           Address of the ERC-20 asset to deposit.
      *  @param  receiver        Address of the receiver of the resulting shares from the deposit.
      *  @param  assetsToDeposit Amount of the asset to deposit into the PSM.
-     *  @param  referralCode    Referral code for the deposit.
      *  @return newShares       Number of shares minted to the user.
      */
-    function deposit(address asset, address receiver, uint256 assetsToDeposit, uint16 referralCode)
+    function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external returns (uint256 newShares);
 
     /**
@@ -164,14 +159,12 @@ interface IPSM {
      *  @param  asset               Address of the ERC-20 asset to withdraw.
      *  @param  receiver            Address of the receiver of the withdrawn assets.
      *  @param  maxAssetsToWithdraw Max amount that the user is willing to withdraw.
-     *  @param  referralCode        Referral code for the withdrawal.
      *  @return assetsWithdrawn     Resulting amount of the asset withdrawn from the PSM.
      */
     function withdraw(
-        address asset, 
+        address asset,
         address receiver,
-        uint256 maxAssetsToWithdraw, 
-        uint16 referralCode
+        uint256 maxAssetsToWithdraw
     ) external returns (uint256 assetsWithdrawn);
 
     /**********************************************************************************************/
