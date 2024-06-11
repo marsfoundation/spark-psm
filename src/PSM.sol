@@ -24,15 +24,15 @@ contract PSM is IPSM {
 
     // NOTE: Assumption is made that asset2 is the yield-bearing counterpart of asset0 and asset1.
     //       Examples: asset0 = USDC, asset1 = DAI, asset2 = sDAI
-    IERC20 public immutable asset0;
-    IERC20 public immutable asset1;
-    IERC20 public immutable asset2;
+    IERC20 public override immutable asset0;
+    IERC20 public override immutable asset1;
+    IERC20 public override immutable asset2;
 
-    address public immutable rateProvider;
+    address public override immutable rateProvider;
 
-    uint256 public totalShares;
+    uint256 public override totalShares;
 
-    mapping(address user => uint256 shares) public shares;
+    mapping(address user => uint256 shares) public override shares;
 
     constructor(address asset0_, address asset1_, address asset2_, address rateProvider_) {
         require(asset0_       != address(0), "PSM/invalid-asset0");
