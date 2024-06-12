@@ -21,8 +21,8 @@ For detailed implementation, refer to the contract code and `IPSM` interface doc
 
 ## Contracts
 
-- **`src/PSM.sol`**: The core contract implementing the `IPSM` interface, providing functionality for swapping, depositing, and withdrawing assets.
-- **`src/interfaces/IPSM.sol`**: Defines the essential functions and events that the PSM contract implements.
+- **`src/PSM3.sol`**: The core contract implementing the `IPSM3` interface, providing functionality for swapping, depositing, and withdrawing assets.
+- **`src/interfaces/IPSM3.sol`**: Defines the essential functions and events that the PSM contract implements.
 
 ## [CRITICAL]: First Depositor Attack Prevention on Deployment
 

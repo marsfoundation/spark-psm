@@ -5,15 +5,15 @@ import "forge-std/Test.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-import { PSMHarness } from "test/harnesses/PSMHarness.sol";
+import { PSM3Harness } from "test/harnesses/PSM3Harness.sol";
 
 contract PSMHarnessTests is PSMTestBase {
 
-    PSMHarness psmHarness;
+    PSM3Harness psmHarness;
 
     function setUp() public override {
         super.setUp();
-        psmHarness = new PSMHarness(
+        psmHarness = new PSM3Harness(
             address(dai),
             address(usdc),
             address(sDai),
@@ -141,7 +141,7 @@ contract PSMHarnessTests is PSMTestBase {
     }
 
     function test_getAssetValue_zeroAddress() public {
-        vm.expectRevert("PSM/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset");
         psmHarness.getAssetValue(address(0), 1);
     }
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
-interface IPSM {
+interface IPSM3 {
 
     // TODO: Determine priority for indexing
 

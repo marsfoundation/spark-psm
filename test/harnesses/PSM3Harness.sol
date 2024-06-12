@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { PSM } from "src/PSM.sol";
+import { PSM3 } from "src/PSM3.sol";
 
-contract PSMHarness is PSM {
+contract PSM3Harness is PSM3 {
 
     constructor(address asset0_, address asset1_, address asset2_, address rateProvider_)
-        PSM(asset0_, asset1_, asset2_, rateProvider_) {}
+        PSM3(asset0_, asset1_, asset2_, rateProvider_) {}
 
     function getAssetValue(address asset, uint256 amount) external view returns (uint256) {
         return _getAssetValue(asset, amount);
