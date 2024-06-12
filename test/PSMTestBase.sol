@@ -54,17 +54,25 @@ contract PSMTestBase is Test {
             + dai.balanceOf(address(psm));
     }
 
-    function _deposit(address user, address asset, uint256 amount) internal {
+    function _deposit(address asset, address user, uint256 amount) internal {
+        _deposit(asset, user, user, amount);
+    }
+
+    function _deposit(address asset, address user, address receiver, uint256 amount) internal {
         vm.startPrank(user);
         MockERC20(asset).mint(user, amount);
         MockERC20(asset).approve(address(psm), amount);
-        psm.deposit(asset, amount);
+        psm.deposit(asset, receiver, amount);
         vm.stopPrank();
     }
 
-    function _withdraw(address user, address asset, uint256 amount) internal {
+    function _withdraw(address asset, address user, uint256 amount) internal {
+        _withdraw(asset, user, user, amount);
+    }
+
+    function _withdraw(address asset, address user, address receiver, uint256 amount) internal {
         vm.prank(user);
-        psm.withdraw(asset, amount);
+        psm.withdraw(asset, receiver, amount);
         vm.stopPrank();
     }
 

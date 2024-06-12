@@ -14,7 +14,6 @@ interface IRateProviderLike {
 // TODO: Determine what admin functionality we want (fees?)
 // TODO: Refactor into inheritance structure
 // TODO: Prove that we're always rounding against user
-// TODO: Add receiver to deposit/withdraw
 contract PSM is IPSM {
 
     using SafeERC20 for IERC20;
@@ -87,22 +86,28 @@ contract PSM is IPSM {
     /*** Liquidity provision functions                                                          ***/
     /**********************************************************************************************/
 
-    function deposit(address asset, uint256 assetsToDeposit)
+    function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external override returns (uint256 newShares)
     {
+        require(receiver != address(0), "PSM/invalid-receiver");
+        require(assetsToDeposit != 0,   "PSM/invalid-amount");
+
         newShares = previewDeposit(asset, assetsToDeposit);
 
-        shares[msg.sender] += newShares;
-        totalShares        += newShares;
+        shares[receiver] += newShares;
+        totalShares      += newShares;
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
 
-        emit Deposit(asset, msg.sender, assetsToDeposit, newShares);
+        emit Deposit(asset, msg.sender, receiver, assetsToDeposit, newShares);
     }
 
-    function withdraw(address asset, uint256 maxAssetsToWithdraw)
+    function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw)
         external override returns (uint256 assetsWithdrawn)
     {
+        require(receiver != address(0),   "PSM/invalid-receiver");
+        require(maxAssetsToWithdraw != 0, "PSM/invalid-amount");
+
         uint256 sharesToBurn;
 
         ( sharesToBurn, assetsWithdrawn ) = previewWithdraw(asset, maxAssetsToWithdraw);
@@ -112,9 +117,9 @@ contract PSM is IPSM {
             totalShares        -= sharesToBurn;
         }
 
-        IERC20(asset).safeTransfer(msg.sender, assetsWithdrawn);
+        IERC20(asset).safeTransfer(receiver, assetsWithdrawn);
 
-        emit Withdraw(asset, msg.sender, assetsWithdrawn, sharesToBurn);
+        emit Withdraw(asset, msg.sender, receiver, assetsWithdrawn, sharesToBurn);
     }
 
     /**********************************************************************************************/

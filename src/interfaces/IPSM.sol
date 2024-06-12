@@ -35,12 +35,14 @@ interface IPSM {
      *  @dev   Emitted when an asset is deposited into the PSM.
      *  @param asset           Address of the asset deposited.
      *  @param user            Address of the user that deposited the asset.
+     *  @param receiver        Address of the receiver of the resulting shares from the deposit.
      *  @param assetsDeposited Amount of the asset deposited.
      *  @param sharesMinted    Number of shares minted to the user.
      */
     event Deposit(
         address indexed asset,
         address indexed user,
+        address indexed receiver,
         uint256 assetsDeposited,
         uint256 sharesMinted
     );
@@ -49,12 +51,14 @@ interface IPSM {
      *  @dev   Emitted when an asset is withdrawn from the PSM.
      *  @param asset           Address of the asset withdrawn.
      *  @param user            Address of the user that withdrew the asset.
+     *  @param receiver        Address of the receiver of the withdrawn assets.
      *  @param assetsWithdrawn Amount of the asset withdrawn.
      *  @param sharesBurned    Number of shares burned from the user.
      */
     event Withdraw(
         address indexed asset,
         address indexed user,
+        address indexed receiver,
         uint256 assetsWithdrawn,
         uint256 sharesBurned
     );
@@ -140,10 +144,11 @@ interface IPSM {
      *          assets in order to succeed. The amount deposited is converted to shares based on
      *          the current exchange rate.
      *  @param  asset           Address of the ERC-20 asset to deposit.
+     *  @param  receiver        Address of the receiver of the resulting shares from the deposit.
      *  @param  assetsToDeposit Amount of the asset to deposit into the PSM.
      *  @return newShares       Number of shares minted to the user.
      */
-    function deposit(address asset, uint256 assetsToDeposit)
+    function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external returns (uint256 newShares);
 
     /**
@@ -152,11 +157,15 @@ interface IPSM {
      *          the minimum of the balance of the PSM, the max amount, and the max amount of assets
      *          that the user's shares can be converted to.
      *  @param  asset               Address of the ERC-20 asset to withdraw.
+     *  @param  receiver            Address of the receiver of the withdrawn assets.
      *  @param  maxAssetsToWithdraw Max amount that the user is willing to withdraw.
      *  @return assetsWithdrawn     Resulting amount of the asset withdrawn from the PSM.
      */
-    function withdraw(address asset, uint256 maxAssetsToWithdraw)
-        external returns (uint256 assetsWithdrawn);
+    function withdraw(
+        address asset,
+        address receiver,
+        uint256 maxAssetsToWithdraw
+    ) external returns (uint256 assetsWithdrawn);
 
     /**********************************************************************************************/
     /*** Deposit/withdraw preview functions                                                     ***/
