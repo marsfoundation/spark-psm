@@ -17,8 +17,6 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
 
     MockERC20[3] public assets;
 
-    uint256 public count;
-
     constructor(
         PSM3      psm_,
         MockERC20 asset0,

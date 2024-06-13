@@ -21,11 +21,14 @@ contract PSMInvariantTests is PSMTestBase {
         lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
         swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
 
+        // TODO: Add rate updates
+        rateProvider.__setConversionRate(1.25e27);
+
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
     }
 
-    function invariant_A() public {
+    function invariant_A() public view {
         assertEq(
             psm.shares(address(lpHandler.lps(0))) +
             psm.shares(address(lpHandler.lps(1))) +
@@ -34,14 +37,36 @@ contract PSMInvariantTests is PSMTestBase {
         );
     }
 
-    function invariant_logs() public {
-        console.log("count1", lpHandler.count());
-        console.log("count2", lpHandler.withdrawCount());
-        console.log("count3", swapperHandler.count());
-        console.log("count4", swapperHandler.zeroBalanceCount());
-
-        console.log("lp1Shares", psm.shares(address(lpHandler.lps(0))));
-        console.log("lp2Shares", psm.shares(address(lpHandler.lps(1))));
-        console.log("lp3Shares", psm.shares(address(lpHandler.lps(2))));
+    function invariant_B() public view {
+        // Assumes exchange rate above 1 for sDAI
+        assertGe(
+            psm.getPsmTotalValue(),
+            psm.totalShares()
+        );
     }
+
+    function invariant_C() public view {
+        assertApproxEqAbs(
+            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(0)))) +
+            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(1)))) +
+            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(2)))),
+            psm.getPsmTotalValue(),
+            3
+        );
+    }
+
+    function invariant_logs() public view {
+        console.log("depositCount    ", lpHandler.depositCount());
+        console.log("withdrawCount   ", lpHandler.withdrawCount());
+        console.log("swapCount       ", swapperHandler.swapCount());
+        console.log("zeroBalanceCount", swapperHandler.zeroBalanceCount());
+        console.log(
+            "sum             ",
+            lpHandler.depositCount() +
+            lpHandler.withdrawCount() +
+            swapperHandler.swapCount() +
+            swapperHandler.zeroBalanceCount()
+        );
+    }
+
 }

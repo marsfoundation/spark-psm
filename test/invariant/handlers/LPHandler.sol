@@ -11,7 +11,10 @@ contract LpHandler is HandlerBase {
 
     address[] public lps;
 
+    uint256 public depositCount;
     uint256 public withdrawCount;
+
+    uint256 public constant TRILLION = 1e10;
 
     constructor(
         PSM3      psm_,
@@ -33,7 +36,7 @@ contract LpHandler is HandlerBase {
         MockERC20 asset = _getAsset(assetSeed);
         address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, 1e18);  // TODO: Change this to something dynamic
+        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
 
         vm.startPrank(lp);
         asset.mint(lp, amount);
@@ -41,20 +44,20 @@ contract LpHandler is HandlerBase {
         psm.deposit(address(asset), lp, amount);
         vm.stopPrank();
 
-        count++;
+        depositCount++;
     }
 
-    // function withdraw(uint256 assetSeed, uint256 lpSeed, uint256 amount) public {
-    //     MockERC20 asset = _getAsset(assetSeed);
-    //     address   lp    = _getLP(lpSeed);
+    function withdraw(uint256 assetSeed, uint256 lpSeed, uint256 amount) public {
+        MockERC20 asset = _getAsset(assetSeed);
+        address   lp    = _getLP(lpSeed);
 
-    //     amount = _bound(amount, 1, 1e18);  // TODO: Change this to something dynamic
+        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
 
-    //     vm.prank(lp);
-    //     psm.withdraw(address(asset), lp, amount);
-    //     vm.stopPrank();
+        vm.prank(lp);
+        psm.withdraw(address(asset), lp, amount);
+        vm.stopPrank();
 
-    //     withdrawCount++;
-    // }
+        withdrawCount++;
+    }
 
 }

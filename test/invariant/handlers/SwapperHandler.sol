@@ -11,6 +11,7 @@ contract SwapperHandler is HandlerBase {
 
     address[] public swappers;
 
+    uint256 public swapCount;
     uint256 public zeroBalanceCount;
 
     constructor(
@@ -79,7 +80,7 @@ contract SwapperHandler is HandlerBase {
         psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
         vm.stopPrank();
 
-        count++;
+        swapCount++;
     }
 
 }
