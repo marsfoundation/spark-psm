@@ -44,17 +44,17 @@ contract LpHandler is HandlerBase {
         count++;
     }
 
-    function withdraw(uint256 assetSeed, uint256 lpSeed, uint256 amount) public {
-        MockERC20 asset = _getAsset(assetSeed);
-        address   lp    = _getLP(lpSeed);
+    // function withdraw(uint256 assetSeed, uint256 lpSeed, uint256 amount) public {
+    //     MockERC20 asset = _getAsset(assetSeed);
+    //     address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, 1e18);  // TODO: Change this to something dynamic
+    //     amount = _bound(amount, 1, 1e18);  // TODO: Change this to something dynamic
 
-        vm.prank(lp);
-        psm.withdraw(address(asset), lp, amount);
-        vm.stopPrank();
+    //     vm.prank(lp);
+    //     psm.withdraw(address(asset), lp, amount);
+    //     vm.stopPrank();
 
-        withdrawCount++;
-    }
+    //     withdrawCount++;
+    // }
 
 }

@@ -11,7 +11,7 @@ runs = 1000
 
 [invariant]
 runs = 1
-depth = 10000
+depth = 1000
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 

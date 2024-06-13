@@ -38,6 +38,7 @@ contract PSMInvariantTests is PSMTestBase {
         console.log("count1", lpHandler.count());
         console.log("count2", lpHandler.withdrawCount());
         console.log("count3", swapperHandler.count());
+        console.log("count4", swapperHandler.zeroBalanceCount());
 
         console.log("lp1Shares", psm.shares(address(lpHandler.lps(0))));
         console.log("lp2Shares", psm.shares(address(lpHandler.lps(1))));
