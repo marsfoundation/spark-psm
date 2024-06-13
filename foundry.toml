@@ -13,7 +13,7 @@ runs = 1000
 runs = 20
 depth = 100
 
-[ci.invariant]
+[profile.ci.invariant]
 runs = 200
 depth = 10000
 
