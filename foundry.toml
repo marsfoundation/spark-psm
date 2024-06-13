@@ -15,7 +15,7 @@ depth = 100
 
 [profile.ci.invariant]
 runs = 200
-depth = 10000
+depth = 10_000
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
