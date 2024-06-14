@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
-
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
 import { CommonBase }    from "forge-std/Base.sol";
@@ -31,7 +29,7 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
     }
 
     function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
-        return assets[_bound(indexSeed, 0, 2)];
+        return assets[indexSeed % assets.length];
     }
 
     function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {

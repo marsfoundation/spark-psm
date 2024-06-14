@@ -19,7 +19,7 @@ contract SwapperHandler is HandlerBase {
         MockERC20 asset0,
         MockERC20 asset1,
         MockERC20 asset2,
-        uint256 lpCount
+        uint256   lpCount
     ) HandlerBase(psm_, asset0, asset1, asset2) {
         for (uint256 i = 0; i < lpCount; i++) {
             swappers.push(makeAddr(string(abi.encodePacked("swapper-", i))));
@@ -27,7 +27,7 @@ contract SwapperHandler is HandlerBase {
     }
 
     function _getSwapper(uint256 indexSeed) internal view returns (address) {
-        return swappers[_bound(indexSeed, 0, swappers.length - 1)];
+        return swappers[indexSeed % swappers.length];
     }
 
     function swap(
@@ -56,8 +56,8 @@ contract SwapperHandler is HandlerBase {
         uint256 maxAmountIn = psm.previewSwap(
             address(assetOut),
             address(assetIn),
-            assetOut.balanceOf(address(psm)
-        ));
+            assetOut.balanceOf(address(psm))
+        );
 
         // If there's zero balance a swap can't be performed
         if (maxAmountIn == 0) {

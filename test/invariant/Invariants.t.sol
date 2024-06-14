@@ -3,8 +3,6 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM3 } from "src/PSM3.sol";
-
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
 import { LpHandler }      from "test/invariant/handlers/LpHandler.sol";

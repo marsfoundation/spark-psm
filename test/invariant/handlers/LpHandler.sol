@@ -14,22 +14,22 @@ contract LpHandler is HandlerBase {
     uint256 public depositCount;
     uint256 public withdrawCount;
 
-    uint256 public constant TRILLION = 1e10;
+    uint256 public constant TRILLION = 1e12;
 
     constructor(
         PSM3      psm_,
         MockERC20 asset0,
         MockERC20 asset1,
         MockERC20 asset2,
-        uint256 lpCount
+        uint256   lpCount
     ) HandlerBase(psm_, asset0, asset1, asset2) {
         for (uint256 i = 0; i < lpCount; i++) {
             lps.push(makeAddr(string(abi.encodePacked("lp-", i))));
         }
     }
 
-    function _getLP(uint256 lpSeed) internal view returns (address) {
-        return lps[_bound(lpSeed, 0, lps.length - 1)];
+    function _getLP(uint256 indexSeed) internal view returns (address) {
+        return lps[indexSeed % lps.length];
     }
 
     function deposit(uint256 assetSeed, uint256 lpSeed, uint256 amount) public {
