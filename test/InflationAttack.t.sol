@@ -15,11 +15,6 @@ contract InflationAttackTests is PSMTestBase {
     address frontRunner    = makeAddr("frontRunner");
     address deployer       = makeAddr("deployer");
 
-    function setUp() public override {
-        super.setUp();
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
-    }
-
     function test_inflationAttack_noInitialDeposit_sDai() public {
         // Step 1: Front runner deposits 1 sDAI to get 1 share
 
