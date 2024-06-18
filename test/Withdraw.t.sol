@@ -456,17 +456,8 @@ contract PSMWithdrawTests is PSMTestBase {
     function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
         internal view returns (uint256 withdrawAmount)
     {
-        // TODO: See if convertToAssets can be used
         uint256 balance    = asset.balanceOf(address(psm));
-        uint256 userAssets = psm.convertToAssetValue(psm.shares(user));
-
-        if (address(asset) == address(usdc)) {
-            userAssets /= 1e12;
-        }
-
-        if (address(asset) == address(sDai)) {
-            userAssets = userAssets * 1e27 / rateProvider.getConversionRate();
-        }
+        uint256 userAssets = psm.convertToAssets(address(asset), psm.shares(user));
 
         // Return the min of assets, balance, and amount
         withdrawAmount = userAssets < balance        ? userAssets : balance;
