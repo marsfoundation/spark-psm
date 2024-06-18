@@ -7,6 +7,8 @@ import { PSM3 } from "../src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
+// TODO: Add failure modes tests
+
 contract PSMConvertToAssetsTests is PSMTestBase {
 
     function test_convertToAssets_invalidAsset() public {
