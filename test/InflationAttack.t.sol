@@ -12,12 +12,16 @@ contract InflationAttackTests is PSMTestBase {
     // TODO: Add DOS attack test outlined here: https://github.com/marsfoundation/spark-psm/pull/2#pullrequestreview-2085880206
     // TODO: Decide if DAI test is needed
 
-    function test_inflationAttack_noInitialDeposit() public {
+    address firstDepositor = makeAddr("firstDepositor");
+    address frontRunner    = makeAddr("frontRunner");
+    address deployer       = makeAddr("deployer");
+
+    function setUp() public override {
+        super.setUp();
         psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
+    }
 
-        address firstDepositor = makeAddr("firstDepositor");
-        address frontRunner    = makeAddr("frontRunner");
-
+    function test_inflationAttack_noInitialDeposit() public {
         // Step 1: Front runner deposits 1 sDAI to get 1 share
 
         // Have to use sDai because 1 USDC mints 1e12 shares
@@ -60,13 +64,7 @@ contract InflationAttackTests is PSMTestBase {
     }
 
     function test_inflationAttack_useInitialDeposit() public {
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
-
-        address firstDepositor = makeAddr("firstDepositor");
-        address frontRunner    = makeAddr("frontRunner");
-        address deployer       = address(this);  // TODO: Update to use non-deployer receiver
-
-        _deposit(address(sDai), address(this), 0.8e18);  /// 1e18 shares
+        _deposit(address(sDai), address(deployer), 0.8e18);  /// 1e18 shares
 
         // Step 1: Front runner deposits sDAI to get 1 share
 
