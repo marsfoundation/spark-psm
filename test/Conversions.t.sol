@@ -225,7 +225,7 @@ contract PSMConvertToSharesTests is PSMConversionTestBase {
         _assertOneToOneConversion();
     }
 
-    function test_convertToShares_updateSDaiValue() public {
+    function test_convertToShares_conversionRateIncrease() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
         _deposit(address(usdc), address(this), 100e6);
         _deposit(address(sDai), address(this), 80e18);
@@ -371,7 +371,7 @@ contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
         _assertOneToOneConversionDai();
     }
 
-    function test_convertToShares_updateSDaiValue() public {
+    function test_convertToShares_conversionRateIncrease() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
         _deposit(address(dai),  address(this), 100e18);
         _deposit(address(sDai), address(this), 80e18);
@@ -391,7 +391,7 @@ contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(dai), 12e18), 10.909090909090909090e18);
     }
 
-    // NOTE: These tests will be the same as convertToShares(amount) tests because DAI is an
+    // NOTE: These tests will be the exact same as convertToShares(amount) tests because DAI is an
     //       18 decimal precision asset pegged to the dollar, which is whats used for "value".
 
     function testFuzz_convertToShares_conversionRateIncrease(
@@ -511,7 +511,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
         _assertOneToOneConversionUsdc();
     }
 
-    function test_convertToShares_updateSDaiValue() public {
+    function test_convertToShares_conversionRateIncrease() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
         _deposit(address(usdc), address(this), 100e6);
         _deposit(address(sDai), address(this), 80e18);
@@ -529,6 +529,117 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(usdc), 10e6), 9.090909090909090909e18);
         assertEq(psm.convertToShares(address(usdc), 11e6), 10e18);
         assertEq(psm.convertToShares(address(usdc), 12e6), 10.909090909090909090e18);
+    }
+
+    function testFuzz_convertToShares_conversionRateIncrease(
+        uint256 daiAmount,
+        uint256 usdcAmount,
+        uint256 sDaiAmount,
+        uint256 conversionRate
+    )
+        public
+    {
+        rateProvider.__setConversionRate(1e27);  // Start lower than 1.25 for this test
+
+        FuzzVars memory vars = _setUpConversionFuzzTest(
+            1e27,
+            daiAmount,
+            usdcAmount,
+            sDaiAmount
+        );
+
+        // These two values are always the same at the beginning
+        uint256 initialValue = vars.expectedShares;
+
+        conversionRate = _bound(conversionRate, 1e27, 1000e27);
+
+        // Precision is lost when using 1e6 so expectedShares have to be adjusted accordingly
+        // but this represents a 1:1 exchange rate in 1e6 precision
+        assertEq(
+            psm.convertToShares(address(usdc), initialValue / 1e12),
+            vars.expectedShares / 1e12 * 1e12
+        );
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        uint256 newValue
+            = vars.daiAmount + vars.usdcAmount * 1e12 + vars.sDaiAmount * conversionRate / 1e27;
+
+        assertApproxEqAbs(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            vars.expectedShares,
+            1e12
+        );
+
+        // Make sure that rounding error here is always against the user
+        assertLe(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            vars.expectedShares
+        );
+
+        // Value change is only from sDAI exchange rate increasing
+        assertEq(newValue - initialValue, vars.sDaiAmount * (conversionRate - 1e27) / 1e27);
+    }
+
+    function testFuzz_convertToAssetValue_conversionRateDecrease(
+        uint256 daiAmount,
+        uint256 usdcAmount,
+        uint256 sDaiAmount,
+        uint256 conversionRate
+    )
+        public
+    {
+        rateProvider.__setConversionRate(2e27);  // Start higher than 1.25 for this test
+
+        FuzzVars memory vars = _setUpConversionFuzzTest(
+            2e27,
+            daiAmount,
+            usdcAmount,
+            sDaiAmount
+        );
+
+        // These two values are always the same at the beginning
+        uint256 initialValue = vars.expectedShares;
+
+        conversionRate = _bound(conversionRate, 0.001e27, 2e27);
+
+        // Precision is lost when using 1e6 so expectedShares have to be adjusted accordingly
+        // but this represents a 1:1 exchange rate in 1e6 precision
+        assertEq(
+            psm.convertToShares(address(usdc), initialValue / 1e12),
+            vars.expectedShares / 1e12 * 1e12
+        );
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        uint256 newValue
+            = vars.daiAmount + vars.usdcAmount * 1e12 + vars.sDaiAmount * conversionRate / 1e27;
+
+        // Rounding scales with difference between expectedShares and newValue
+        assertApproxEqAbs(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            vars.expectedShares,
+            1e12 + initialValue * 1e18 / newValue
+        );
+
+        // Make sure that rounding error here is always against the user
+        assertLe(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            vars.expectedShares
+        );
+
+        // This is the exact calculation of what is happening
+        assertEq(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            (newValue / 1e12 * 1e12) * vars.expectedShares / newValue
+        );
+
+        // Value change is only from sDAI exchange rate decreasing
+        assertApproxEqAbs(
+            initialValue - newValue,
+            vars.sDaiAmount * (2e27 - conversionRate) / 1e27,
+            1
+        );
     }
 
     function _assertOneToOneConversionUsdc() internal view {
@@ -576,7 +687,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         _assertStartingConversionSDai();
     }
 
-    function test_convertToShares_updateSDaiValue() public {
+    function test_convertToShares_conversionRateIncrease() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
         _deposit(address(usdc), address(this), 100e6);
         _deposit(address(sDai), address(this), 80e18);
@@ -598,6 +709,135 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(sDai), 2e18), 2.727272727272727272e18);
         assertEq(psm.convertToShares(address(sDai), 3e18), 4.090909090909090909e18);
         assertEq(psm.convertToShares(address(sDai), 4e18), 5.454545454545454545e18);
+    }
+
+    function testFuzz_convertToShares_conversionRateIncrease(
+        uint256 daiAmount,
+        uint256 usdcAmount,
+        uint256 sDaiAmount,
+        uint256 conversionRate
+    )
+        public
+    {
+        // NOTE: Not using 1e27 for this test because initialSDaiValue needs to be different
+        rateProvider.__setConversionRate(1.1e27);  // Start lower than 1.25 for this test
+
+        FuzzVars memory vars = _setUpConversionFuzzTest(
+            1.1e27,
+            daiAmount,
+            usdcAmount,
+            sDaiAmount
+        );
+
+        // These two values are always the same at the beginning
+        uint256 initialValue     = vars.expectedShares;
+        uint256 initialSDaiValue = initialValue * 1e27 / 1.1e27;
+
+        conversionRate = _bound(conversionRate, 1.1e27, 1000e27);
+
+        // 1:1 between shares and dollar value
+        assertApproxEqAbs(
+            psm.convertToShares(address(sDai), initialSDaiValue),
+            vars.expectedShares,
+            1
+        );
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        uint256 newValue
+            = vars.daiAmount + vars.usdcAmount * 1e12 + vars.sDaiAmount * conversionRate / 1e27;
+
+        uint256 newSDaiValue = newValue * 1e27 / conversionRate;
+
+        // New conversion rate can be up to 1000x higher
+        assertApproxEqAbs(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            vars.expectedShares,
+            1000
+        );
+
+        // Make sure that rounding error here is always against the user
+        assertLe(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            vars.expectedShares
+        );
+
+        // Exact calculation used
+        assertEq(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
+        );
+
+        // Value change is only from sDAI exchange rate increasing
+        assertApproxEqAbs(
+            newValue - initialValue,
+            vars.sDaiAmount * (conversionRate - 1.1e27) / 1e27,
+            3
+        );
+    }
+
+    function testFuzz_convertToAssetValue_conversionRateDecrease(
+        uint256 daiAmount,
+        uint256 usdcAmount,
+        uint256 sDaiAmount,
+        uint256 conversionRate
+    )
+        public
+    {
+        rateProvider.__setConversionRate(2e27);  // Start higher than 1.25 for this test
+
+        FuzzVars memory vars = _setUpConversionFuzzTest(
+            2e27,
+            daiAmount,
+            usdcAmount,
+            sDaiAmount
+        );
+
+        // These two values are always the same at the beginning
+        uint256 initialValue     = vars.expectedShares;
+        uint256 initialSDaiValue = initialValue * 1e27 / 2e27;
+
+        conversionRate = _bound(conversionRate, 0.001e27, 2e27);
+
+        // 1:1 between shares and dollar value
+        assertApproxEqAbs(
+            psm.convertToShares(address(sDai), initialSDaiValue),
+            vars.expectedShares,
+            1
+        );
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        uint256 newValue
+            = vars.daiAmount + vars.usdcAmount * 1e12 + vars.sDaiAmount * conversionRate / 1e27;
+
+        uint256 newSDaiValue = newValue * 1e27 / conversionRate;
+
+        // New conversion rate can be up to 2000x lower (2e27 to 0.001e27)
+        assertApproxEqAbs(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            vars.expectedShares,
+            2000
+        );
+
+        // Make sure that rounding error here is always against the user
+        assertLe(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            vars.expectedShares
+        );
+
+        // Exact calculation used
+        assertEq(
+            psm.convertToShares(address(sDai), newSDaiValue),
+            (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
+        );
+
+        // Value change is only from sDAI exchange rate increasing
+        assertApproxEqAbs(
+            initialValue - newValue,
+            vars.sDaiAmount * (2e27 - conversionRate) / 1e27,
+            3
+        );
     }
 
     function _assertOneToOneConversion() internal view {
