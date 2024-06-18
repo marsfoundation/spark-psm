@@ -1,20 +1,3 @@
-// I've thought about it some more and to keep things simple I don't think we should include any
-// custom logic for ensuring an initial burn amount. There are actually a lot of ways to brick the
-//  contract with an initial deposit. This current method prevents the share inflation attack,
-//  but you can also just send a non-zero balance to the contract before the first call to deposit
-//   to DoS any deposit after that as convertToShares(...) will return 0 always
-//   since psm value is > 0 and totalShares = 0.
-
-// I think instead let's just make it very clear a small seed amount should be deposited as
-// the first action in all cases. This is what other protocols do, and I think it's easier to not
-// go overly fancy as it introduces complexity.
-
-// For the deposit and withdraw functions let's add a receiver param and during deployment we will
-//  just deposit some initial amount and send it to the zero address.
-
-// As part of the deployment script we can include this initial deposit to force the deployer
-//  address to have a seed balance inside it's wallet.
-
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
@@ -24,5 +7,41 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
+    address user1 = makeAddr("user1");
+    address user2 = makeAddr("user2");
+
+    function test_dos_sendFundsBeforeFirstDeposit() public {
+        // Attack pool sending funds in before the first deposit
+        usdc.mint(address(this), 100e6);
+        usdc.transfer(address(psm), 100e6);
+
+        assertEq(usdc.balanceOf(address(psm)), 100e6);
+
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(user2), 0);
+
+        _deposit(address(usdc), address(user1), 1_000_000e6);
+
+        // Since exchange rate is zero, convertToShares returns 1m * 0 / 100e6
+        // because totalValue is not zero so it enters that if statement.
+        // This results in the funds going in the pool with no way for the user
+        // to recover them.
+        assertEq(usdc.balanceOf(address(psm)), 1_000_100e6);
+
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(user2), 0);
+
+        // This issue is not related to the first deposit only because totalShares cannot
+        // get above zero.
+        _deposit(address(usdc), address(user2), 1_000_000e6);
+
+        assertEq(usdc.balanceOf(address(psm)), 2_000_100e6);
+
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(user2), 0);
+    }
 
 }
