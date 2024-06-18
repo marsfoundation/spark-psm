@@ -565,6 +565,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
         uint256 newValue
             = vars.daiAmount + vars.usdcAmount * 1e12 + vars.sDaiAmount * conversionRate / 1e27;
 
+        // Larger rounding error because of 1e6 precision
         assertApproxEqAbs(
             psm.convertToShares(address(usdc), newValue / 1e12),
             vars.expectedShares,
@@ -575,6 +576,12 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
         assertLe(
             psm.convertToShares(address(usdc), newValue / 1e12),
             vars.expectedShares
+        );
+
+        // This is the exact calculation of what is happening
+        assertEq(
+            psm.convertToShares(address(usdc), newValue / 1e12),
+            (newValue / 1e12 * 1e12) * vars.expectedShares / newValue
         );
 
         // Value change is only from sDAI exchange rate increasing
@@ -762,7 +769,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
             vars.expectedShares
         );
 
-        // Exact calculation used
+        // This is the exact calculation of what is happening
         assertEq(
             psm.convertToShares(address(sDai), newSDaiValue),
             (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
@@ -826,7 +833,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
             vars.expectedShares
         );
 
-        // Exact calculation used
+        // This is the exact calculation of what is happening
         assertEq(
             psm.convertToShares(address(sDai), newSDaiValue),
             (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
