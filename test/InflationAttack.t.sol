@@ -9,6 +9,8 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
+    // TODO: Add DOS attack test outlined here: https://github.com/marsfoundation/spark-psm/pull/2#pullrequestreview-2085880206
+
     address firstDepositor = makeAddr("firstDepositor");
     address frontRunner    = makeAddr("frontRunner");
     address deployer       = makeAddr("deployer");
