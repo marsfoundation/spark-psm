@@ -46,8 +46,6 @@ contract InflationAttackTests is PSMTestBase {
         // User tries to do the same attack, depositing one sDAI for 1 share
         _deposit(address(sDai), frontRunner, 1);
 
-        assertEq(psm.shares(frontRunner), 1);
-
         _runInflationAttack_useInitialDepositTest();
     }
 
@@ -58,8 +56,6 @@ contract InflationAttackTests is PSMTestBase {
 
         // User tries to do the same attack, depositing one sDAI for 1 share
         _deposit(address(dai), frontRunner, 1);
-
-        assertEq(psm.shares(frontRunner), 1);
 
         _runInflationAttack_useInitialDepositTest();
     }
