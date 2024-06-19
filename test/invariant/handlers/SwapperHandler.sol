@@ -22,7 +22,7 @@ contract SwapperHandler is HandlerBase {
         uint256   lpCount
     ) HandlerBase(psm_, asset0, asset1, asset2) {
         for (uint256 i = 0; i < lpCount; i++) {
-            swappers.push(makeAddr(string(abi.encodePacked("swapper-", i))));
+            swappers.push(makeAddr(string(abi.encodePacked("swapper-", vm.toString(i)))));
         }
     }
 

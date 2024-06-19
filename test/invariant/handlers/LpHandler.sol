@@ -24,7 +24,7 @@ contract LpHandler is HandlerBase {
         uint256   lpCount
     ) HandlerBase(psm_, asset0, asset1, asset2) {
         for (uint256 i = 0; i < lpCount; i++) {
-            lps.push(makeAddr(string(abi.encodePacked("lp-", i))));
+            lps.push(makeAddr(string(abi.encodePacked("lp-", vm.toString(i)))));
         }
     }
 
