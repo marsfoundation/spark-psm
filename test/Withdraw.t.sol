@@ -427,50 +427,11 @@ contract PSMWithdrawTests is PSMTestBase {
             0,
             usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sDAI calculations
         );
-
-        // -- TODO: Get these to work, rounding assertions proving always rounding down
-
-        // assertLe(sDai.balanceOf(user2),        expectedWithdrawnAmount3);
-        // assertGe(sDai.balanceOf(address(psm)), depositAmount3 - expectedWithdrawnAmount3);
-
-        // assertLe(
-        //     psm.shares(user2),
-        //     (depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (expectedWithdrawnAmount2 * 1e12) - (expectedWithdrawnAmount3 * 125/100)
-        // );
-
-        // assertLe(
-        //     psm.totalShares(),
-        //     totalValue - (expectedWithdrawnAmount1 + expectedWithdrawnAmount2) * 1e12 - (expectedWithdrawnAmount3 * 125/100)
-        // );
-    }
-
-    function _checkPsmInvariant() internal view {
-        uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
-        uint256 totalAssetsValue =
-            sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
-            + usdc.balanceOf(address(psm)) * 1e12;
-
-        assertApproxEqAbs(totalSharesValue, totalAssetsValue, 1);
-    }
-
-    function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
-        internal view returns (uint256 withdrawAmount)
-    {
-        uint256 balance    = asset.balanceOf(address(psm));
-        uint256 userAssets = psm.convertToAssets(address(asset), psm.shares(user));
-
-        // Return the min of assets, balance, and amount
-        withdrawAmount = userAssets < balance        ? userAssets : balance;
-        withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
     }
 
     function test_withdraw_changeConversionRate() public {
         _deposit(address(usdc), user1, 100e6);
         _deposit(address(sDai), user2, 100e18);
-
-        assertEq(psm.totalShares(), 225e18);
-        assertEq(psm.shares(user1), 100e18);
-        assertEq(psm.shares(user2), 125e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
@@ -492,7 +453,9 @@ contract PSMWithdrawTests is PSMTestBase {
 
         // NOTE: Users shares have more value than the balance of USDC now
         vm.prank(user1);
-        psm.withdraw(address(usdc), user1, type(uint256).max);
+        uint256 amount = psm.withdraw(address(usdc), user1, type(uint256).max);
+
+        assertEq(amount, 100e6);
 
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
@@ -506,10 +469,11 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 125e18);
 
         vm.prank(user1);
-        psm.withdraw(address(sDai), user1, type(uint256).max);
+        amount = psm.withdraw(address(sDai), user1, type(uint256).max);
 
         uint256 user1SDai = uint256(10e18) * 1e18 / 0.9e18 * 1e27 / 1.5e27;
 
+        assertEq(amount,    user1SDai);
         assertEq(user1SDai, 7.407407407407407407e18);
 
         assertEq(sDai.balanceOf(user1),        user1SDai);
@@ -521,7 +485,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 125e18);
 
         vm.prank(user2);
-        psm.withdraw(address(sDai), user2, type(uint256).max);
+        amount = psm.withdraw(address(sDai), user2, type(uint256).max);
+
+        assertEq(amount, 100e18 - user1SDai);  // Remaining funds in PSM
 
         assertEq(sDai.balanceOf(user1),        user1SDai);
         assertEq(sDai.balanceOf(user2),        100e18 - user1SDai);
@@ -539,331 +505,126 @@ contract PSMWithdrawTests is PSMTestBase {
 
         assertEq(user1ResultingValue + user2ResultingValue, 249.999999999999999999e18);
 
-        // User1 gets a 0.000015% lower percentage yield than user2
+        // Value gains are the same for both users
         assertEq((user1ResultingValue - 100e18) * 1e18 / 100e18, 0.111111111111111111e18);
         assertEq((user2ResultingValue - 125e18) * 1e18 / 125e18, 0.111111111111111111e18);
     }
 
-    // function test_withdraw_changeConversionRate_bigBalances_roundingCode() public {
-    //     _deposit(address(usdc), user1, 100_000_000e6);
-    //     _deposit(address(sDai), user2, 100_000_000e18);
-
-    //     assertEq(psm.totalShares(), 225_000_000e18);
-    //     assertEq(psm.shares(user1), 100_000_000e18);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     assertEq(psm.convertToShares(1e18), 1e18);
-
-    //     rateProvider.__setConversionRate(1.5e27);
-
-    //     // Total shares / (100 USDC + 150 sDAI value)
-    //     uint256 expectedConversionRate = 225 * 1e18 / 250;
-
-    //     assertEq(expectedConversionRate, 0.9e18);
-
-    //     assertEq(psm.convertToShares(1e18), 0.9e18);
-
-    //     assertEq(usdc.balanceOf(user1),        0);
-    //     assertEq(usdc.balanceOf(address(psm)), 100_000_000e6);
-
-    //     assertEq(psm.totalShares(), 225_000_000e18);
-    //     assertEq(psm.shares(user1), 100_000_000e18);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     // Solving for `a` to get a result of 100.000001e6 USDC to transfer out
-    //     // a * (250/225) / 1e12 = 100.000001e6
-    //     // a = 100.000001e6 * 1e12 / (250/225)
-    //     // a = 100.000001e18 * (225/250)
-    //     // Subtract 1 to get the amount that will succeed
-    //     uint256 maxUsdcShares = 100_000_000.000001e18 * 0.9 - 1;
-
-    //     assertEq(maxUsdcShares, 90_000_000.0000009e18 - 1);
-
-    //     // NOTE: Users shares have more value than the balance of USDC now
-    //     vm.startPrank(user1);
-
-    //     // Original full balance reverts
-    //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), 100_000_000e18);
-
-    //     // Boundary condition at 90.000001e18 shares
-    //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), maxUsdcShares + 1);
-
-    //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
-
-    //     // Rounds down here and transfers 100_000_000e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares);
-
-    //     console2.log("\n\n\n");
-
-    //     console2.log("maxUsdcShares value", psm.convertToAssetValue(maxUsdcShares));
-
-    //     assertEq(sDai.balanceOf(user1),        0);
-    //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18);
-
-    //     maxUsdcShares = 90_000_000e18;
-
-    //     assertEq(psm.totalShares(), 225_000_000e18 - maxUsdcShares);
-    //     assertEq(psm.shares(user1), 100_000_000e18 - maxUsdcShares);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
-
-    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
-
-    //     uint256 sDaiUser1Balance = 7_407_407.407407407407407407e18;
-
-    //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     assertEq(sDai.balanceOf(user2),        0);
-    //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18 - sDaiUser1Balance);
-
-    //     assertEq(psm.totalShares(), 125_000_000e18);
-    //     assertEq(psm.shares(user1), 0);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     vm.stopPrank();
-    //     vm.startPrank(user2);
-
-    //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
-
-    //     // Withdraw shares originally worth $100 to compare yield with user1
-    //     psm.withdraw(address(sDai), 125_000_000e18);
-
-    //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     assertEq(sDai.balanceOf(user2),        100_000_000e18 - sDaiUser1Balance - 1);
-    //     assertEq(sDai.balanceOf(address(psm)), 1);
-
-    //     assertEq(psm.totalShares(), 0);
-    //     assertEq(psm.shares(user1), 0);
-    //     assertEq(psm.shares(user2), 0);
-
-    //     uint256 user1ResultingValue = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * 150/100;
-    //     uint256 user2ResultingValue = sDai.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
-
-    //     console.log("\n\n FINAL RESULTS");
-    //     console.log("user1SDai", sDai.balanceOf(user1));
-
-    //     assertEq(user1ResultingValue, 111_111_111.111111111111111110e18);
-    //     assertEq(user2ResultingValue, 138_888_888.888888888888888888e18);
-
-    //     assertEq(user1ResultingValue + user2ResultingValue, 249_999_999.999999999999999998e18);
-
-    //     assertEq((user1ResultingValue - 100_000_000e18) * 1e18 / 100_000_000e18, 0.111111111111111111e18);
-    //     assertEq((user2ResultingValue - 125_000_000e18) * 1e18 / 125_000_000e18, 0.111111111111111111e18);
-    // }
-
-    // function test_withdraw_changeConversionRate_bigBalances_nonRoundingCode() public {
-    //     _deposit(address(usdc), user1, 100_000_000e6);
-    //     _deposit(address(sDai), user2, 100_000_000e18);
-
-    //     assertEq(psm.totalShares(), 225_000_000e18);
-    //     assertEq(psm.shares(user1), 100_000_000e18);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     assertEq(psm.convertToShares(1e18), 1e18);
-
-    //     rateProvider.__setConversionRate(1.5e27);
-
-    //     // Total shares / (100 USDC + 150 sDAI value)
-    //     uint256 expectedConversionRate = 225 * 1e18 / 250;
-
-    //     assertEq(expectedConversionRate, 0.9e18);
-
-    //     assertEq(psm.convertToShares(1e18), 0.9e18);
-
-    //     assertEq(usdc.balanceOf(user1),        0);
-    //     assertEq(usdc.balanceOf(address(psm)), 100_000_000e6);
-
-    //     assertEq(psm.totalShares(), 225_000_000e18);
-    //     assertEq(psm.shares(user1), 100_000_000e18);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     // Solving for `a` to get a result of 100.000001e6 USDC to transfer out
-    //     // a * (250/225) / 1e12 = 100.000001e6
-    //     // a = 100.000001e6 * 1e12 / (250/225)
-    //     // a = 100.000001e18 * (225/250)
-    //     // Subtract 1 to get the amount that will succeed
-    //     uint256 maxUsdcShares = 100_000_000.000001e18 * 0.9 - 1;
-
-    //     assertEq(maxUsdcShares, 90_000_000.0000009e18 - 1);
-
-    //     // NOTE: Users shares have more value than the balance of USDC now
-    //     vm.startPrank(user1);
-
-    //     // Original full balance reverts
-    //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), 100_000_000e18);
-
-    //     // Boundary condition at 90.000001e18 shares
-    //     vm.expectRevert("SafeERC20/transfer-failed");
-    //     psm.withdraw(address(usdc), maxUsdcShares + 1);
-
-    //     console2.log("First CTA", psm.convertToAssetValue(100_000_000e18));
-
-    //     // Rounds down here and transfers 100_000_000e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares);
-
-    //     console2.log("\n\n\n");
-
-    //     console2.log("maxUsdcShares value", psm.convertToAssetValue(maxUsdcShares));
-
-    //     assertEq(sDai.balanceOf(user1),        0);
-    //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18);
-
-    //     assertEq(psm.totalShares(), 225_000_000e18 - maxUsdcShares);
-    //     assertEq(psm.shares(user1), 100_000_000e18 - maxUsdcShares);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     console2.log("Second CTA", psm.convertToAssetValue(100_000_000e18));
-
-    //     psm.withdraw(address(sDai), 100_000_000e18 - maxUsdcShares);
-
-    //     uint256 sDaiUser1Balance = 7_407_407.407406790123456790e18;
-
-    //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     assertEq(sDai.balanceOf(user2),        0);
-    //     assertEq(sDai.balanceOf(address(psm)), 100_000_000e18 - sDaiUser1Balance);
-
-    //     assertEq(psm.totalShares(), 125_000_000e18);
-    //     assertEq(psm.shares(user1), 0);
-    //     assertEq(psm.shares(user2), 125_000_000e18);
-
-    //     vm.stopPrank();
-    //     vm.startPrank(user2);
-
-    //     console2.log("Third CTA", psm.convertToAssetValue(100e18));
-
-    //     // Withdraw shares originally worth $100 to compare yield with user1
-    //     psm.withdraw(address(sDai), 125_000_000e18);
-
-    //     assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     assertEq(sDai.balanceOf(user2),        100_000_000e18 - sDaiUser1Balance);
-    //     assertEq(sDai.balanceOf(address(psm)), 0);
-
-    //     assertEq(psm.totalShares(), 0);
-    //     assertEq(psm.shares(user1), 0);
-    //     assertEq(psm.shares(user2), 0);
-
-    //     uint256 user1ResultingValue = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * 150/100;
-    //     uint256 user2ResultingValue = sDai.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
-
-    //     console.log("\n\n FINAL RESULTS");
-    //     console.log("user1SDai", sDai.balanceOf(user1));
-
-    //     assertEq(user1ResultingValue, 111_111_111.111110185185185185e18);
-    //     assertEq(user2ResultingValue, 138_888_888.888889814814814815e18);
-
-    //     assertEq(user1ResultingValue + user2ResultingValue, 250_000_000e18);
-
-    //     // User1 gets a 0.000000000015% lower percentage yield than user2 because the shares
-    //     // that could've been used to withdraw sDAI with burned on the withdrawal.
-    //     assertEq((user1ResultingValue - 100_000_000e18) * 1e18 / 100_000_000e18, 0.111111111111101851e18);
-    //     assertEq((user2ResultingValue - 125_000_000e18) * 1e18 / 125_000_000e18, 0.111111111111118518e18);
-    // }
-
-    // function test_withdraw_2() public {
-    //     _deposit(address(usdc), user1, 100e6);
-    //     _deposit(address(sDai), user2, 100e18);
-
-    //     assertEq(psm.totalShares(), 225e18);
-    //     assertEq(psm.shares(user1), 100e18);
-    //     assertEq(psm.shares(user2), 125e18);
-
-    //     assertEq(psm.convertToShares(1e18), 1e18);
-
-    //     rateProvider.__setConversionRate(1.5e27);
-
-    //     // Total shares / (100 USDC + 150 sDAI value)
-    //     uint256 expectedConversionRate = 225 * 1e18 / 250;
-
-    //     assertEq(expectedConversionRate, 0.9e18);
-
-    //     assertEq(psm.convertToShares(1e18), 0.9e18);
-
-    //     assertEq(usdc.balanceOf(user1),        0);
-    //     assertEq(usdc.balanceOf(address(psm)), 100e6);
-
-    //     assertEq(psm.totalShares(), 225e18);
-    //     assertEq(psm.shares(user1), 100e18);
-    //     assertEq(psm.shares(user2), 125e18);
-
-    //     // Solving for `a` to get a result of 100.000001e6 USDC to transfer out
-    //     // a * (250/225) / 1e12 = 100.000001e6
-    //     // a = 100.000001e6 * 1e12 / (250/225)
-    //     // a = 100.000001e18 * (225/250)
-    //     // Subtract 1 to get the amount that will succeed
-    //     uint256 maxUsdcShares = 100.000001e18 * 0.9 - 1;
-
-    //     assertEq(maxUsdcShares, 90.0000009e18 - 1);
-
-    //     // // NOTE: Users shares have more value than the balance of USDC now
-    //     vm.startPrank(user1);
-
-    //     // // Original full balance reverts
-    //     // vm.expectRevert("SafeERC20/transfer-failed");
-    //     // psm.withdraw(address(usdc), 100e18);
-
-    //     // // Boundary condition at 90.000001e18 shares
-    //     // vm.expectRevert("SafeERC20/transfer-failed");
-    //     // psm.withdraw(address(usdc), maxUsdcShares + 1);
-
-    //     console2.log("First CTA", psm.convertToAssetValue(100e18));
-
-    //     // maxUsdcShares = 89.99999e18;
-
-    //     // Rounds down here and transfers 100e6 USDC
-    //     psm.withdraw(address(usdc), maxUsdcShares);
-
-    //     console2.log("\n\n\n");
-
-    //     // assertEq(sDai.balanceOf(user1),        0);
-    //     // assertEq(sDai.balanceOf(address(psm)), 100e18);
-
-    //     // assertEq(psm.totalShares(), 225e18 - maxUsdcShares);
-    //     // assertEq(psm.shares(user1), 100e18 - maxUsdcShares);
-    //     // assertEq(psm.shares(user2), 125e18);
-
-    //     console2.log("Second CTA", psm.convertToAssetValue(100e18));
-
-    //     // psm.withdraw(address(sDai), 100e18 - maxUsdcShares);
-
-    //     // uint256 sDaiUser1Balance = 7.407406790123452675e18;
-
-    //     // assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     // assertEq(sDai.balanceOf(user2),        0);
-    //     // assertEq(sDai.balanceOf(address(psm)), 100e18 - sDaiUser1Balance);
-
-    //     // assertEq(psm.totalShares(), 125e18);
-    //     // assertEq(psm.shares(user1), 0);
-    //     // assertEq(psm.shares(user2), 125e18);
-
-    //     // vm.stopPrank();
-    //     // vm.startPrank(user2);
-
-    //     // console2.log("Third CTA", psm.convertToAssetValue(100e18));
-
-    //     // // Withdraw shares originally worth $100 to compare yield with user1
-    //     // psm.withdraw(address(sDai), 100e18);
-
-    //     // // assertEq(sDai.balanceOf(user1),        sDaiUser1Balance);
-    //     // // assertEq(sDai.balanceOf(user2),        100e18 - sDaiUser1Balance - 1);
-    //     // // assertEq(sDai.balanceOf(address(psm)), 1);
-
-    //     // // assertEq(psm.totalShares(), 0);
-    //     // // assertEq(psm.shares(user1), 0);
-    //     // // assertEq(psm.shares(user2), 0);
-
-    //     // uint256 user1ResultingValue = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1);
-    //     // uint256 user2ResultingValue = sDai.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
-
-    //     // assertEq(user1ResultingValue, 107.407406790123452675e18);
-    //     // assertEq(user2ResultingValue, 111.111111851851856788e18);
-
-    //     // assertEq(user1ResultingValue + user2ResultingValue, 250e18);
-
-    //     // assertEq((user1ResultingValue - 100e18) * 1e18 / 100e18, 0.074074067901234526e18);
-    //     // assertEq((user2ResultingValue - 125e18) * 1e18 / 125e18, 0.111111118518518567e18);
-    // }
+    function testFuzz_withdraw_changeConversionRate(
+        uint256 usdcAmount,
+        uint256 sDaiAmount,
+        uint256 conversionRate
+    )
+        public
+    {
+        // Use higher lower bounds to get returns at the end to be more accurate
+        usdcAmount     = _bound(usdcAmount,     1e6,     USDC_TOKEN_MAX);
+        sDaiAmount     = _bound(sDaiAmount,     1e18,    SDAI_TOKEN_MAX);
+        conversionRate = _bound(conversionRate, 1.25e27, 1000e27);
+
+        _deposit(address(usdc), user1, usdcAmount);
+        _deposit(address(sDai), user2, sDaiAmount);
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        uint256 user1Shares = usdcAmount * 1e12;
+        uint256 user2Shares = sDaiAmount * 125/100;
+        uint256 totalShares = user1Shares + user2Shares;
+        uint256 totalValue  = usdcAmount * 1e12 + sDaiAmount * conversionRate / 1e27;
+
+        assertEq(psm.getPsmTotalValue(), totalValue);
+
+        assertEq(psm.totalShares(), totalShares);
+        assertEq(psm.shares(user1), user1Shares);
+        assertEq(psm.shares(user2), user2Shares);
+
+        assertEq(usdc.balanceOf(user1),        0);
+        assertEq(usdc.balanceOf(address(psm)), usdcAmount);
+
+        // NOTE: Users shares have more value than the balance of USDC now
+        vm.prank(user1);
+        uint256 amount = psm.withdraw(address(usdc), user1, type(uint256).max);
+
+        assertEq(amount, usdcAmount);  // Withdraws all USDC since shares are worth more
+
+        assertEq(usdc.balanceOf(user1),        usdcAmount);
+        assertEq(usdc.balanceOf(address(psm)), 0);
+
+        assertEq(sDai.balanceOf(user1),        0);
+        assertEq(sDai.balanceOf(user2),        0);
+        assertEq(sDai.balanceOf(address(psm)), sDaiAmount);
+
+        uint256 expectedUser1SharesBurned = usdcAmount * 1e12 * totalShares / totalValue;
+
+        assertApproxEqAbs(psm.totalShares(), totalShares - expectedUser1SharesBurned, 2);
+        assertApproxEqAbs(psm.shares(user1), user1Shares - expectedUser1SharesBurned, 2);
+        assertApproxEqAbs(psm.shares(user2), user2Shares,                             0);
+
+        vm.prank(user1);
+        amount = psm.withdraw(address(sDai), user1, type(uint256).max);
+
+        // User1s remaining shares are used
+        uint256 user1SDai = (user1Shares - expectedUser1SharesBurned)
+            * totalValue
+            / totalShares
+            * 1e27
+            / conversionRate;
+
+        assertApproxEqAbs(sDai.balanceOf(user1),        user1SDai,              2);
+        assertApproxEqAbs(sDai.balanceOf(user2),        0,                      0);
+        assertApproxEqAbs(sDai.balanceOf(address(psm)), sDaiAmount - user1SDai, 2);
+
+        vm.prank(user2);
+        amount = psm.withdraw(address(sDai), user2, type(uint256).max);
+
+        assertApproxEqAbs(amount, sDaiAmount - user1SDai, 2);
+
+        assertApproxEqAbs(sDai.balanceOf(user1),        user1SDai,              2);
+        assertApproxEqAbs(sDai.balanceOf(user2),        sDaiAmount - user1SDai, 2);
+        assertApproxEqAbs(sDai.balanceOf(address(psm)), 0,                      2);
+
+        assertLe(psm.totalShares(), 1);
+        assertLe(psm.shares(user1), 1);
+        assertLe(psm.shares(user2), 1);
+
+        uint256 user1ResultingValue
+            = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * conversionRate / 1e27;
+
+        uint256 user2ResultingValue = sDai.balanceOf(user2) * conversionRate / 1e27;  // Use 1.5 conversion rate
+
+        // Equal to starting value
+        assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue, 2);
+
+        // Value gains are the same for both users, accurate to 0.001%
+        assertApproxEqRel(
+            (user1ResultingValue - (usdcAmount * 1e12))    * 1e18 / (usdcAmount * 1e12),
+            (user2ResultingValue - (sDaiAmount * 125/100)) * 1e18 / (sDaiAmount * 125/100),
+            0.00001e18
+        );
+    }
+
+    /**********************************************************************************************/
+    /*** Helper functions                                                                       ***/
+    /**********************************************************************************************/
+
+    function _checkPsmInvariant() internal view {
+        uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
+        uint256 totalAssetsValue =
+            sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
+            + usdc.balanceOf(address(psm)) * 1e12;
+
+        assertApproxEqAbs(totalSharesValue, totalAssetsValue, 1);
+    }
+
+    function _getExpectedWithdrawnAmount(MockERC20 asset, address user, uint256 amount)
+        internal view returns (uint256 withdrawAmount)
+    {
+        uint256 balance    = asset.balanceOf(address(psm));
+        uint256 userAssets = psm.convertToAssets(address(asset), psm.shares(user));
+
+        // Return the min of assets, balance, and amount
+        withdrawAmount = userAssets < balance        ? userAssets : balance;
+        withdrawAmount = amount     < withdrawAmount ? amount     : withdrawAmount;
+    }
 
 }
