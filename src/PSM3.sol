@@ -11,7 +11,6 @@ interface IRateProviderLike {
     function getConversionRate() external view returns (uint256);
 }
 
-// TODO: Prove that we're always rounding against user
 contract PSM3 is IPSM3 {
 
     using SafeERC20 for IERC20;
