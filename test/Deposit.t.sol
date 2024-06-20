@@ -342,6 +342,11 @@ contract PSMDepositTests is PSMTestBase {
         sDaiAmount2 = _bound(sDaiAmount2, 1e18,    SDAI_TOKEN_MAX);
         newRate     = _bound(newRate,     1.25e27, 1000e27);
 
+        // uint256 usdcAmount  = 67208237910507999;
+        // uint256 sDaiAmount1 = 913557807587464934542;
+        // uint256 sDaiAmount2 = 822673057090704755655244549519;
+        // uint256 newRate     = 998750000000000000011353377373;
+
         uint256 user1DepositValue = usdcAmount * 1e12 + sDaiAmount1 * 125/100;
 
         usdc.mint(user1, usdcAmount);
@@ -402,8 +407,10 @@ contract PSMDepositTests is PSMTestBase {
 
         newShares = psm.deposit(address(sDai), receiver2, sDaiAmount2);
 
+        // Using queried values here instead of derived to avoid larger errors getting introduced
+        // Assertions above prove that these values are as expected.
         uint256 receiver2Shares
-            = sDaiAmount2 * newRate / 1e27 * receiver1Shares / receiver1NewValue;
+            = (sDaiAmount2 * newRate / 1e27) * psm.totalShares() / psm.getPsmTotalValue();
 
         assertApproxEqAbs(newShares, receiver2Shares, 2);
 
@@ -418,11 +425,13 @@ contract PSMDepositTests is PSMTestBase {
         assertApproxEqAbs(psm.shares(receiver1), receiver1Shares,                   2);
         assertApproxEqAbs(psm.shares(receiver2), receiver2Shares,                   2);
 
-        // // Receiver 1 earned $25 on 225, Receiver 2 has earned nothing
-        // assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
-        // assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 150e18);
+        uint256 receiver2NewValue = sDaiAmount2 * newRate / 1e27;
 
-        // assertEq(psm.getPsmTotalValue(), 400e18);
+        // Rate change of up to 1000x introduces errors
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver1)), receiver1NewValue, 1000);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver2)), receiver2NewValue, 1000);
+
+        assertApproxEqAbs(psm.getPsmTotalValue(), receiver1NewValue + receiver2NewValue, 1000);
     }
 
 }
