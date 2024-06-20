@@ -9,7 +9,6 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
-    // TODO: Add DOS attack test outlined here: https://github.com/marsfoundation/spark-psm/pull/2#pullrequestreview-2085880206
     // TODO: Decide if DAI test is needed
 
     function test_inflationAttack_noInitialDeposit() public {
