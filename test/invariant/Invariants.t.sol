@@ -36,10 +36,10 @@ contract PSMInvariantTests is PSMTestBase {
     }
 
     function invariant_B() public view {
-        // Assumes exchange rate above 1 for sDAI
-        assertGe(
-            psm.getPsmTotalValue() + 1,  // Make this adjustment to allow a negative tolerance of 1
-            psm.totalShares()
+        assertApproxEqAbs(
+            psm.getPsmTotalValue(),
+            psm.convertToAssetValue(psm.totalShares()),
+            2
         );
     }
 
