@@ -342,11 +342,6 @@ contract PSMDepositTests is PSMTestBase {
         sDaiAmount2 = _bound(sDaiAmount2, 1e18,    SDAI_TOKEN_MAX);
         newRate     = _bound(newRate,     1.25e27, 1000e27);
 
-        // uint256 usdcAmount  = 67208237910507999;
-        // uint256 sDaiAmount1 = 913557807587464934542;
-        // uint256 sDaiAmount2 = 822673057090704755655244549519;
-        // uint256 newRate     = 998750000000000000011353377373;
-
         uint256 user1DepositValue = usdcAmount * 1e12 + sDaiAmount1 * 125/100;
 
         usdc.mint(user1, usdcAmount);
