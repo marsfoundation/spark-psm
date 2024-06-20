@@ -3,25 +3,55 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM3 } from "src/PSM3.sol";
-
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract InflationAttackTests is PSMTestBase {
 
-    // TODO: Decide if DAI test is needed
+    address firstDepositor = makeAddr("firstDepositor");
+    address frontRunner    = makeAddr("frontRunner");
+    address deployer       = makeAddr("deployer");
 
-    function test_inflationAttack_noInitialDeposit() public {
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
-
-        address firstDepositor = makeAddr("firstDepositor");
-        address frontRunner    = makeAddr("frontRunner");
-
+    function test_inflationAttack_noInitialDeposit_sDai() public {
         // Step 1: Front runner deposits 1 sDAI to get 1 share
 
         // Have to use sDai because 1 USDC mints 1e12 shares
         _deposit(address(sDai), frontRunner, 1);
 
+        _runInflationAttack_noInitialDepositTest();
+    }
+
+    function test_inflationAttack_noInitialDeposit_dai() public {
+        // Step 1: Front runner deposits 1 sDAI to get 1 share
+
+        // Have to use DAI because 1 USDC mints 1e12 shares
+        _deposit(address(dai), frontRunner, 1);
+
+        _runInflationAttack_noInitialDepositTest();
+    }
+
+    function test_inflationAttack_useInitialDeposit_sDai() public {
+        _deposit(address(sDai), address(deployer), 0.8e18);  // 1e18 shares
+
+        // Step 1: Front runner deposits sDAI to get 1 share
+
+        // User tries to do the same attack, depositing one sDAI for 1 share
+        _deposit(address(sDai), frontRunner, 1);
+
+        _runInflationAttack_useInitialDepositTest();
+    }
+
+    function test_inflationAttack_useInitialDeposit_dai() public {
+        _deposit(address(dai), address(deployer), 1e18);  // 1e18 shares
+
+        // Step 1: Front runner deposits dai to get 1 share
+
+        // User tries to do the same attack, depositing one sDAI for 1 share
+        _deposit(address(dai), frontRunner, 1);
+
+        _runInflationAttack_useInitialDepositTest();
+    }
+
+    function _runInflationAttack_noInitialDepositTest() internal {
         assertEq(psm.shares(frontRunner), 1);
 
         // Step 2: Front runner transfers 10m USDC to inflate the exchange rate to 1:(10m + 1)
@@ -58,20 +88,7 @@ contract InflationAttackTests is PSMTestBase {
         assertEq(usdc.balanceOf(frontRunner),    15_000_000e6);
     }
 
-    function test_inflationAttack_useInitialDeposit() public {
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
-
-        address firstDepositor = makeAddr("firstDepositor");
-        address frontRunner    = makeAddr("frontRunner");
-        address deployer       = address(this);  // TODO: Update to use non-deployer receiver
-
-        _deposit(address(sDai), address(this), 0.8e18);  /// 1e18 shares
-
-        // Step 1: Front runner deposits sDAI to get 1 share
-
-        // User tries to do the same attack, depositing one sDAI for 1 share
-        _deposit(address(sDai), frontRunner, 1);
-
+    function _runInflationAttack_useInitialDepositTest() internal {
         assertEq(psm.shares(frontRunner), 1);
 
         // Step 2: Front runner transfers 10m USDC to inflate the exchange rate to 1:(10m + 1)
