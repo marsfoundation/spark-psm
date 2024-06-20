@@ -337,9 +337,9 @@ contract PSMDepositTests is PSMTestBase {
         public
     {
         // Zero amounts revert
-        usdcAmount  = _bound(usdcAmount,  1e6,     USDC_TOKEN_MAX);
-        sDaiAmount1 = _bound(sDaiAmount1, 1e18,    SDAI_TOKEN_MAX);
-        sDaiAmount2 = _bound(sDaiAmount2, 1e18,    SDAI_TOKEN_MAX);
+        usdcAmount  = _bound(usdcAmount,  1,       USDC_TOKEN_MAX);
+        sDaiAmount1 = _bound(sDaiAmount1, 1,       SDAI_TOKEN_MAX);
+        sDaiAmount2 = _bound(sDaiAmount2, 1,       SDAI_TOKEN_MAX);
         newRate     = _bound(newRate,     1.25e27, 1000e27);
 
         uint256 user1DepositValue = usdcAmount * 1e12 + sDaiAmount1 * 125/100;
