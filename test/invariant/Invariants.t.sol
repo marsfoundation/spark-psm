@@ -244,7 +244,7 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
         _checkInvariant_B();
     }
 
-    function invariant_C_test() public view {
+    function invariant_C() public view {
         _checkInvariant_C();
     }
 
