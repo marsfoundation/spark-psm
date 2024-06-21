@@ -14,8 +14,6 @@ contract LpHandler is HandlerBase {
     uint256 public depositCount;
     uint256 public withdrawCount;
 
-    uint256 public constant TRILLION = 1e12;
-
     constructor(
         PSM3      psm_,
         MockERC20 asset0,

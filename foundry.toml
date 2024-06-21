@@ -12,7 +12,7 @@ runs = 1000
 [invariant]
 runs = 20
 depth = 1000
-shrink_run_limit=100
+shrink_run_limit=1000
 
 [profile.pr.invariant]
 runs = 200
