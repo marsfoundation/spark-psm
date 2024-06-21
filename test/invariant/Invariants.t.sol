@@ -216,10 +216,6 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
-    function invariant_log() public view {
-        _logHandlerCallCounts();
-    }
-
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -250,10 +246,6 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
 
     function invariant_C() public view {
         _checkInvariant_C();
-    }
-
-    function invariant_log() public view {
-        _logHandlerCallCounts();
     }
 
     function afterInvariant() public {
@@ -288,10 +280,6 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
-    function invariant_log_rate() public view {
-        _logHandlerCallCounts();
-    }
-
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -324,10 +312,6 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
 
     function invariant_C() public view {
         _checkInvariant_C();
-    }
-
-    function invariant_log() public view {
-        _logHandlerCallCounts();
     }
 
     function afterInvariant() public {
