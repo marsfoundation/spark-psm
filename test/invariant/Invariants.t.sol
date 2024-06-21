@@ -5,15 +5,17 @@ import "forge-std/Test.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-import { LpHandler }       from "test/invariant/handlers/LpHandler.sol";
-import { SwapperHandler }  from "test/invariant/handlers/SwapperHandler.sol";
-import { TransferHandler } from "test/invariant/handlers/TransferHandler.sol";
+import { LpHandler }         from "test/invariant/handlers/LpHandler.sol";
+import { RateSetterHandler } from "test/invariant/handlers/RateSetterHandler.sol";
+import { SwapperHandler }    from "test/invariant/handlers/SwapperHandler.sol";
+import { TransferHandler }   from "test/invariant/handlers/TransferHandler.sol";
 
 abstract contract PSMInvariantTestBase is PSMTestBase {
 
-    LpHandler       public lpHandler;
-    SwapperHandler  public swapperHandler;
-    TransferHandler public transferHandler;
+    LpHandler         public lpHandler;
+    RateSetterHandler public rateSetterHandler;
+    SwapperHandler    public swapperHandler;
+    TransferHandler   public transferHandler;
 
     address BURN_ADDRESS = makeAddr("burn-address");
 
@@ -69,12 +71,14 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         console.log("withdrawCount   ", lpHandler.withdrawCount());
         console.log("swapCount       ", swapperHandler.swapCount());
         console.log("zeroBalanceCount", swapperHandler.zeroBalanceCount());
+        console.log("setRateCount    ", rateSetterHandler.setRateCount());
         console.log(
             "sum             ",
             lpHandler.depositCount() +
             lpHandler.withdrawCount() +
             swapperHandler.swapCount() +
-            swapperHandler.zeroBalanceCount()
+            swapperHandler.zeroBalanceCount() +
+            rateSetterHandler.setRateCount()
         );
     }
 
@@ -178,7 +182,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertApproxEqAbs(
             sumLpValue + _getLpTokenValue(BURN_ADDRESS),
             sumStartingValue + startingSeedValue,
-            4
+            5
         );
 
         // All funds can always be withdrawn completely.
@@ -196,8 +200,6 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
         swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
 
-        rateProvider.__setConversionRate(1.25e27);
-
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
     }
@@ -212,6 +214,10 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
 
     function invariant_C() public view {
         _checkInvariant_C();
+    }
+
+    function invariant_log() public view {
+        _logHandlerCallCounts();
     }
 
     function afterInvariant() public {
@@ -229,8 +235,6 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
         swapperHandler  = new SwapperHandler(psm, dai, usdc, sDai, 3);
         transferHandler = new TransferHandler(psm, dai, usdc, sDai);
 
-        rateProvider.__setConversionRate(1.25e27);
-
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
         targetContract(address(transferHandler));
@@ -244,8 +248,86 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
         _checkInvariant_B();
     }
 
-    function invariant_C_test() public view {
+    function invariant_C() public view {
         _checkInvariant_C();
+    }
+
+    function invariant_log() public view {
+        _logHandlerCallCounts();
+    }
+
+    function afterInvariant() public {
+        _withdrawAllPositions();
+    }
+
+}
+
+contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
+
+    function setUp() public override {
+        super.setUp();
+
+        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        rateSetterHandler = new RateSetterHandler(rateProvider, 1.25e27);
+        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
+
+        targetContract(address(lpHandler));
+        targetContract(address(rateSetterHandler));
+        targetContract(address(swapperHandler));
+    }
+
+    function invariant_A_test() public view {
+        _checkInvariant_A();
+    }
+
+    function invariant_B() public view {
+        _checkInvariant_B();
+    }
+
+    function invariant_C() public view {
+        _checkInvariant_C();
+    }
+
+    function invariant_log_rate() public view {
+        _logHandlerCallCounts();
+    }
+
+    function afterInvariant() public {
+        _withdrawAllPositions();
+    }
+
+}
+
+contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
+
+    function setUp() public override {
+        super.setUp();
+
+        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        rateSetterHandler = new RateSetterHandler(rateProvider, 1.25e27);
+        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
+
+        targetContract(address(lpHandler));
+        targetContract(address(rateSetterHandler));
+        targetContract(address(swapperHandler));
+        targetContract(address(transferHandler));
+    }
+
+    function invariant_A() public view {
+        _checkInvariant_A();
+    }
+
+    function invariant_B() public view {
+        _checkInvariant_B();
+    }
+
+    function invariant_C() public view {
+        _checkInvariant_C();
+    }
+
+    function invariant_log() public view {
+        _logHandlerCallCounts();
     }
 
     function afterInvariant() public {
