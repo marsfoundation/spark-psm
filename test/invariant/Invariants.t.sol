@@ -8,25 +8,16 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 import { LpHandler }      from "test/invariant/handlers/LpHandler.sol";
 import { SwapperHandler } from "test/invariant/handlers/SwapperHandler.sol";
 
-contract PSMInvariantTests is PSMTestBase {
+contract PSMInvariantTestBase is PSMTestBase {
 
     LpHandler      public lpHandler;
     SwapperHandler public swapperHandler;
 
-    function setUp() public override {
-        super.setUp();
+    /**********************************************************************************************/
+    /*** Invariant assertion functions                                                          ***/
+    /**********************************************************************************************/
 
-        lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
-
-        // TODO: Add rate updates
-        rateProvider.__setConversionRate(1.25e27);
-
-        targetContract(address(lpHandler));
-        targetContract(address(swapperHandler));
-    }
-
-    function invariant_A() public view {
+    function _checkInvariant_A() public view {
         assertEq(
             psm.shares(address(lpHandler.lps(0))) +
             psm.shares(address(lpHandler.lps(1))) +
@@ -35,7 +26,7 @@ contract PSMInvariantTests is PSMTestBase {
         );
     }
 
-    function invariant_B() public view {
+    function _checkInvariant_B() public view {
         assertApproxEqAbs(
             psm.getPsmTotalValue(),
             psm.convertToAssetValue(psm.totalShares()),
@@ -43,7 +34,7 @@ contract PSMInvariantTests is PSMTestBase {
         );
     }
 
-    function invariant_C() public view {
+    function _checkInvariant_C() public view {
         assertApproxEqAbs(
             psm.convertToAssetValue(psm.shares(address(lpHandler.lps(0)))) +
             psm.convertToAssetValue(psm.shares(address(lpHandler.lps(1)))) +
@@ -53,7 +44,11 @@ contract PSMInvariantTests is PSMTestBase {
         );
     }
 
-    function invariant_logs() public view {
+    /**********************************************************************************************/
+    /*** Helper functions                                                                       ***/
+    /**********************************************************************************************/
+
+    function _logHandlerCallCounts() public view {
         console.log("depositCount    ", lpHandler.depositCount());
         console.log("withdrawCount   ", lpHandler.withdrawCount());
         console.log("swapCount       ", swapperHandler.swapCount());
@@ -67,7 +62,19 @@ contract PSMInvariantTests is PSMTestBase {
         );
     }
 
-    function afterInvariant() public {
+    function _getLpTokenValue(address lp) internal view returns (uint256) {
+        uint256 daiValue  = dai.balanceOf(lp);
+        uint256 usdcValue = usdc.balanceOf(lp) * 1e12;
+        uint256 sDaiValue = sDai.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
+
+        return daiValue + usdcValue + sDaiValue;
+    }
+
+    /**********************************************************************************************/
+    /*** After invariant hook functions                                                         ***/
+    /**********************************************************************************************/
+
+    function _withdrawAllPositions() public {
         address lp0 = lpHandler.lps(0);
         address lp1 = lpHandler.lps(1);
         address lp2 = lpHandler.lps(2);
@@ -135,12 +142,37 @@ contract PSMInvariantTests is PSMTestBase {
         assertApproxEqAbs(sumLpValue, sumStartingValue, 6);
     }
 
-    function _getLpTokenValue(address lp) internal view returns (uint256) {
-        uint256 daiValue  = dai.balanceOf(lp);
-        uint256 usdcValue = usdc.balanceOf(lp) * 1e12;
-        uint256 sDaiValue = sDai.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
+}
 
-        return daiValue + usdcValue + sDaiValue;
+contract PSMInvariants1 is PSMInvariantTestBase {
+
+    function setUp() public override {
+        super.setUp();
+
+        lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
+        swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
+
+        // TODO: Add rate updates
+        rateProvider.__setConversionRate(1.25e27);
+
+        targetContract(address(lpHandler));
+        targetContract(address(swapperHandler));
+    }
+
+    function invariant_A() public view {
+        _checkInvariant_A();
+    }
+
+    function invariant_B() public view {
+        _checkInvariant_B();
+    }
+
+    function invariant_C() public view {
+        _checkInvariant_C();
+    }
+
+    function afterInvariant() public {
+        _withdrawAllPositions();
     }
 
 }
