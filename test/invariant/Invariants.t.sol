@@ -162,7 +162,8 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             (lp0WithdrawsValue + lp1WithdrawsValue + lp2WithdrawsValue);
 
         // Assert that the sum of all LPs' deposits and withdrawals equals
-        // the sum of all LPs' resulting token holdings. Rounding errors are accumulated by LPs.
+        // the sum of all LPs' resulting token holdings. Rounding errors are accumulated to the
+        // burn address.
         assertApproxEqAbs(sumLpValue, sumStartingValue, seedValue - startingSeedValue + 1);
 
         // NOTE: Below logic is not realistic, shown to demonstrate precision.
