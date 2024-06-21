@@ -18,9 +18,15 @@ shrink_run_limit=100
 runs = 200
 depth = 1000
 
+[profile.pr.fuzz]
+runs = 100_000
+
 [profile.master.invariant]
 runs = 200
 depth = 10_000
+
+[profile.master.fuzz]
+runs = 1_000_000
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
