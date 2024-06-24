@@ -39,7 +39,8 @@ contract TimeBasedRateHandler is StdCheats, StdUtils {
         }));
     }
 
-    // function warp(uint256 skipTime) external {
-    //     skip(_bound(skipTime, 0, 45 days));
-    // }
+    function warp(uint256 skipTime) external {
+        skip(_bound(skipTime, 0, 45 days));
+    }
+
 }

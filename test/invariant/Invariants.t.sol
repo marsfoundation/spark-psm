@@ -121,8 +121,6 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         uint256 startingSeedValue = psm.convertToAssetValue(1e18);
 
-        console.log("startingSeedValue", startingSeedValue);
-
         // Liquidity is unknown so withdraw all assets for all users to empty PSM.
         _withdraw(address(dai),  lp0, type(uint256).max);
         _withdraw(address(usdc), lp0, type(uint256).max);
@@ -357,7 +355,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
 
         targetContract(address(lpHandler));
-        // targetContract(address(swapperHandler));
+        targetContract(address(swapperHandler));
         targetContract(address(timeBasedRateHandler));
     }
 
