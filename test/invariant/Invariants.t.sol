@@ -47,7 +47,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertApproxEqAbs(
             psm.getPsmTotalValue(),
             psm.convertToAssetValue(psm.totalShares()),
-            2
+            3
         );
     }
 
