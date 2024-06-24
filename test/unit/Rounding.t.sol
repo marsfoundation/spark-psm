@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSMTestBase } from "test/PSMTestBase.sol";
+import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
@@ -20,7 +20,7 @@ contract RoundingTests is PSMTestBase {
         _deposit(address(usdc), address(this), USDC_TOKEN_MAX);
 
         // Set an exchange rate that will cause rounding
-        rateProvider.__setConversionRate(1.25e27 * uint256(100) / 99);
+        MockRateProvider(address(rateProvider)).__setConversionRate(1.25e27 * uint256(100) / 99);
     }
 
     function test_roundAgainstUser_dai() public {
@@ -131,7 +131,7 @@ contract RoundingTests is PSMTestBase {
         amount1 = _bound(amount1, 1, tokenMax);
         amount2 = _bound(amount2, 1, tokenMax);
 
-        rateProvider.__setConversionRate(rate1);
+        MockRateProvider(address(rateProvider)).__setConversionRate(rate1);
 
         _deposit(address(asset), address(user1), amount1);
 
@@ -144,7 +144,7 @@ contract RoundingTests is PSMTestBase {
         assertApproxEqAbs(asset.balanceOf(address(user1)), amount1, roundingTolerance);
         assertLe(asset.balanceOf(address(user1)), amount1);
 
-        rateProvider.__setConversionRate(rate2);
+        MockRateProvider(address(rateProvider)).__setConversionRate(rate2);
 
         _deposit(address(asset), address(user2), amount2);
 

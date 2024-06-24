@@ -5,6 +5,8 @@ import "forge-std/Test.sol";
 
 import { PSM3 } from "src/PSM3.sol";
 
+import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
+
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
 import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
@@ -18,7 +20,7 @@ contract PSMTestBase is Test {
     MockERC20 public usdc;
     MockERC20 public sDai;
 
-    MockRateProvider public rateProvider;
+    IRateProviderLike public rateProvider;
 
     modifier assertAtomicPsmValueDoesNotChange {
         uint256 beforeValue = _getPsmValue();
@@ -36,10 +38,12 @@ contract PSMTestBase is Test {
         usdc = new MockERC20("usdc", "usdc", 6);
         sDai = new MockERC20("sDai", "sDai", 18);
 
-        rateProvider = new MockRateProvider();
+        MockRateProvider mockRateProvider = new MockRateProvider();
 
         // NOTE: Using 1.25 for easy two way conversions
-        rateProvider.__setConversionRate(1.25e27);
+        mockRateProvider.__setConversionRate(1.25e27);
+
+        rateProvider = IRateProviderLike(address(mockRateProvider));
 
         psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
 

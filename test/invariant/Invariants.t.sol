@@ -3,19 +3,27 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
+import { DSRAuthOracle } from "lib/xchain-dsr-oracle/src/DSRAuthOracle.sol";
+
+import { PSM3 } from "src/PSM3.sol";
+
+import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
+
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-import { LpHandler }         from "test/invariant/handlers/LpHandler.sol";
-import { RateSetterHandler } from "test/invariant/handlers/RateSetterHandler.sol";
-import { SwapperHandler }    from "test/invariant/handlers/SwapperHandler.sol";
-import { TransferHandler }   from "test/invariant/handlers/TransferHandler.sol";
+import { LpHandler }            from "test/invariant/handlers/LpHandler.sol";
+import { RateSetterHandler }    from "test/invariant/handlers/RateSetterHandler.sol";
+import { SwapperHandler }       from "test/invariant/handlers/SwapperHandler.sol";
+import { TimeBasedRateHandler } from "test/invariant/handlers/TimeBasedRateHandler.sol";
+import { TransferHandler }      from "test/invariant/handlers/TransferHandler.sol";
 
 abstract contract PSMInvariantTestBase is PSMTestBase {
 
-    LpHandler         public lpHandler;
-    RateSetterHandler public rateSetterHandler;
-    SwapperHandler    public swapperHandler;
-    TransferHandler   public transferHandler;
+    LpHandler            public lpHandler;
+    RateSetterHandler    public rateSetterHandler;
+    SwapperHandler       public swapperHandler;
+    TransferHandler      public transferHandler;
+    TimeBasedRateHandler public timeBasedRateHandler;
 
     address BURN_ADDRESS = makeAddr("burn-address");
 
@@ -112,6 +120,8 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 psmTotalValue = psm.getPsmTotalValue();
 
         uint256 startingSeedValue = psm.convertToAssetValue(1e18);
+
+        console.log("startingSeedValue", startingSeedValue);
 
         // Liquidity is unknown so withdraw all assets for all users to empty PSM.
         _withdraw(address(dai),  lp0, type(uint256).max);
@@ -260,7 +270,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(rateProvider, 1.25e27);
+        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
 
         targetContract(address(lpHandler));
@@ -268,7 +278,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(swapperHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
@@ -292,7 +302,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(rateProvider, 1.25e27);
+        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
         transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
 
@@ -319,3 +329,55 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
     }
 
 }
+
+contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
+
+    function setUp() public override {
+        super.setUp();
+
+        DSRAuthOracle dsrOracle = new DSRAuthOracle();
+
+        // Redeploy PSM with new rate provider
+        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+
+        // Seed the new PSM with 1e18 shares (1e18 of value)
+        _deposit(address(dai), BURN_ADDRESS, 1e18);
+
+        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
+        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        timeBasedRateHandler = new TimeBasedRateHandler(dsrOracle);
+
+        // Handler acts in the same way as a receiver on L2, so add as a data provider to the
+        // oracle.
+        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
+
+        rateProvider = IRateProviderLike(address(dsrOracle));
+
+        // Manually set initial values for the oracle through the handler to start
+        timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
+
+        targetContract(address(lpHandler));
+        // targetContract(address(swapperHandler));
+        targetContract(address(timeBasedRateHandler));
+    }
+
+    function invariant_A_test() public view {
+        _checkInvariant_A();
+    }
+
+    function invariant_B() public view {
+        _checkInvariant_B();
+    }
+
+    function invariant_C() public view {
+        _checkInvariant_C();
+    }
+
+    function afterInvariant() public {
+        _withdrawAllPositions();
+    }
+
+}
+
+
+// TODO: Cast `rateProvider` to interface
