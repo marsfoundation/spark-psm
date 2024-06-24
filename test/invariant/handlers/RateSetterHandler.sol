@@ -13,8 +13,8 @@ contract RateSetterHandler is StdUtils {
 
     uint256 public setRateCount;
 
-    constructor(MockRateProvider rateProvider_, uint256 initialRate) {
-        rateProvider = rateProvider_;
+    constructor(address rateProvider_, uint256 initialRate) {
+        rateProvider = MockRateProvider(rateProvider_);
         rate         = initialRate;
     }
 

@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import { PSM3 } from "src/PSM3.sol";
 
-import { PSMTestBase } from "test/PSMTestBase.sol";
+import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
 // TODO: Add failure modes tests
 
@@ -59,7 +59,7 @@ contract PSMConvertToAssetsTests is PSMTestBase {
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
         amount         = _bound(amount,         0,         SDAI_TOKEN_MAX);
 
-        rateProvider.__setConversionRate(conversionRate);
+        MockRateProvider(address(rateProvider)).__setConversionRate(conversionRate);
 
         assertEq(psm.convertToAssets(address(sDai), amount), amount * 1e27 / conversionRate);
     }
@@ -79,7 +79,7 @@ contract PSMConvertToAssetValueTests is PSMTestBase {
 
         assertEq(psm.convertToAssetValue(1e18), 1e18);
 
-        rateProvider.__setConversionRate(2e27);
+        MockRateProvider(address(rateProvider)).__setConversionRate(2e27);
 
         // $300 dollars of value deposited, 300 shares minted.
         // sDAI portion becomes worth $160, full pool worth $360, each share worth $1.20
@@ -125,7 +125,7 @@ contract PSMConvertToSharesTests is PSMTestBase {
 
         // 80 sDAI now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10.
-        rateProvider.__setConversionRate(1.5e27);
+        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
 
         assertEq(psm.convertToShares(10), 9);
         assertEq(psm.convertToShares(11), 10);
@@ -195,7 +195,7 @@ contract PSMConvertToSharesWithDaiTests is PSMTestBase {
 
         // 80 sDAI now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10.
-        rateProvider.__setConversionRate(1.5e27);
+        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
 
         assertEq(psm.convertToShares(address(dai), 10), 9);
         assertEq(psm.convertToShares(address(dai), 11), 10);
@@ -256,7 +256,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMTestBase {
 
         // 80 sDAI now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10.
-        rateProvider.__setConversionRate(1.5e27);
+        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
 
         assertEq(psm.convertToShares(address(usdc), 10), 9.090909090909e12);
         assertEq(psm.convertToShares(address(usdc), 11), 10e12);
@@ -291,7 +291,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMTestBase {
         amount         = _bound(amount,         1000,    SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.01e27, 1000e27);
 
-        rateProvider.__setConversionRate(conversionRate);
+        MockRateProvider(address(rateProvider)).__setConversionRate(conversionRate);
 
         assertEq(psm.convertToShares(address(sDai), amount), amount * conversionRate / 1e27);
     }
@@ -322,7 +322,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMTestBase {
         // 80 sDAI now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10. Since 1 sDAI is now worth 1.5 USDC, 1 sDAI is worth
         // 1.50/1.10 = 1.3636... shares
-        rateProvider.__setConversionRate(1.5e27);
+        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
 
         // TODO: Reinvestigate this, interesting difference in rounding
         assertEq(psm.convertToShares(address(sDai), 1), 0);
