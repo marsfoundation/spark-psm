@@ -74,11 +74,15 @@ contract SwapperHandler is HandlerBase {
             psm.previewSwap(address(assetIn), address(assetOut), amountIn)
         );
 
+        // uint256 startingPsmValue = psm.getPsmTotalValue();
+
         vm.startPrank(swapper);
         assetIn.mint(swapper, amountIn);
         assetIn.approve(address(psm), amountIn);
         psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
         vm.stopPrank();
+
+        // assertGe(psm.getPsmTotalValue(), startingPsmValue, "SwapperHandler: psm value decreased");
 
         swapCount++;
     }

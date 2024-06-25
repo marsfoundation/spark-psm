@@ -70,6 +70,76 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         );
     }
 
+    // This might be failing because of swap rounding errors.
+    // function _checkInvariant_D() public view {
+    //     address lp0 = lpHandler.lps(0);
+    //     address lp1 = lpHandler.lps(1);
+    //     address lp2 = lpHandler.lps(2);
+
+    //     uint256 lp0Deposits = _getLpDepositsValue(lp0);
+    //     uint256 lp1Deposits = _getLpDepositsValue(lp1);
+    //     uint256 lp2Deposits = _getLpDepositsValue(lp2);
+
+    //     console.log("sum deposits", lp0Deposits + lp1Deposits + lp2Deposits + 1e18);
+    //     console.log("psm value   ", psm.getPsmTotalValue());
+    //     console.log("sum lps     ",
+    //         psm.convertToAssetValue(psm.shares(lp0)) +
+    //         psm.convertToAssetValue(psm.shares(lp1)) +
+    //         psm.convertToAssetValue(psm.shares(lp2)) +
+    //         psm.convertToAssetValue(1e18)
+    //     );
+
+
+    //     console.log("DAI balance  ", dai.balanceOf(address(psm)));
+    //     console.log("DAI deposits ",
+    //         lpHandler.lpDeposits(lp0, address(dai)) +
+    //         lpHandler.lpDeposits(lp1, address(dai)) +
+    //         lpHandler.lpDeposits(lp2, address(dai)) -
+    //         lpHandler.lpWithdrawals(lp0, address(dai)) -
+    //         lpHandler.lpWithdrawals(lp1, address(dai)) -
+    //         lpHandler.lpWithdrawals(lp2, address(dai))
+    //     );
+
+    //     console.log("");
+    //     console.log("USDC balance  ", usdc.balanceOf(address(psm)));
+    //     console.log("USDC deposits ",
+    //         lpHandler.lpDeposits(lp0, address(usdc)) +
+    //         lpHandler.lpDeposits(lp1, address(usdc)) +
+    //         lpHandler.lpDeposits(lp2, address(usdc)) -
+    //         lpHandler.lpWithdrawals(lp0, address(usdc)) -
+    //         lpHandler.lpWithdrawals(lp1, address(usdc)) -
+    //         lpHandler.lpWithdrawals(lp2, address(usdc))
+    //     );
+
+    //     console.log("SDAI balance", sDai.balanceOf(address(psm)));
+    //     console.log("SDAI deposits ",
+    //         lpHandler.lpDeposits(lp0, address(sDai)) +
+    //         lpHandler.lpDeposits(lp1, address(sDai)) +
+    //         lpHandler.lpDeposits(lp2, address(sDai)) -
+    //         lpHandler.lpWithdrawals(lp0, address(sDai)) -
+    //         lpHandler.lpWithdrawals(lp1, address(sDai)) -
+    //         lpHandler.lpWithdrawals(lp2, address(sDai))
+    //     );
+
+    //     // LPs position value can increase from transfers into the PSM and from swapping rounding
+    //     // errors increasing the value of the PSM slightly.
+    //     // Allow a 4 tolerance for negative rounding on conversion calculations.
+    //     assertGe(
+    //         psm.convertToAssetValue(psm.shares(lp0)) +
+    //         psm.convertToAssetValue(psm.shares(lp1)) +
+    //         psm.convertToAssetValue(psm.shares(lp2)) +
+    //         psm.convertToAssetValue(1e18) + 4,  // Seed amount
+    //         lp0Deposits + lp1Deposits + lp2Deposits + 1e18
+    //     );
+
+    //     // Include seed deposit, allow for 2 wei negative tolerance.
+    //     assertGeDecimal(
+    //         psm.getPsmTotalValue() + 2,
+    //         lp0Deposits + lp1Deposits + lp2Deposits + 1e18,
+    //         1e18
+    //     );
+    // }
+
     /**********************************************************************************************/
     /*** Helper functions                                                                       ***/
     /**********************************************************************************************/
@@ -96,6 +166,20 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 sDaiValue = sDai.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
 
         return daiValue + usdcValue + sDaiValue;
+    }
+
+    function _getLpDepositsValue(address lp) internal view returns (uint256) {
+        uint256 depositValue =
+            lpHandler.lpDeposits(lp, address(dai)) +
+            lpHandler.lpDeposits(lp, address(usdc)) * 1e12 +
+            lpHandler.lpDeposits(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+
+        uint256 withdrawValue =
+            lpHandler.lpWithdrawals(lp, address(dai)) +
+            lpHandler.lpWithdrawals(lp, address(usdc)) * 1e12 +
+            lpHandler.lpWithdrawals(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+
+        return withdrawValue > depositValue ? 0 : depositValue - withdrawValue;
     }
 
     /**********************************************************************************************/
@@ -224,6 +308,10 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
+    // function invariant_D_test() public view {
+    //     _checkInvariant_D();
+    // }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -287,6 +375,10 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
     function invariant_C() public view {
         _checkInvariant_C();
     }
+
+    // function invariant_D() public view {
+    //     _checkInvariant_D();
+    // }
 
     function afterInvariant() public {
         _withdrawAllPositions();
@@ -371,11 +463,13 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
+    // function invariant_D() public view {
+    //     _checkInvariant_D();
+    // }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
 
 }
 
-
-// TODO: Cast `rateProvider` to interface

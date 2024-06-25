@@ -13,6 +13,7 @@ runs = 1000
 runs = 20
 depth = 1000
 shrink_run_limit = 1000
+fail_on_revert = true
 
 [profile.pr.invariant]
 runs = 200
