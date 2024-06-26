@@ -356,7 +356,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
+        rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
 
         targetContract(address(lpHandler));
@@ -392,7 +392,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
+        rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
         transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
 
@@ -402,7 +402,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         targetContract(address(transferHandler));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
@@ -435,7 +435,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
         lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
         swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        timeBasedRateHandler = new TimeBasedRateHandler(dsrOracle);
+        timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.
@@ -444,14 +444,14 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         rateProvider = IRateProviderLike(address(dsrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
+        timeBasedRateHandler.setPotData(1e27, block.timestamp);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
         targetContract(address(timeBasedRateHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A_test2() public view {
         _checkInvariant_A();
     }
 

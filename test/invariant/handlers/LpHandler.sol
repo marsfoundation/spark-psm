@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
-import { HandlerBase } from "test/invariant/handlers/HandlerBase.sol";
-
-import { PSM3 } from "src/PSM3.sol";
+import { HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
 
 contract LpHandler is HandlerBase {
+
+    MockERC20[3] public assets;
 
     address[] public lps;
 
@@ -23,10 +23,18 @@ contract LpHandler is HandlerBase {
         MockERC20 asset1,
         MockERC20 asset2,
         uint256   lpCount
-    ) HandlerBase(psm_, asset0, asset1, asset2) {
+    ) HandlerBase(psm_) {
+        assets[0] = asset0;
+        assets[1] = asset1;
+        assets[2] = asset2;
+
         for (uint256 i = 0; i < lpCount; i++) {
             lps.push(makeAddr(string(abi.encodePacked("lp-", vm.toString(i)))));
         }
+    }
+
+    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
+        return assets[indexSeed % assets.length];
     }
 
     function _getLP(uint256 indexSeed) internal view returns (address) {
@@ -56,7 +64,9 @@ contract LpHandler is HandlerBase {
 
         // 5. Perform action-specific assertions
         assertApproxEqAbs(
-            psm.convertToShares(1e18), startingConversion, 2,
+            psm.convertToShares(1e18),
+            startingConversion,
+            2,
             "LpHandler/deposit/conversion-rate-change"
         );
 
@@ -93,7 +103,9 @@ contract LpHandler is HandlerBase {
 
         // Larger tolerance for rounding errors because of burning more shares on USDC withdraw
         assertApproxEqAbs(
-            psm.convertToShares(1e18), startingConversion, 1e12,
+            psm.convertToShares(1e18),
+            startingConversion,
+            1e12,
             "LpHandler/withdraw/conversion-rate-change"
         );
 

@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
-import { HandlerBase } from "test/invariant/handlers/HandlerBase.sol";
-
-import { PSM3 } from "src/PSM3.sol";
+import { HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
 
 contract SwapperHandler is HandlerBase {
+
+    MockERC20[3] public assets;
 
     address[] public swappers;
 
@@ -20,10 +20,18 @@ contract SwapperHandler is HandlerBase {
         MockERC20 asset1,
         MockERC20 asset2,
         uint256   lpCount
-    ) HandlerBase(psm_, asset0, asset1, asset2) {
+    ) HandlerBase(psm_) {
+        assets[0] = asset0;
+        assets[1] = asset1;
+        assets[2] = asset2;
+
         for (uint256 i = 0; i < lpCount; i++) {
             swappers.push(makeAddr(string(abi.encodePacked("swapper-", vm.toString(i)))));
         }
+    }
+
+    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
+        return assets[indexSeed % assets.length];
     }
 
     function _getSwapper(uint256 indexSeed) internal view returns (address) {
@@ -39,6 +47,8 @@ contract SwapperHandler is HandlerBase {
     )
         public
     {
+        // 1. Setup and bounds
+
         // Prevent overflow in if statement below
         assetOutSeed = _bound(assetOutSeed, 0, type(uint256).max - 2);
 
@@ -74,7 +84,11 @@ contract SwapperHandler is HandlerBase {
             psm.previewSwap(address(assetIn), address(assetOut), amountIn)
         );
 
-        // uint256 startingPsmValue = psm.getPsmTotalValue();
+        // 2. Cache starting state
+        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingValue      = psm.getPsmTotalValue();
+
+        // 3. Perform action against protocol
 
         vm.startPrank(swapper);
         assetIn.mint(swapper, amountIn);
@@ -82,8 +96,24 @@ contract SwapperHandler is HandlerBase {
         psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
         vm.stopPrank();
 
-        // assertGe(psm.getPsmTotalValue(), startingPsmValue, "SwapperHandler: psm value decreased");
+        // 4. Perform action-specific assertions
 
+        // Rounding because of USDC precision
+        assertApproxEqAbs(
+            psm.convertToShares(1e18),
+            startingConversion,
+            2e12,
+            "SwapperHandler/swap/conversion-rate-change"
+        );
+
+        // Rounding because of USDC precision
+        assertGe(
+            psm.getPsmTotalValue() + 2e12,
+            startingValue,
+            "SwapperHandler/swap/psm-total-value-change"
+        );
+
+        // 5. Update metrics tracking state
         swapCount++;
     }
 
