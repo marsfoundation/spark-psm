@@ -5,7 +5,7 @@ import "forge-std/Test.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
-import { PSM3Harness } from "test/harnesses/PSM3Harness.sol";
+import { PSM3Harness } from "test/unit/harnesses/PSM3Harness.sol";
 
 contract PSMHarnessTests is PSMTestBase {
 
