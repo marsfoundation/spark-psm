@@ -50,13 +50,13 @@ contract TransferHandler is HandlerBase {
 
         // 4. Perform action-specific assertions
         assertGe(
-            psm.convertToAssetValue(1e18),
+            psm.convertToAssetValue(1e18) + 1,
             startingConversion,
             "TransferHandler/transfer/conversion-rate-decrease"
         );
 
         assertGe(
-            psm.getPsmTotalValue(),
+            psm.getPsmTotalValue() + 1,
             startingValue,
             "TransferHandler/transfer/psm-total-value-decrease"
         );

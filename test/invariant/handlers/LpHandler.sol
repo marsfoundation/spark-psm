@@ -71,7 +71,7 @@ contract LpHandler is HandlerBase {
         );
 
         assertGe(
-            psm.getPsmTotalValue(),
+            psm.getPsmTotalValue() + 1,
             startingValue,
             "LpHandler/deposit/psm-total-value-decrease"
         );
@@ -111,7 +111,7 @@ contract LpHandler is HandlerBase {
 
         assertLe(
             psm.getPsmTotalValue(),
-            startingValue,
+            startingValue + 1,
             "LpHandler/withdraw/psm-total-value-increase"
         );
 

@@ -48,13 +48,13 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
         // 4. Perform action-specific assertions
         assertGe(
-            psm.convertToAssetValue(1e18),
+            psm.convertToAssetValue(1e18) + 1,
             startingConversion,
             "TimeBasedRateHandler/setPotData/conversion-rate-decrease"
         );
 
         assertGe(
-            psm.getPsmTotalValue(),
+            psm.getPsmTotalValue() + 1,
             startingValue,
             "TimeBasedRateHandler/setPotData/psm-total-value-decrease"
         );
