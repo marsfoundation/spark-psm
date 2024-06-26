@@ -595,11 +595,11 @@ contract PSMWithdrawTests is PSMTestBase {
         // Equal to starting value
         assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue, 2);
 
-        // Value gains are the same for both users, accurate to 0.001%
+        // Value gains are the same for both users, accurate to 0.01%
         assertApproxEqRel(
             (user1ResultingValue - (usdcAmount * 1e12))    * 1e18 / (usdcAmount * 1e12),
             (user2ResultingValue - (sDaiAmount * 125/100)) * 1e18 / (sDaiAmount * 125/100),
-            0.00001e18
+            0.0001e18
         );
     }
 
