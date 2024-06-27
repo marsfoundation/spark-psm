@@ -222,6 +222,7 @@ contract PSM3 is IPSM3 {
     /*** Asset value functions                                                                  ***/
     /**********************************************************************************************/
 
+    // Rename to getTotalValue or totalAssets
     function getPsmTotalValue() public view override returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))

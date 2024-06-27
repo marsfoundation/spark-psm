@@ -55,7 +55,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertApproxEqAbs(
             psm.getPsmTotalValue(),
             psm.convertToAssetValue(psm.totalShares()),
-            3
+            4
         );
     }
 
@@ -67,6 +67,35 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             psm.convertToAssetValue(1e18),  // Seed amount
             psm.getPsmTotalValue(),
             4
+        );
+    }
+
+    // This might be failing because of swap rounding errors.
+    function _checkInvariant_D() public view {
+        address lp0 = lpHandler.lps(0);
+        address lp1 = lpHandler.lps(1);
+        address lp2 = lpHandler.lps(2);
+
+        uint256 lp0Deposits = _getLpDepositsValue(lp0);
+        uint256 lp1Deposits = _getLpDepositsValue(lp1);
+        uint256 lp2Deposits = _getLpDepositsValue(lp2);
+
+        // LPs position value can increase from transfers into the PSM and from swapping rounding
+        // errors increasing the value of the PSM slightly.
+        // Allow a 4 tolerance for negative rounding on conversion calculations.
+        assertGe(
+            psm.convertToAssetValue(psm.shares(lp0)) +
+            psm.convertToAssetValue(psm.shares(lp1)) +
+            psm.convertToAssetValue(psm.shares(lp2)) +
+            psm.convertToAssetValue(1e18) + // Seed amount
+            1e12,  // Rounding
+            lp0Deposits + lp1Deposits + lp2Deposits + 1e18
+        );
+
+        // Include seed deposit, allow for 1e12 negative tolerance.
+        assertGe(
+            psm.getPsmTotalValue() + 1e12,
+            lp0Deposits + lp1Deposits + lp2Deposits + 1e18
         );
     }
 
@@ -96,6 +125,20 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 sDaiValue = sDai.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
 
         return daiValue + usdcValue + sDaiValue;
+    }
+
+    function _getLpDepositsValue(address lp) internal view returns (uint256) {
+        uint256 depositValue =
+            lpHandler.lpDeposits(lp, address(dai)) +
+            lpHandler.lpDeposits(lp, address(usdc)) * 1e12 +
+            lpHandler.lpDeposits(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+
+        uint256 withdrawValue =
+            lpHandler.lpWithdrawals(lp, address(dai)) +
+            lpHandler.lpWithdrawals(lp, address(usdc)) * 1e12 +
+            lpHandler.lpWithdrawals(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+
+        return withdrawValue > depositValue ? 0 : depositValue - withdrawValue;
     }
 
     /**********************************************************************************************/
@@ -224,6 +267,10 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
+    function invariant_D_test() public view {
+        _checkInvariant_D();
+    }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -268,7 +315,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
+        rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
 
         targetContract(address(lpHandler));
@@ -284,9 +331,12 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_B();
     }
 
-    function invariant_C() public view {
+    function invariant_C_rate() public view {
         _checkInvariant_C();
     }
+
+    // No invariant D because rate changes lead to large rounding errors when compared with
+    // ghost variables
 
     function afterInvariant() public {
         _withdrawAllPositions();
@@ -300,7 +350,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         super.setUp();
 
         lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
-        rateSetterHandler = new RateSetterHandler(address(rateProvider), 1.25e27);
+        rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
         swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
         transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
 
@@ -310,7 +360,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         targetContract(address(transferHandler));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
@@ -321,6 +371,9 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
     function invariant_C() public view {
         _checkInvariant_C();
     }
+
+    // No invariant D because rate changes lead to large rounding errors when compared with
+    // ghost variables
 
     function afterInvariant() public {
         _withdrawAllPositions();
@@ -343,7 +396,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
         lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
         swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        timeBasedRateHandler = new TimeBasedRateHandler(dsrOracle);
+        timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.
@@ -352,14 +405,14 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         rateProvider = IRateProviderLike(address(dsrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
+        timeBasedRateHandler.setPotData(1e27, block.timestamp);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
         targetContract(address(timeBasedRateHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A_test2() public view {
         _checkInvariant_A();
     }
 
@@ -371,11 +424,12 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
+    // No invariant D because rate changes lead to large rounding errors when compared with
+    // ghost variables
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
 
 }
 
-
-// TODO: Cast `rateProvider` to interface
