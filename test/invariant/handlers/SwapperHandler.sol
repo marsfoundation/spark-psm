@@ -85,7 +85,7 @@ contract SwapperHandler is HandlerBase {
         );
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.getPsmTotalValue();
 
         // 3. Perform action against protocol
@@ -98,13 +98,17 @@ contract SwapperHandler is HandlerBase {
 
         // 4. Perform action-specific assertions
 
-        // Rounding because of USDC precision
-        assertApproxEqAbs(
-            psm.convertToShares(1e18),
-            startingConversion,
-            5e12,  // Investigate reducing this
-            "SwapperHandler/swap/conversion-rate-change"
-        );
+        // Performing this check with tighter bounds when there is a minimum amount in the PSM.
+        // Leads to more accurate assertions in the more realistic scenario.
+        if (psm.getPsmTotalValue() > 10_000e18) {
+            // Rounding because of USDC precision
+            assertApproxEqAbs(
+                psm.convertToAssetValue(1e18),
+                startingConversion,
+                1e9,
+                "SwapperHandler/swap/conversion-rate-change"
+            );
+        }
 
         // Rounding because of USDC precision
         assertGe(

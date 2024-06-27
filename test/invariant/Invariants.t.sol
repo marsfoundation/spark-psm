@@ -331,7 +331,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_B();
     }
 
-    function invariant_C() public view {
+    function invariant_C_rate() public view {
         _checkInvariant_C();
     }
 
