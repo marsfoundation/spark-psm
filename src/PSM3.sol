@@ -56,7 +56,7 @@ contract PSM3 is IPSM3 {
     /*** Swap functions                                                                         ***/
     /**********************************************************************************************/
 
-    function swap(
+    function swapExactIn(
         address assetIn,
         address assetOut,
         uint256 amountIn,
