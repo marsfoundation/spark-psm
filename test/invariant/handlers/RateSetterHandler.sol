@@ -26,4 +26,5 @@ contract RateSetterHandler is StdUtils {
 
         setRateCount++;
     }
+
 }
