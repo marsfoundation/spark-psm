@@ -205,8 +205,12 @@ interface IPSM3 {
      * @param  amountIn  Amount of the asset to swap in.
      * @return amountOut Amount of the asset that will be received in the swap.
      */
-    function previewSwap(address assetIn, address assetOut, uint256 amountIn)
+    function previewSwapExactIn(address assetIn, address assetOut, uint256 amountIn)
         external view returns (uint256 amountOut);
+
+    // TODO
+    function previewSwapExactOut(address assetIn, address assetOut, uint256 amountOut)
+        external view returns (uint256 amountIn);
 
     /**********************************************************************************************/
     /*** Conversion functions                                                                   ***/

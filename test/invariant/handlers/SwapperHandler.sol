@@ -53,7 +53,7 @@ contract SwapperHandler is HandlerBase {
 
         // By calculating the amount of assetIn we can get from the max asset out, we can
         // determine the max amount of assetIn we can swap since its the same both ways.
-        uint256 maxAmountIn = psm.previewSwap(
+        uint256 maxAmountIn = psm.previewSwapExactIn(
             address(assetOut),
             address(assetIn),
             assetOut.balanceOf(address(psm))
@@ -71,7 +71,7 @@ contract SwapperHandler is HandlerBase {
         minAmountOut = _bound(
             minAmountOut,
             0,
-            psm.previewSwap(address(assetIn), address(assetOut), amountIn)
+            psm.previewSwapExactIn(address(assetIn), address(assetOut), amountIn)
         );
 
         vm.startPrank(swapper);

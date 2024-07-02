@@ -62,7 +62,7 @@ contract PSMSwapFailureTests is PSMTestBase {
 
         usdc.approve(address(psm), 100e6);
 
-        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 100e6);
+        uint256 expectedAmountOut = psm.previewSwapExactIn(address(usdc), address(sDai), 100e6);
 
         assertEq(expectedAmountOut, 80e18);
 
@@ -112,7 +112,7 @@ contract PSMSwapFailureTests is PSMTestBase {
 
         usdc.approve(address(psm), 125e6 + 2);
 
-        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 125e6 + 2);
+        uint256 expectedAmountOut = psm.previewSwapExactIn(address(usdc), address(sDai), 125e6 + 2);
 
         assertEq(expectedAmountOut, 100.000001e18);  // More than balance of sDAI
 
