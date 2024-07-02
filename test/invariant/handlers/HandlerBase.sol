@@ -15,8 +15,6 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
 
     MockERC20[3] public assets;
 
-    uint256 public constant TRILLION = 1e12;
-
     constructor(
         PSM3      psm_,
         MockERC20 asset0,

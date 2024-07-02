@@ -34,7 +34,7 @@ contract LpHandler is HandlerBase {
         MockERC20 asset = _getAsset(assetSeed);
         address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         vm.startPrank(lp);
         asset.mint(lp, amount);
@@ -49,7 +49,7 @@ contract LpHandler is HandlerBase {
         MockERC20 asset = _getAsset(assetSeed);
         address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         vm.prank(lp);
         psm.withdraw(address(asset), lp, amount);

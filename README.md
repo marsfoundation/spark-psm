@@ -1,6 +1,6 @@
 # ⚡ Spark PSM ⚡
 
-![Foundry CI](https://github.com/marsfoundation/spark-psm/actions/workflows/ci.yml/badge.svg)
+![Foundry CI](https://github.com/marsfoundation/spark-psm/actions/workflows/master.yml/badge.svg)
 [![Foundry][foundry-badge]][foundry]
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://github.com/marsfoundation/spark-psm/blob/master/LICENSE)
 
