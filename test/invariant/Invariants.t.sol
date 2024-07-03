@@ -359,7 +359,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(timeBasedRateHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
@@ -410,7 +410,7 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         targetContract(address(transferHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
