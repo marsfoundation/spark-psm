@@ -268,7 +268,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(swapperHandler));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
