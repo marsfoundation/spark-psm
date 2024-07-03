@@ -279,7 +279,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 225e18);
 
-        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
+        mockRateProvider.__setConversionRate(1.5e27);
 
         // Total shares / (100 USDC + 150 sDAI value)
         uint256 expectedConversionRate = 225 * 1e18 / 250;
@@ -375,7 +375,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.shares(user1),     0);
         assertEq(psm.shares(receiver1), receiver1Shares);
 
-        MockRateProvider(address(rateProvider)).__setConversionRate(newRate);
+        mockRateProvider.__setConversionRate(newRate);
 
         vm.startPrank(user2);
 

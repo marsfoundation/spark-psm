@@ -435,7 +435,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
+        mockRateProvider.__setConversionRate(1.5e27);
 
         // Total shares / (100 USDC + 150 sDAI value)
         uint256 expectedConversionRate = 225 * 1e18 / 250;
@@ -525,7 +525,7 @@ contract PSMWithdrawTests is PSMTestBase {
         _deposit(address(usdc), user1, usdcAmount);
         _deposit(address(sDai), user2, sDaiAmount);
 
-        MockRateProvider(address(rateProvider)).__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 user1Shares = usdcAmount * 1e12;
         uint256 user2Shares = sDaiAmount * 125/100;
