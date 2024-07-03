@@ -377,5 +377,4 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
 }
 
-
-// TODO: Cast `rateProvider` to interface
+// TODO: Add transfers (check other PR)

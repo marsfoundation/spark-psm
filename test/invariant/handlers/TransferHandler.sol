@@ -19,13 +19,13 @@ contract TransferHandler is HandlerBase {
     ) HandlerBase(psm_, asset0, asset1, asset2) {}
 
     function transfer(uint256 assetSeed, string memory senderSeed, uint256 amount) external {
-        MockERC20 asset = _getAsset(assetSeed);
+        MockERC20 asset  = _getAsset(assetSeed);
         address   sender = makeAddr(senderSeed);
 
-        // Bounding to 1 million here because 1 trillion introduces unrealistic conditions with
+        // Bounding to 10 million here because 1 trillion introduces unrealistic conditions with
         // large rounding errors. Would rather keep tolerances smaller with a lower upper bound
         // on transfer amounts.
-        amount = _bound(amount, 1, 1_000_000 * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 10_000_000 * 10 ** asset.decimals());
 
         asset.mint(sender, amount);
 
@@ -34,4 +34,5 @@ contract TransferHandler is HandlerBase {
 
         transferCount += 1;
     }
+
 }
