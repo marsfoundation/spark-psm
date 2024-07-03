@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
-import { HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
+import { console, HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
 
 contract SwapperHandler is HandlerBase {
 
@@ -105,7 +105,8 @@ contract SwapperHandler is HandlerBase {
 
         // 4. Perform action-specific assertions
 
-        // Rounding because of USDC precision, a user's position can fluctuate by 2e12 per 1e18 shares
+        // Rounding because of USDC precision, a the conversion rate of a
+        // user's position can fluctuate by up to 2e12 per 1e18 shares
         assertApproxEqAbs(
             psm.convertToAssetValue(1e18),
             startingConversion,
@@ -114,25 +115,28 @@ contract SwapperHandler is HandlerBase {
         );
 
         // Demonstrate rounding scales with shares
+        // TODO: Reinvestigate this assertion once swap fuzz tests are in place
         assertApproxEqAbs(
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
             2_000_000e12, // 2e18 of value
-            "SwapperHandler/swap/conversion-rate-change"
+            "SwapperHandler/swap/conversion-rate-change-million"
         );
 
-        // Position values can fluctuate by 0.00000002% on swaps
+        // Position values can fluctuate by up to 0.00000002% on swaps
         assertApproxEqRel(
             psm.convertToAssetValue(psm.shares(lp0)),
             startingConversionLp0,
             0.000002e18,
-            "SwapperHandler/swap/conversion-rate-change"
+            "SwapperHandler/swap/conversion-rate-change-lp"
         );
 
-        // Rounding because of USDC precision
-        assertGe(
-            psm.getPsmTotalValue() + 2e12,
+        // PSM value can fluctuate by up to 0.00000001% on swaps because of USDC rounding
+        // (conversion not performed so 1 instead of 2)
+        assertApproxEqRel(
+            psm.getPsmTotalValue(),
             startingValue,
+            0.000001e18,
             "SwapperHandler/swap/psm-total-value-change"
         );
 

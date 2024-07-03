@@ -120,9 +120,3 @@ contract LpHandler is HandlerBase {
     }
 
 }
-
-/**
- * Add before/after value assertions for all
- * Add APY calc for after hook in timebased
- * Add ghost variable for swapper and transfer and sum those
- */

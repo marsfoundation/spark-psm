@@ -482,7 +482,6 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
     }
 
     function invariant_A() public view {
-
         _checkInvariant_A();
     }
 
