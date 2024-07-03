@@ -13,8 +13,6 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
 
     PSM3 public psm;
 
-    uint256 public constant TRILLION = 1e12;
-
     constructor(PSM3 psm_) {
         psm = psm_;
     }

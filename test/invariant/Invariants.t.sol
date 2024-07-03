@@ -412,7 +412,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(timeBasedRateHandler));
     }
 
-    function invariant_A_test2() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
@@ -433,3 +433,53 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
 }
 
+contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBase {
+
+    function setUp() public override {
+        super.setUp();
+
+        DSRAuthOracle dsrOracle = new DSRAuthOracle();
+
+        // Redeploy PSM with new rate provider
+        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+
+        // Seed the new PSM with 1e18 shares (1e18 of value)
+        _deposit(address(dai), BURN_ADDRESS, 1e18);
+
+        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
+        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
+        transferHandler      = new TransferHandler(psm, dai, usdc, sDai);
+
+        // Handler acts in the same way as a receiver on L2, so add as a data provider to the
+        // oracle.
+        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
+
+        rateProvider = IRateProviderLike(address(dsrOracle));
+
+        // Manually set initial values for the oracle through the handler to start
+        timeBasedRateHandler.setPotData(1e27, block.timestamp);
+
+        targetContract(address(lpHandler));
+        targetContract(address(swapperHandler));
+        targetContract(address(timeBasedRateHandler));
+        targetContract(address(transferHandler));
+    }
+
+    function invariant_A() public view {
+        _checkInvariant_A();
+    }
+
+    function invariant_B() public view {
+        _checkInvariant_B();
+    }
+
+    function invariant_C() public view {
+        _checkInvariant_C();
+    }
+
+    function afterInvariant() public {
+        _withdrawAllPositions();
+    }
+
+}

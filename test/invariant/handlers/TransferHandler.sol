@@ -38,10 +38,10 @@ contract TransferHandler is HandlerBase {
         uint256 startingConversion = psm.convertToShares(1e18);
         uint256 startingValue      = psm.getPsmTotalValue();
 
-        // Bounding to 1 million here because 1 trillion introduces unrealistic conditions with
+        // Bounding to 10 million here because 1 trillion introduces unrealistic conditions with
         // large rounding errors. Would rather keep tolerances smaller with a lower upper bound
         // on transfer amounts.
-        amount = _bound(amount, 1, 1_000_000 * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 10_000_000 * 10 ** asset.decimals());
 
         // 3. Perform action against protocol
         asset.mint(sender, amount);
@@ -64,4 +64,5 @@ contract TransferHandler is HandlerBase {
         // 5. Update metrics tracking state
         transferCount += 1;
     }
+
 }

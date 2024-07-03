@@ -46,7 +46,7 @@ contract LpHandler is HandlerBase {
         MockERC20 asset = _getAsset(assetSeed);
         address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
@@ -85,7 +85,7 @@ contract LpHandler is HandlerBase {
         MockERC20 asset = _getAsset(assetSeed);
         address   lp    = _getLP(lpSeed);
 
-        amount = _bound(amount, 1, TRILLION * 10 ** asset.decimals());
+        amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);

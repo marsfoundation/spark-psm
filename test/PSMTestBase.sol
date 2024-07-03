@@ -20,7 +20,9 @@ contract PSMTestBase is Test {
     MockERC20 public usdc;
     MockERC20 public sDai;
 
-    IRateProviderLike public rateProvider;
+    IRateProviderLike public rateProvider;  // Can be overridden by dsrOracle using same interface
+
+    MockRateProvider public mockRateProvider;  // Interface used for mocking
 
     modifier assertAtomicPsmValueDoesNotChange {
         uint256 beforeValue = _getPsmValue();
@@ -38,7 +40,7 @@ contract PSMTestBase is Test {
         usdc = new MockERC20("usdc", "usdc", 6);
         sDai = new MockERC20("sDai", "sDai", 18);
 
-        MockRateProvider mockRateProvider = new MockRateProvider();
+        mockRateProvider = new MockRateProvider();
 
         // NOTE: Using 1.25 for easy two way conversions
         mockRateProvider.__setConversionRate(1.25e27);

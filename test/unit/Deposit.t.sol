@@ -279,7 +279,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 225e18);
 
-        MockRateProvider(address(rateProvider)).__setConversionRate(1.5e27);
+        mockRateProvider.__setConversionRate(1.5e27);
 
         // Total shares / (100 USDC + 150 sDAI value)
         uint256 expectedConversionRate = 225 * 1e18 / 250;
@@ -328,6 +328,105 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.getPsmTotalValue(), 400e18);
     }
 
-    // TODO: Add fuzz test
+    function testFuzz_deposit_multiUser_changeConversionRate(
+        uint256 usdcAmount,
+        uint256 sDaiAmount1,
+        uint256 sDaiAmount2,
+        uint256 newRate
+    )
+        public
+    {
+        // Zero amounts revert
+        usdcAmount  = _bound(usdcAmount,  1,       USDC_TOKEN_MAX);
+        sDaiAmount1 = _bound(sDaiAmount1, 1,       SDAI_TOKEN_MAX);
+        sDaiAmount2 = _bound(sDaiAmount2, 1,       SDAI_TOKEN_MAX);
+        newRate     = _bound(newRate,     1.25e27, 1000e27);
+
+        uint256 user1DepositValue = usdcAmount * 1e12 + sDaiAmount1 * 125/100;
+
+        usdc.mint(user1, usdcAmount);
+
+        vm.startPrank(user1);
+
+        usdc.approve(address(psm), usdcAmount);
+
+        uint256 newShares = psm.deposit(address(usdc), receiver1, usdcAmount);
+
+        assertEq(newShares, usdcAmount * 1e12);
+
+        sDai.mint(user1, sDaiAmount1);
+        sDai.approve(address(psm), sDaiAmount1);
+
+        newShares = psm.deposit(address(sDai), receiver1, sDaiAmount1);
+
+        assertEq(newShares, sDaiAmount1 * 125/100);
+
+        vm.stopPrank();
+
+        assertEq(usdc.balanceOf(address(psm)), usdcAmount);
+
+        assertEq(sDai.balanceOf(user1),        0);
+        assertEq(sDai.balanceOf(address(psm)), sDaiAmount1);
+
+        // Deposited at 1:1 conversion
+        uint256 receiver1Shares = user1DepositValue;
+
+        assertEq(psm.totalShares(),     receiver1Shares);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), receiver1Shares);
+
+        mockRateProvider.__setConversionRate(newRate);
+
+        vm.startPrank(user2);
+
+        sDai.mint(user2, sDaiAmount2);
+        sDai.approve(address(psm), sDaiAmount2);
+
+        assertEq(sDai.allowance(user2, address(psm)), sDaiAmount2);
+        assertEq(sDai.balanceOf(user2),               sDaiAmount2);
+        assertEq(sDai.balanceOf(address(psm)),        sDaiAmount1);
+
+        // Receiver1 has gained from conversion change
+        uint256 receiver1NewValue = user1DepositValue + sDaiAmount1 * (newRate - 1.25e27) / 1e27;
+
+        // Receiver1 has gained from conversion change
+        assertApproxEqAbs(
+            psm.convertToAssetValue(psm.shares(receiver1)),
+            receiver1NewValue,
+            1
+        );
+
+        assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 0);
+
+        assertApproxEqAbs(psm.getPsmTotalValue(), receiver1NewValue, 1);
+
+        newShares = psm.deposit(address(sDai), receiver2, sDaiAmount2);
+
+        // Using queried values here instead of derived to avoid larger errors getting introduced
+        // Assertions above prove that these values are as expected.
+        uint256 receiver2Shares
+            = (sDaiAmount2 * newRate / 1e27) * psm.totalShares() / psm.getPsmTotalValue();
+
+        assertApproxEqAbs(newShares, receiver2Shares, 2);
+
+        assertEq(sDai.allowance(user2, address(psm)), 0);
+        assertEq(sDai.balanceOf(user2),               0);
+        assertEq(sDai.balanceOf(address(psm)),        sDaiAmount1 + sDaiAmount2);
+
+        assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(user2), 0);
+
+        assertApproxEqAbs(psm.totalShares(),     receiver1Shares + receiver2Shares, 2);
+        assertApproxEqAbs(psm.shares(receiver1), receiver1Shares,                   2);
+        assertApproxEqAbs(psm.shares(receiver2), receiver2Shares,                   2);
+
+        uint256 receiver2NewValue = sDaiAmount2 * newRate / 1e27;
+
+        // Rate change of up to 1000x introduces errors
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver1)), receiver1NewValue, 1000);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver2)), receiver2NewValue, 1000);
+
+        assertApproxEqAbs(psm.getPsmTotalValue(), receiver1NewValue + receiver2NewValue, 1000);
+    }
 
 }

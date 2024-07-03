@@ -32,6 +32,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         dsr = _bound(newDsr, 1e27, ONE_HUNDRED_PCT_APY_DSR);
         rho = _bound(newRho, rho,  block.timestamp);
 
+        // If chi hasn't been set yet, set to 1e27
         uint256 rate = dsrOracle.getConversionRate();
         uint256 chi  = rate == 0 ? 1e27 : rate;
 
