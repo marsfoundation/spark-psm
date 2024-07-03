@@ -22,7 +22,7 @@ contract RateSetterHandler is HandlerBase {
         // 1. Setup and bounds
 
         // Increase the rate by up to 20%
-        rate += bound(rateIncrease, 0, 0.2e27);
+        rate += _bound(rateIncrease, 0, 0.2e27);
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);

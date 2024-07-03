@@ -11,6 +11,9 @@ contract SwapperHandler is HandlerBase {
 
     address[] public swappers;
 
+    // Used for assertions, assumption made that LpHandler is used with at least 1 LP.
+    address public lp0;
+
     uint256 public swapCount;
     uint256 public zeroBalanceCount;
 
@@ -19,15 +22,18 @@ contract SwapperHandler is HandlerBase {
         MockERC20 asset0,
         MockERC20 asset1,
         MockERC20 asset2,
-        uint256   lpCount
+        uint256   swapperCount
     ) HandlerBase(psm_) {
         assets[0] = asset0;
         assets[1] = asset1;
         assets[2] = asset2;
 
-        for (uint256 i = 0; i < lpCount; i++) {
+        for (uint256 i = 0; i < swapperCount; i++) {
             swappers.push(makeAddr(string(abi.encodePacked("swapper-", vm.toString(i)))));
         }
+
+        // Derive LP-0 address for assertion
+        lp0 = makeAddr("lp-0");
     }
 
     function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
@@ -85,11 +91,12 @@ contract SwapperHandler is HandlerBase {
         );
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToAssetValue(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingConversion        = psm.convertToAssetValue(1e18);
+        uint256 startingConversionMillion = psm.convertToAssetValue(1e6 * 1e18);
+        uint256 startingConversionLp0     = psm.convertToAssetValue(psm.shares(lp0));
+        uint256 startingValue             = psm.getPsmTotalValue();
 
         // 3. Perform action against protocol
-
         vm.startPrank(swapper);
         assetIn.mint(swapper, amountIn);
         assetIn.approve(address(psm), amountIn);
@@ -98,17 +105,29 @@ contract SwapperHandler is HandlerBase {
 
         // 4. Perform action-specific assertions
 
-        // Performing this check with tighter bounds when there is a minimum amount in the PSM.
-        // Leads to more accurate assertions in the more realistic scenario.
-        if (psm.getPsmTotalValue() > 10_000e18) {
-            // Rounding because of USDC precision
-            assertApproxEqAbs(
-                psm.convertToAssetValue(1e18),
-                startingConversion,
-                1e9,
-                "SwapperHandler/swap/conversion-rate-change"
-            );
-        }
+        // Rounding because of USDC precision, a user's position can fluctuate by 2e12 per 1e18 shares
+        assertApproxEqAbs(
+            psm.convertToAssetValue(1e18),
+            startingConversion,
+            2e12,
+            "SwapperHandler/swap/conversion-rate-change"
+        );
+
+        // Demonstrate rounding scales with shares
+        assertApproxEqAbs(
+            psm.convertToAssetValue(1_000_000e18),
+            startingConversionMillion,
+            2_000_000e12, // 2e18 of value
+            "SwapperHandler/swap/conversion-rate-change"
+        );
+
+        // Position values can fluctuate by 0.00000002% on swaps
+        assertApproxEqRel(
+            psm.convertToAssetValue(psm.shares(lp0)),
+            startingConversionLp0,
+            0.000002e18,
+            "SwapperHandler/swap/conversion-rate-change"
+        );
 
         // Rounding because of USDC precision
         assertGe(

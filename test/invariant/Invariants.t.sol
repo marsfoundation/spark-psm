@@ -253,6 +253,9 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
+
+        // Check that LPs used for swap assertions are correct to not get zero values
+        assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
     function invariant_A() public view {
@@ -267,7 +270,7 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_C();
     }
 
-    function invariant_D_test() public view {
+    function invariant_D() public view {
         _checkInvariant_D();
     }
 
@@ -321,6 +324,9 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(lpHandler));
         targetContract(address(rateSetterHandler));
         targetContract(address(swapperHandler));
+
+        // Check that LPs used for swap assertions are correct to not get zero values
+        assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
     function invariant_A() public view {
@@ -331,7 +337,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_B();
     }
 
-    function invariant_C_rate() public view {
+    function invariant_C() public view {
         _checkInvariant_C();
     }
 
@@ -358,9 +364,12 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         targetContract(address(rateSetterHandler));
         targetContract(address(swapperHandler));
         targetContract(address(transferHandler));
+
+        // Check that LPs used for swap assertions are correct to not get zero values
+        assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
@@ -410,6 +419,9 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
         targetContract(address(timeBasedRateHandler));
+
+        // Check that LPs used for swap assertions are correct to not get zero values
+        assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
     function invariant_A() public view {
@@ -464,9 +476,13 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         targetContract(address(swapperHandler));
         targetContract(address(timeBasedRateHandler));
         targetContract(address(transferHandler));
+
+        // Check that LPs used for swap assertions are correct to not get zero values
+        assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
     function invariant_A() public view {
+
         _checkInvariant_A();
     }
 

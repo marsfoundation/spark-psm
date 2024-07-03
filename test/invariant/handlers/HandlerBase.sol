@@ -67,4 +67,25 @@ contract HandlerBase is CommonBase, StdCheatsSafe, StdUtils {
         }
     }
 
+    function assertApproxEqRel(
+        uint256 a,
+        uint256 b,
+        uint256 maxPercentDelta, // An 18 decimal fixed point number, where 1e18 == 100%
+        string memory err
+    ) internal virtual {
+        // If the left is 0, right must be too.
+        if (b == 0) return assertEq(a, b, string(abi.encodePacked("assertEq - ", err)));
+
+        uint256 percentDelta = stdMath.percentDelta(a, b);
+
+        if (percentDelta > maxPercentDelta) {
+            console.log("Error: a ~= b not satisfied [uint]");
+            console.log("              Left", a);
+            console.log("             Right", b);
+            console.log(" Max % Delta [wad]", maxPercentDelta);
+            console.log("     % Delta [wad]", percentDelta);
+            revert(err);
+        }
+    }
+
 }
