@@ -123,12 +123,26 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-change-million"
         );
 
+        // Decrease in value from rounding is capped at 2e12
+        assertGe(
+            psm.convertToAssetValue(1_000_000e18) + 2e12,
+            startingConversionMillion,
+            "SwapperHandler/swap/conversion-rate-million-decrease"
+        );
+
         // Position values can fluctuate by up to 0.00000002% on swaps
         assertApproxEqRel(
             psm.convertToAssetValue(psm.shares(lp0)),
             startingConversionLp0,
             0.000002e18,
             "SwapperHandler/swap/conversion-rate-change-lp"
+        );
+
+        // Decrease in value from rounding is capped at 2e12
+        assertGe(
+            psm.convertToAssetValue(psm.shares(lp0)) + 2e12,
+            startingConversionLp0,
+            "SwapperHandler/swap/conversion-rate-lp-decrease"
         );
 
         // PSM value can fluctuate by up to 0.00000001% on swaps because of USDC rounding
@@ -138,6 +152,13 @@ contract SwapperHandler is HandlerBase {
             startingValue,
             0.000001e18,
             "SwapperHandler/swap/psm-total-value-change"
+        );
+
+        // Decrease in value from rounding is capped at 2e12
+        assertGe(
+            psm.getPsmTotalValue() + 1e12,
+            startingValue,
+            "SwapperHandler/swap/psm-total-value-decrease"
         );
 
         // 5. Update metrics tracking state
