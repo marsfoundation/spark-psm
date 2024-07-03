@@ -108,12 +108,12 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             expectedUsdcBalance += swapperHandler.swapsIn(swapper, address(usdc));
             expectedDaiBalance  += swapperHandler.swapsIn(swapper, address(dai));
             expectedSDaiBalance += swapperHandler.swapsIn(swapper, address(sDai));
+        }
 
-            if (address(transferHandler) != address(0)) {
-                expectedUsdcBalance += transferHandler.transfersIn(address(usdc));
-                expectedDaiBalance  += transferHandler.transfersIn(address(dai));
-                expectedSDaiBalance += transferHandler.transfersIn(address(sDai));
-            }
+        if (address(transferHandler) != address(0)) {
+            expectedUsdcBalance += transferHandler.transfersIn(address(usdc));
+            expectedDaiBalance  += transferHandler.transfersIn(address(dai));
+            expectedSDaiBalance += transferHandler.transfersIn(address(sDai));
         }
 
         // Loop twice to avoid underflows between LPs
@@ -133,6 +133,32 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)), expectedUsdcBalance);
         assertEq(dai.balanceOf(address(psm)),  expectedDaiBalance);
         assertEq(sDai.balanceOf(address(psm)), expectedSDaiBalance);
+    }
+
+    function _checkInvariant_F() public view {
+        uint256 totalValueSwappedIn;
+        uint256 totalValueSwappedOut;
+
+        for(uint256 i; i < 3; i++) {
+            address swapper = swapperHandler.swappers(i);
+
+            totalValueSwappedIn +=
+                swapperHandler.swapsIn(swapper, address(usdc)) * 1e12 +
+                swapperHandler.swapsIn(swapper, address(dai)) +
+                swapperHandler.swapsIn(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+        }
+
+        // Loop twice to avoid underflows between LPs
+        for(uint256 i; i < 3; i++) {
+            address swapper = swapperHandler.swappers(i);
+
+            totalValueSwappedOut +=
+                swapperHandler.swapsIn(swapper, address(usdc)) * 1e12 +
+                swapperHandler.swapsIn(swapper, address(dai)) +
+                swapperHandler.swapsIn(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+        }
+
+        assertEq(totalValueSwappedIn, totalValueSwappedOut);
     }
 
     /**********************************************************************************************/
@@ -314,6 +340,10 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
+    function invariant_F() public view {
+        _checkInvariant_F();
+    }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -344,6 +374,17 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
 
     function invariant_C() public view {
         _checkInvariant_C();
+    }
+
+    // No invariant D because rate changes lead to large rounding errors when compared with
+    // ghost variables
+
+    function invariant_E() public view {
+        _checkInvariant_E();
+    }
+
+    function invariant_F() public view {
+        _checkInvariant_F();
     }
 
     function afterInvariant() public {
@@ -384,6 +425,14 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
     // No invariant D because rate changes lead to large rounding errors when compared with
     // ghost variables
 
+    function invariant_E() public view {
+        _checkInvariant_E();
+    }
+
+    function invariant_F() public view {
+        _checkInvariant_F();
+    }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -423,6 +472,14 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
 
     // No invariant D because rate changes lead to large rounding errors when compared with
     // ghost variables
+
+    function invariant_E() public view {
+        _checkInvariant_E();
+    }
+
+    function invariant_F() public view {
+        _checkInvariant_F();
+    }
 
     function afterInvariant() public {
         _withdrawAllPositions();
@@ -479,6 +536,14 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
     // No invariant D because rate changes lead to large rounding errors when compared with
     // ghost variables
 
+    function invariant_E() public view {
+        _checkInvariant_E();
+    }
+
+    function invariant_F() public view {
+        _checkInvariant_F();
+    }
+
     function afterInvariant() public {
         _withdrawAllPositions();
     }
@@ -531,6 +596,17 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
 
     function invariant_C() public view {
         _checkInvariant_C();
+    }
+
+    // No invariant D because rate changes lead to large rounding errors when compared with
+    // ghost variables
+
+    function invariant_E() public view {
+        _checkInvariant_E();
+    }
+
+    function invariant_F() public view {
+        _checkInvariant_F();
     }
 
     function afterInvariant() public {
