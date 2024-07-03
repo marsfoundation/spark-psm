@@ -123,6 +123,7 @@ interface IPSM3 {
      *  @param minAmountOut  Minimum amount of the asset to receive.
      *  @param receiver      Address of the receiver of the swapped assets.
      *  @param referralCode  Referral code for the swap.
+     *  @return amountOut    Amount of the asset that will be received in the swap.
      */
     function swap(
         address assetIn,
@@ -131,7 +132,7 @@ interface IPSM3 {
         uint256 minAmountOut,
         address receiver,
         uint256 referralCode
-    ) external;
+    ) external returns (uint256 amountOut);
 
     /**********************************************************************************************/
     /*** Liquidity provision functions                                                          ***/

@@ -13,6 +13,8 @@ contract TransferHandler is HandlerBase {
 
     uint256 public transferCount;
 
+    mapping(address asset => uint256) public transfersIn;
+
     constructor(
         PSM3      psm_,
         MockERC20 asset0,
@@ -48,7 +50,10 @@ contract TransferHandler is HandlerBase {
         vm.prank(sender);
         asset.transfer(address(psm), amount);
 
-        // 4. Perform action-specific assertions
+        // 4. Update ghost variable(s)
+        transfersIn[address(asset)] += amount;
+
+        // 5. Perform action-specific assertions
         assertGe(
             psm.convertToAssetValue(1e18) + 1,
             startingConversion,
@@ -61,7 +66,7 @@ contract TransferHandler is HandlerBase {
             "TransferHandler/transfer/psm-total-value-decrease"
         );
 
-        // 5. Update metrics tracking state
+        // 6. Update metrics tracking state
         transferCount += 1;
     }
 

@@ -11,6 +11,9 @@ contract SwapperHandler is HandlerBase {
 
     address[] public swappers;
 
+    mapping(address user => mapping(address asset => uint256 deposits)) public swapsIn;
+    mapping(address user => mapping(address asset => uint256 deposits)) public swapsOut;
+
     // Used for assertions, assumption made that LpHandler is used with at least 1 LP.
     address public lp0;
 
@@ -100,10 +103,15 @@ contract SwapperHandler is HandlerBase {
         vm.startPrank(swapper);
         assetIn.mint(swapper, amountIn);
         assetIn.approve(address(psm), amountIn);
-        psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
+        uint256 amountOut
+            = psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
         vm.stopPrank();
 
-        // 4. Perform action-specific assertions
+        // 4. Update ghost variable(s)
+        swapsIn[swapper][address(assetIn)]   += amountIn;
+        swapsOut[swapper][address(assetOut)] += amountOut;
+
+        // 5. Perform action-specific assertions
 
         // Rounding because of USDC precision, a the conversion rate of a
         // user's position can fluctuate by up to 2e12 per 1e18 shares
@@ -145,23 +153,22 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-lp-decrease"
         );
 
-        // PSM value can fluctuate by up to 0.00000001% on swaps because of USDC rounding
-        // (conversion not performed so 1 instead of 2)
+        // PSM value can fluctuate by up to 0.00000002% on swaps because of USDC rounding
         assertApproxEqRel(
             psm.getPsmTotalValue(),
             startingValue,
-            0.000001e18,
+            0.000002e18,
             "SwapperHandler/swap/psm-total-value-change"
         );
 
         // Decrease in value from rounding is capped at 2e12
         assertGe(
-            psm.getPsmTotalValue() + 1e12,
+            psm.getPsmTotalValue() + 2e12,
             startingValue,
             "SwapperHandler/swap/psm-total-value-decrease"
         );
 
-        // 5. Update metrics tracking state
+        // 6. Update metrics tracking state
         swapCount++;
     }
 

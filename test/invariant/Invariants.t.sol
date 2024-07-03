@@ -42,13 +42,14 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     /**********************************************************************************************/
 
     function _checkInvariant_A() public view {
-        assertEq(
-            psm.shares(address(lpHandler.lps(0))) +
-            psm.shares(address(lpHandler.lps(1))) +
-            psm.shares(address(lpHandler.lps(2))) +
-            1e18,  // Seed amount
-            psm.totalShares()
-        );
+        uint256 lpShares = 1e18;  // Seed amount
+
+        // TODO: Update to be dynamic
+        for (uint256 i = 0; i < 3; i++) {
+            lpShares += psm.shares(lpHandler.lps(i));
+        }
+
+        assertEq(lpShares, psm.totalShares());
     }
 
     function _checkInvariant_B() public view {
@@ -60,43 +61,44 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     }
 
     function _checkInvariant_C() public view {
-        assertApproxEqAbs(
-            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(0)))) +
-            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(1)))) +
-            psm.convertToAssetValue(psm.shares(address(lpHandler.lps(2)))) +
-            psm.convertToAssetValue(1e18),  // Seed amount
-            psm.getPsmTotalValue(),
-            4
-        );
+        uint256 lpAssetValue = psm.convertToAssetValue(1e18);  // Seed amount
+
+        for (uint256 i = 0; i < 3; i++) {
+            lpAssetValue += psm.convertToAssetValue(psm.shares(lpHandler.lps(i)));
+        }
+
+        assertApproxEqAbs(lpAssetValue, psm.getPsmTotalValue(), 4);
     }
 
     // This might be failing because of swap rounding errors.
     function _checkInvariant_D() public view {
-        address lp0 = lpHandler.lps(0);
-        address lp1 = lpHandler.lps(1);
-        address lp2 = lpHandler.lps(2);
+        // Seed amounts
+        uint256 lpDeposits   = 1e18;
+        uint256 lpAssetValue = psm.convertToAssetValue(1e18);
 
-        uint256 lp0Deposits = _getLpDepositsValue(lp0);
-        uint256 lp1Deposits = _getLpDepositsValue(lp1);
-        uint256 lp2Deposits = _getLpDepositsValue(lp2);
+        for (uint256 i = 0; i < 3; i++) {
+            address lp = lpHandler.lps(i);
+
+            lpDeposits   += _getLpDepositsValue(lp);
+            lpAssetValue += psm.convertToAssetValue(psm.shares(lp));
+        }
 
         // LPs position value can increase from transfers into the PSM and from swapping rounding
         // errors increasing the value of the PSM slightly.
         // Allow a 4 tolerance for negative rounding on conversion calculations.
-        assertGe(
-            psm.convertToAssetValue(psm.shares(lp0)) +
-            psm.convertToAssetValue(psm.shares(lp1)) +
-            psm.convertToAssetValue(psm.shares(lp2)) +
-            psm.convertToAssetValue(1e18) + // Seed amount
-            1e12,  // Rounding
-            lp0Deposits + lp1Deposits + lp2Deposits + 1e18
-        );
+        assertGe(lpAssetValue + 1e12, lpDeposits);
 
         // Include seed deposit, allow for 1e12 negative tolerance.
-        assertGe(
-            psm.getPsmTotalValue() + 1e12,
-            lp0Deposits + lp1Deposits + lp2Deposits + 1e18
-        );
+        assertGe(psm.getPsmTotalValue() + 1e12, lpDeposits);
+    }
+
+    function _checkInvariant_E() public view {
+        address lp0      = lpHandler.lps(0);
+        address lp1      = lpHandler.lps(1);
+        address lp2      = lpHandler.lps(2);
+        address swapper0 = swapperHandler.swappers(0);
+        address swapper1 = swapperHandler.swappers(1);
+        address swapper2 = swapperHandler.swappers(2);
     }
 
     /**********************************************************************************************/
