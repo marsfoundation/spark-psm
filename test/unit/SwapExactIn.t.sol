@@ -362,20 +362,6 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
 
     address swapper = makeAddr("swapper");
 
-    function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
-        hash_ = uint256(keccak256(abi.encode(number_, salt)));
-    }
-
-    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
-        uint256 index = indexSeed % 3;
-
-        if (index == 0) return dai;
-        if (index == 1) return usdc;
-        if (index == 2) return sDai;
-
-        else revert("Invalid index");
-    }
-
     struct FuzzVars {
         uint256 lp0StartingValue;
         uint256 lp1StartingValue;
@@ -466,4 +452,19 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue, 2000e12);
         assertApproxEqAbs(psm.getPsmTotalValue(),                   vars.psmStartingValue, 2000e12);
     }
+
+    function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
+        hash_ = uint256(keccak256(abi.encode(number_, salt)));
+    }
+
+    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
+        uint256 index = indexSeed % 3;
+
+        if (index == 0) return dai;
+        if (index == 1) return usdc;
+        if (index == 2) return sDai;
+
+        else revert("Invalid index");
+    }
+
 }
