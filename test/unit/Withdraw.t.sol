@@ -330,7 +330,7 @@ contract PSMWithdrawTests is PSMTestBase {
         _checkPsmInvariant();
 
         assertEq(
-            usdc.balanceOf(receiver1) * 1e12 + psm.getPsmTotalValue(),
+            usdc.balanceOf(receiver1) * 1e12 + psm.totalAssets(),
             totalValue
         );
 
@@ -358,7 +358,7 @@ contract PSMWithdrawTests is PSMTestBase {
         _checkPsmInvariant();
 
         assertEq(
-            (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12 + psm.getPsmTotalValue(),
+            (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12 + psm.totalAssets(),
             totalValue
         );
 
@@ -399,7 +399,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertApproxEqAbs(
             (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12
                 + (sDai.balanceOf(receiver2) * rateProvider.getConversionRate() / 1e27)
-                + psm.getPsmTotalValue(),
+                + psm.totalAssets(),
             totalValue,
             1
         );
@@ -532,7 +532,7 @@ contract PSMWithdrawTests is PSMTestBase {
         uint256 totalShares = user1Shares + user2Shares;
         uint256 totalValue  = usdcAmount * 1e12 + sDaiAmount * conversionRate / 1e27;
 
-        assertEq(psm.getPsmTotalValue(), totalValue);
+        assertEq(psm.totalAssets(), totalValue);
 
         assertEq(psm.totalShares(), totalShares);
         assertEq(psm.shares(user1), user1Shares);
