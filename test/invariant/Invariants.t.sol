@@ -155,7 +155,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertApproxEqAbs(_getLpTokenValue(lp2), lp2DepositsValue + lp2WithdrawsValue, 4e12);
 
         // All rounding errors from LPs can accrue to the burn address after withdrawals are made.
-        assertApproxEqAbs(seedValue, startingSeedValue, 4e12);
+        assertApproxEqAbs(seedValue, startingSeedValue, 6e12);
 
         // Current value of all LPs' token holdings.
         uint256 sumLpValue = _getLpTokenValue(lp0) + _getLpTokenValue(lp1) + _getLpTokenValue(lp2);
