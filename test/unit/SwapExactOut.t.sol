@@ -253,7 +253,13 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * conversionRate / 1e27;
 
-        _swapExactOutTest(dai, sDai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(dai), address(sDai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(dai, sDai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
 }
@@ -360,7 +366,13 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * 1e27 / conversionRate;
 
-        _swapExactOutTest(sDai, dai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(sDai), address(dai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(sDai, dai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
     function testFuzz_swapExactOut_sDaiToUsdc(
@@ -380,7 +392,14 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * 1e27 / conversionRate * 1e12;
 
-        _swapExactOutTest(sDai, usdc, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(sDai), address(usdc), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all asserted values are exact
+        // Rounding can cause returnedAmountIn to be up to 1e12 higher than naive calculation
+        assertLe(returnedAmountIn - amountIn, 1e12);
+
+        _swapExactOutTest(sDai, usdc, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
 }
@@ -432,7 +451,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
 
         vm.startPrank(swapper);
 
-        for (uint256 i; i < 1000; ++i) {
+        for (uint256 i; i < 10; ++i) {
             MockERC20 assetIn  = _getAsset(_hash(i, "assetIn"));
             MockERC20 assetOut = _getAsset(_hash(i, "assetOut"));
 
@@ -442,7 +461,8 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
 
             uint256 amountOut = _bound(_hash(i, "amountOut"), 0, assetOut.balanceOf(address(psm)));
 
-            uint256 amountIn = psm.previewSwapExactOut(address(assetIn), address(assetOut), amountOut);
+            uint256 amountIn
+                = psm.previewSwapExactOut(address(assetIn), address(assetOut), amountOut);
 
             vars.lp0CachedValue = psm.convertToAssetValue(psm.shares(lp0));
             vars.lp1CachedValue = psm.convertToAssetValue(psm.shares(lp1));

@@ -125,9 +125,12 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
 
         rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountIn = amountOut * conversionRate / 1e27;
+        uint256 expectedAmountIn = amountOut * conversionRate / 1e27;
 
-        assertEq(psm.previewSwapExactOut(address(dai), address(sDai), amountOut), amountIn);
+        uint256 amountIn = psm.previewSwapExactOut(address(dai), address(sDai), amountOut);
+
+        // Allow for rounding error of 1 unit upwards
+        assertLe(amountIn - expectedAmountIn, 1);
     }
 
 }
@@ -257,9 +260,12 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
 
         rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountIn = amountOut * 1e27 / conversionRate;
+        uint256 expectedAmountIn = amountOut * 1e27 / conversionRate;
 
-        assertEq(psm.previewSwapExactOut(address(sDai), address(dai), amountOut), amountIn);
+        uint256 amountIn = psm.previewSwapExactOut(address(sDai), address(dai), amountOut);
+
+        // Allow for rounding error of 1 unit upwards
+        assertLe(amountIn - expectedAmountIn, 1);
     }
 
     function test_previewSwapExactOut_sDaiToUsdc() public view {
@@ -274,9 +280,12 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
 
         rateProvider.__setConversionRate(conversionRate);
 
-        uint256 amountIn = amountOut * 1e27 / conversionRate * 1e12;
+        uint256 expectedAmountIn = amountOut * 1e27 / conversionRate * 1e12;
 
-        assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), amountOut), amountIn);
+        uint256 amountIn = psm.previewSwapExactOut(address(sDai), address(usdc), amountOut);
+
+        // Allow for rounding error of 1e12 upwards
+        assertLe(amountIn - expectedAmountIn, 1e12);
     }
 
 }

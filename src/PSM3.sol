@@ -302,29 +302,27 @@ contract PSM3 is IPSM3 {
     function _convertToAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
-        uint256 numerator =
-            amount
-            * 1e27
-            / IRateProviderLike(rateProvider).getConversionRate()
-            * _asset2Precision;
+        uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
 
-        if (!roundUp) return numerator / assetPrecision;
+        if (!roundUp) return amount * 1e27 / rate * _asset2Precision / assetPrecision;
 
-        return _divUp(numerator, assetPrecision);
+        return _divUp(
+            _divUp(amount * 1e27, rate) * _asset2Precision,
+            assetPrecision
+        );
     }
 
     function _convertFromAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
-        uint256 numerator =
-            amount
-            * IRateProviderLike(rateProvider).getConversionRate()
-            / 1e27
-            * assetPrecision;
+        uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
 
-            if (!roundUp) return numerator / _asset2Precision;
+        if (!roundUp) return amount * rate / 1e27 * assetPrecision / _asset2Precision;
 
-            return _divUp(numerator, _asset2Precision);
+        return _divUp(
+            _divUp(amount * rate, 1e27) * assetPrecision,
+            _asset2Precision
+        );
     }
 
     function _convertOneToOne(
