@@ -352,7 +352,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         rateProvider = IRateProviderLike(address(dsrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
+        timeBasedRateHandler.setPotData(1e27, block.timestamp);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -402,7 +402,7 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         rateProvider = IRateProviderLike(address(dsrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27, 1e27, block.timestamp);
+        timeBasedRateHandler.setPotData(1e27, block.timestamp);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));

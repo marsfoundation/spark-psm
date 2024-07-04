@@ -13,7 +13,7 @@ contract TimeBasedRateHandler is StdCheats, StdUtils {
     uint256 public chi;
     uint256 public rho;
 
-    uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.00000002197955315123915302e27;
+    uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.000000021979553151239153027e27;
 
     DSRAuthOracle public dsrOracle;
 
@@ -24,12 +24,14 @@ contract TimeBasedRateHandler is StdCheats, StdUtils {
     }
 
     // This acts as a receiver on an L2.
-    // Note that the chi value is not derived from previous values, this is to test if
-    // PSM will work as expected with different chi values.
-    function setPotData(uint256 newDsr, uint256 newChi, uint256 newRho) external {
+    function setPotData(uint256 newDsr, uint256 newRho) external {
         dsr = _bound(newDsr, 1e27, ONE_HUNDRED_PCT_APY_DSR);
-        chi = _bound(newChi, chi,  1e27);
         rho = _bound(newRho, rho,  block.timestamp);
+
+        // If chi hasn't been set yet, set to 1e27, else recalculate it in the same way it would
+        // happen during a refresh.
+        uint256 rate = dsrOracle.getConversionRate();
+        uint256 chi  = rate == 0 ? 1e27 : rate;
 
         dsrOracle.setPotData(IDSROracle.PotData({
             dsr: uint96(dsr),
