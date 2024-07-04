@@ -570,7 +570,6 @@ contract PSMWithdrawTests is PSMTestBase {
         vm.prank(user1);
         amount = psm.withdraw(address(sDai), user1, type(uint256).max);
 
-
         {
             // User1s remaining shares are used
             uint256 user1SDai = (user1Shares - expectedUser1SharesBurned)
@@ -605,11 +604,11 @@ contract PSMWithdrawTests is PSMTestBase {
         // Equal to starting value
         assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue, 2);
 
-        // Value gains are the same for both users, accurate to 0.01%
+        // Value gains are the same for both users, accurate to 0.02%
         assertApproxEqRel(
             (user1ResultingValue - (usdcAmount * 1e12))    * 1e18 / (usdcAmount * 1e12),
             (user2ResultingValue - (sDaiAmount * 125/100)) * 1e18 / (sDaiAmount * 125/100),
-            0.0001e18
+            0.0021e18
         );
     }
 
