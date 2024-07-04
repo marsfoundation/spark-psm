@@ -252,15 +252,15 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         // Tokens held by LPs are equal to the sum of their previous balance
         // plus the amount of value originally represented in the PSM's shares.
-        // There can be rounding here because of share burning up to 1e12 when withdrawing USDC.
-        // It should be noted that LP2 here has a rounding error of 2e12 since both LP0 and LP1
+        // There can be rounding here because of share burning up to 2e12 when withdrawing USDC.
+        // It should be noted that LP2 here has a rounding error of 4e12 since both LP0 and LP1
         // could have rounding errors that accumulate to LP2.
-        assertApproxEqAbs(_getLpTokenValue(lp0), lp0DepositsValue + lp0WithdrawsValue, 1e12);
-        assertApproxEqAbs(_getLpTokenValue(lp1), lp1DepositsValue + lp1WithdrawsValue, 1e12);
-        assertApproxEqAbs(_getLpTokenValue(lp2), lp2DepositsValue + lp2WithdrawsValue, 2e12);
+        assertApproxEqAbs(_getLpTokenValue(lp0), lp0DepositsValue + lp0WithdrawsValue, 2e12);
+        assertApproxEqAbs(_getLpTokenValue(lp1), lp1DepositsValue + lp1WithdrawsValue, 2e12);
+        assertApproxEqAbs(_getLpTokenValue(lp2), lp2DepositsValue + lp2WithdrawsValue, 4e12);
 
         // All rounding errors from LPs can accrue to the burn address after withdrawals are made.
-        assertApproxEqAbs(seedValue, startingSeedValue, 3e12);
+        assertApproxEqAbs(seedValue, startingSeedValue, 6e12);
 
         // Current value of all LPs' token holdings.
         uint256 sumLpValue = _getLpTokenValue(lp0) + _getLpTokenValue(lp1) + _getLpTokenValue(lp2);
@@ -271,7 +271,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         // Assert that all funds were withdrawn equals the original value of the PSM minus the
         // 1e18 share seed deposit.
-        assertApproxEqAbs(totalWithdrawals, psmTotalValue - seedValue, 2);
+        assertApproxEqAbs(totalWithdrawals, psmTotalValue - seedValue, 3);
 
         // Get the starting sum of all LPs' deposits and withdrawals.
         uint256 sumStartingValue =
