@@ -231,7 +231,15 @@ interface IPSM3 {
     function previewSwapExactIn(address assetIn, address assetOut, uint256 amountIn)
         external view returns (uint256 amountOut);
 
-    // TODO
+    /**
+     * @dev    View function that returns the exact amount of assetIn that would be required to
+     *         receive a given amount of assetOut in a swap. The amount returned is
+     *         converted based on the current value of the two assets used in the swap.
+     * @param  assetIn   Address of the ERC-20 asset to swap in.
+     * @param  assetOut  Address of the ERC-20 asset to swap out.
+     * @param  amountOut Amount of the asset to receive from the swap.
+     * @return amountIn  Amount of the asset that is required to receive amountOut.
+     */
     function previewSwapExactOut(address assetIn, address assetOut, uint256 amountOut)
         external view returns (uint256 amountIn);
 
