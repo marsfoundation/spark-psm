@@ -5,11 +5,8 @@ import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
 
-import { IPSM3 } from "src/interfaces/IPSM3.sol";
-
-interface IRateProviderLike {
-    function getConversionRate() external view returns (uint256);
-}
+import { IPSM3 }             from "src/interfaces/IPSM3.sol";
+import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
 
 contract PSM3 is IPSM3 {
 
