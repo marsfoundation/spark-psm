@@ -31,8 +31,8 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         rho = _bound(newRho, rho,  block.timestamp);
 
         // If chi hasn't been set yet, set to 1e27, else recalculate it in the same way it would
-        // happen during a refresh.
-        uint256 rate = dsrOracle.getConversionRate();
+        // happen during a refresh at `rho`
+        uint256 rate = dsrOracle.getConversionRate(rho);
         uint256 chi  = rate == 0 ? 1e27 : rate;
 
         // 2. Cache starting state
