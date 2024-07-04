@@ -11,7 +11,6 @@ import { IDSROracle }    from "lib/xchain-dsr-oracle/src/interfaces/IDSROracle.s
 contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
     uint256 public dsr;
-    uint256 public rho;
 
     uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.000000021979553151239153027e27;
 
@@ -25,10 +24,13 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
     }
 
     // This acts as a receiver on an L2.
-    function setPotData(uint256 newDsr, uint256 newRho) external {
+    // TODO: Discuss if rho should be set to a value between last rho and block.timestamp.
+    //       This was the original approach but was causing the conversion rate to decrease.
+    function setPotData(uint256 newDsr) external {
         // 1. Setup and bounds
         dsr = _bound(newDsr, 1e27, ONE_HUNDRED_PCT_APY_DSR);
-        rho = _bound(newRho, rho,  block.timestamp);
+
+        uint256 rho = block.timestamp;
 
         // If chi hasn't been set yet, set to 1e27, else recalculate it in the same way it would
         // happen during a refresh at `rho`
