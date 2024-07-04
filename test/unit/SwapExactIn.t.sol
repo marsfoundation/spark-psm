@@ -372,21 +372,30 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
         if (index == 0) return dai;
         if (index == 1) return usdc;
         if (index == 2) return sDai;
+
+        else revert("Invalid index");
     }
 
-    /// forge-config: default.fuzz.runs = 1
+    struct FuzzVars {
+        uint256 lp0StartingValue;
+        uint256 lp1StartingValue;
+        uint256 lp2StartingValue;
+        uint256 psmStartingValue;
+        uint256 lp0CachedValue;
+        uint256 lp1CachedValue;
+        uint256 lp2CachedValue;
+        uint256 psmCachedValue;
+    }
+
+    /// forge-config: default.fuzz.runs = 10
+    /// forge-config: pr.fuzz.runs = 100
+    /// forge-config: master.fuzz.runs = 10000
     function testFuzz_swapExactIn(
         uint256 conversionRate,
         uint256 depositSeed
     ) public {
-        // 1. LPs deposit fuzzed amounts of all tokens
-        // 2. 1000 swaps happen
-        // 3. Check that the LPs have the same balances
-        // 4. Check that the PSM has the same value
-
-        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
-
-        rateProvider.__setConversionRate(conversionRate);
+        // 1% to 200% conversion rate
+        rateProvider.__setConversionRate(_bound(conversionRate, 0.01e27, 2e27));
 
         _deposit(address(dai), lp0, _bound(_hash(depositSeed, "lp0-dai"), 1, DAI_TOKEN_MAX));
 
@@ -397,25 +406,64 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
         _deposit(address(usdc), lp2, _bound(_hash(depositSeed, "lp2-usdc"), 1, USDC_TOKEN_MAX));
         _deposit(address(sDai), lp2, _bound(_hash(depositSeed, "lp2-sdai"), 1, SDAI_TOKEN_MAX));
 
+        FuzzVars memory vars;
+
+        vars.lp0StartingValue = psm.convertToAssetValue(psm.shares(lp0));
+        vars.lp1StartingValue = psm.convertToAssetValue(psm.shares(lp1));
+        vars.lp2StartingValue = psm.convertToAssetValue(psm.shares(lp2));
+        vars.psmStartingValue = psm.getPsmTotalValue();
+
         vm.startPrank(swapper);
 
         for (uint256 i; i < 1000; ++i) {
             MockERC20 assetIn  = _getAsset(_hash(i, "assetIn"));
             MockERC20 assetOut = _getAsset(_hash(i, "assetOut"));
 
+            if (assetIn == assetOut) {
+                assetOut = _getAsset(_hash(i, "assetOut") + 1);
+            }
+
             // Calculate the maximum amount that can be swapped by using the inverse conversion rate
             uint256 maxAmountIn = psm.previewSwapExactOut(
-                address(assetOut),
                 address(assetIn),
+                address(assetOut),
                 assetOut.balanceOf(address(psm))
             );
 
-            uint256 amountIn = _bound(_hash(i, "amountIn"), 0, maxAmountIn);
+            uint256 amountIn = _bound(_hash(i, "amountIn"), 0, maxAmountIn - 1);  // Rounding
+
+            vars.lp0CachedValue = psm.convertToAssetValue(psm.shares(lp0));
+            vars.lp1CachedValue = psm.convertToAssetValue(psm.shares(lp1));
+            vars.lp2CachedValue = psm.convertToAssetValue(psm.shares(lp2));
+            vars.psmCachedValue = psm.getPsmTotalValue();
 
             assetIn.mint(swapper, amountIn);
             assetIn.approve(address(psm), amountIn);
             psm.swapExactIn(address(assetIn), address(assetOut), amountIn, 0, swapper, 0);
+
+            // Rounding is always in favour of the users
+            assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue);
+            assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue);
+            assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue);
+            assertGe(psm.getPsmTotalValue(),                   vars.psmCachedValue);
+
+            // Up to 2e12 rounding on each swap
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue, 2e12);
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue, 2e12);
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue, 2e12);
+            assertApproxEqAbs(psm.getPsmTotalValue(),                   vars.psmCachedValue, 2e12);
         }
 
+        // Rounding is always in favour of the users
+        assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue);
+        assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue);
+        assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue);
+        assertGe(psm.getPsmTotalValue(),                   vars.psmStartingValue);
+
+        // Up to 2e12 rounding on each swap, for 1000 swaps
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue, 2000e12);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue, 2000e12);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue, 2000e12);
+        assertApproxEqAbs(psm.getPsmTotalValue(),                   vars.psmStartingValue, 2000e12);
     }
 }
