@@ -249,7 +249,7 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         amountOut      = _bound(amountOut,      1,       DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * conversionRate / 1e27;
 
@@ -316,7 +316,7 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
         amountOut      = _bound(amountOut,      1,       SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * conversionRate / 1e27 / 1e12;
 
@@ -362,7 +362,7 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         amountOut      = _bound(amountOut,      1,       DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * 1e27 / conversionRate;
 
@@ -388,7 +388,7 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         amountOut      = _bound(amountOut,      1,       USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * 1e27 / conversionRate * 1e12;
 
@@ -431,7 +431,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
         uint256 depositSeed
     ) public {
         // 1% to 200% conversion rate
-        rateProvider.__setConversionRate(_bound(conversionRate, 0.01e27, 2e27));
+        mockRateProvider.__setConversionRate(_bound(conversionRate, 0.01e27, 2e27));
 
         _deposit(address(dai), lp0, _bound(_hash(depositSeed, "lp0-dai"), 1, DAI_TOKEN_MAX));
 

@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSMTestBase } from "test/PSMTestBase.sol";
+import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMPreviewSwapExactIn_FailureTests is PSMTestBase {
 
@@ -90,7 +90,7 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * 1e27 / conversionRate;
 
@@ -123,7 +123,7 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,      1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 expectedAmountIn = amountOut * conversionRate / 1e27;
 
@@ -159,7 +159,7 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * 1e27 / conversionRate * 1e12;
 
@@ -195,7 +195,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,     1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         // Using raw calculation to demo rounding
         uint256 expectedAmountIn = amountOut * conversionRate / 1e27 / 1e12;
@@ -220,7 +220,7 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * conversionRate / 1e27;
 
@@ -237,7 +237,7 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * conversionRate / 1e27 / 1e12;
 
@@ -258,7 +258,7 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,      1,         DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 expectedAmountIn = amountOut * 1e27 / conversionRate;
 
@@ -278,7 +278,7 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
         amountOut      = bound(amountOut,      1,         USDC_TOKEN_MAX);
         conversionRate = bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 expectedAmountIn = amountOut * 1e27 / conversionRate * 1e12;
 
