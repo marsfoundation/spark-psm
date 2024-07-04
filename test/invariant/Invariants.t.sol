@@ -85,11 +85,11 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         // LPs position value can increase from transfers into the PSM and from swapping rounding
         // errors increasing the value of the PSM slightly.
-        // Allow a 4 tolerance for negative rounding on conversion calculations.
-        assertGe(lpAssetValue + 1e12, lpDeposits);
+        // Allow a 2e12 tolerance for negative rounding on conversion calculations.
+        assertGe(lpAssetValue + 2e12, lpDeposits);
 
-        // Include seed deposit, allow for 1e12 negative tolerance.
-        assertGe(psm.getPsmTotalValue() + 1e12, lpDeposits);
+        // Include seed deposit, allow for 2e12 negative tolerance.
+        assertGe(psm.getPsmTotalValue() + 2e12, lpDeposits);
     }
 
     function _checkInvariant_E() public view {

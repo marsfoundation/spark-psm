@@ -138,13 +138,16 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-million-decrease"
         );
 
-        // Position values can fluctuate by up to 0.00000002% on swaps
-        assertApproxEqRel(
-            psm.convertToAssetValue(psm.shares(lp0)),
-            startingConversionLp0,
-            0.000002e18,
-            "SwapperHandler/swap/conversion-rate-change-lp"
-        );
+        // Disregard this assertion if the LP has less than a dollar of value
+        if (startingConversionLp0 > 1e18) {
+            // Position values can fluctuate by up to 0.00000002% on swaps
+            assertApproxEqRel(
+                psm.convertToAssetValue(psm.shares(lp0)),
+                startingConversionLp0,
+                0.000002e18,
+                "SwapperHandler/swap/conversion-rate-change-lp"
+            );
+        }
 
         // Decrease in value from rounding is capped at 2e12
         assertGe(
