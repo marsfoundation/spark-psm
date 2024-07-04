@@ -344,3 +344,69 @@ contract PSMSwapExactInSDaiAssetInTests is PSMSwapExactInSuccessTestsBase {
     }
 
 }
+
+contract PSMSwapExactInFuzzTests is PSMTestBase {
+
+    address lp0 = makeAddr("lp0");
+    address lp1 = makeAddr("lp1");
+    address lp2 = makeAddr("lp2");
+
+    address swapper = makeAddr("swapper");
+
+    function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
+        hash_ = uint256(keccak256(abi.encode(number_, salt)));
+    }
+
+    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
+        uint256 index = indexSeed % 3;
+
+        if (index == 0) return dai;
+        if (index == 1) return usdc;
+        if (index == 2) return sDai;
+    }
+
+    /// forge-config: default.fuzz.runs = 1
+    function testFuzz_swapExactIn(
+        uint256 conversionRate,
+        uint256 depositSeed
+    ) public {
+        // 1. LPs deposit fuzzed amounts of all tokens
+        // 2. 1000 swaps happen
+        // 3. Check that the LPs have the same balances
+        // 4. Check that the PSM has the same value
+
+        conversionRate = _bound(conversionRate, 0.01e27, 100e27);  // 1% to 10,000% conversion rate
+
+        rateProvider.__setConversionRate(conversionRate);
+
+        _deposit(address(dai), lp0, _bound(_hash(depositSeed, "lp0-dai"), 1, DAI_TOKEN_MAX));
+
+        _deposit(address(usdc), lp1, _bound(_hash(depositSeed, "lp1-usdc"), 1, USDC_TOKEN_MAX));
+        _deposit(address(sDai), lp1, _bound(_hash(depositSeed, "lp1-sdai"), 1, SDAI_TOKEN_MAX));
+
+        _deposit(address(dai),  lp2, _bound(_hash(depositSeed, "lp2-dai"),  1, DAI_TOKEN_MAX));
+        _deposit(address(usdc), lp2, _bound(_hash(depositSeed, "lp2-usdc"), 1, USDC_TOKEN_MAX));
+        _deposit(address(sDai), lp2, _bound(_hash(depositSeed, "lp2-sdai"), 1, SDAI_TOKEN_MAX));
+
+        vm.startPrank(swapper);
+
+        for (uint256 i; i < 1000; ++i) {
+            MockERC20 assetIn  = _getAsset(_hash(i, "assetIn"));
+            MockERC20 assetOut = _getAsset(_hash(i, "assetOut"));
+
+            // Calculate the maximum amount that can be swapped by using the inverse conversion rate
+            uint256 maxAmountIn = psm.previewSwapExactOut(
+                address(assetOut),
+                address(assetIn),
+                assetOut.balanceOf(address(psm))
+            );
+
+            uint256 amountIn = _bound(_hash(i, "amountIn"), 0, maxAmountIn);
+
+            assetIn.mint(swapper, amountIn);
+            assetIn.approve(address(psm), amountIn);
+            psm.swapExactIn(address(assetIn), address(assetOut), amountIn, 0, swapper, 0);
+        }
+
+    }
+}
