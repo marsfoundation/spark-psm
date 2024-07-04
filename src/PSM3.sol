@@ -64,12 +64,12 @@ contract PSM3 is IPSM3 {
         address receiver,
         uint256 referralCode
     )
-        external override
+        external override returns (uint256 amountOut)
     {
         require(amountIn != 0,          "PSM3/invalid-amountIn");
         require(receiver != address(0), "PSM3/invalid-receiver");
 
-        uint256 amountOut = previewSwapExactIn(assetIn, assetOut, amountIn);
+        amountOut = previewSwapExactIn(assetIn, assetOut, amountIn);
 
         require(amountOut >= minAmountOut, "PSM3/amountOut-too-low");
 
@@ -87,12 +87,12 @@ contract PSM3 is IPSM3 {
         address receiver,
         uint256 referralCode
     )
-        external override
+        external override returns (uint256 amountIn)
     {
         require(amountOut != 0,         "PSM3/invalid-amountOut");
         require(receiver != address(0), "PSM3/invalid-receiver");
 
-        uint256 amountIn = previewSwapExactOut(assetIn, assetOut, amountOut);
+        amountIn = previewSwapExactOut(assetIn, assetOut, amountOut);
 
         require(amountIn <= maxAmountIn, "PSM3/amountIn-too-high");
 

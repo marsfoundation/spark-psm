@@ -160,7 +160,16 @@ contract PSMSwapExactOutSuccessTestsBase is PSMTestBase {
         assertEq(assetOut.balanceOf(receiver_),    0);
         assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance);
 
-        psm.swapExactOut(address(assetIn), address(assetOut), amountOut, amountIn, receiver_, 0);
+        uint256 returnedAmountIn = psm.swapExactOut(
+            address(assetIn),
+            address(assetOut),
+            amountOut,
+            amountIn,
+            receiver_,
+            0)
+        ;
+
+        assertEq(returnedAmountIn, amountIn);
 
         assertEq(assetIn.allowance(swapper_, address(psm)), 0);
 
