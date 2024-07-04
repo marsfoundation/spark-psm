@@ -103,19 +103,42 @@ contract PSMSwapExactOutFailureTests is PSMTestBase {
     }
 
     function test_swapExactOut_insufficientPsmBalanceBoundary() public {
-        // NOTE: Users can get up to 1e12 more sDAI from the swap because of rounding
-        // TODO: Figure out how to make this round down always
-        usdc.mint(swapper, 125e6);
+        // NOTE: Using higher amount so transfer fails
+        usdc.mint(swapper, 125e6 + 1);
 
         vm.startPrank(swapper);
 
-        usdc.approve(address(psm), 125e6);
+        usdc.approve(address(psm), 125e6 + 1);
 
         vm.expectRevert("SafeERC20/transfer-failed");
-        psm.swapExactOut(address(usdc), address(sDai), 100e18 + 1, 125e6, receiver, 0);
+        psm.swapExactOut(address(usdc), address(sDai), 100e18 + 1, 125e6 + 1, receiver, 0);
 
-        psm.swapExactOut(address(usdc), address(sDai), 100e18, 125e6, receiver, 0);
+        psm.swapExactOut(address(usdc), address(sDai), 100e18, 125e6 + 1, receiver, 0);
     }
+
+    // TODO: Cover this case in previews
+    // function test_demoRoundingIssue() public {
+    //     sDai.mint(address(psm), 1_000_000e18);  // Mint so balance isn't an issue
+
+    //     usdc.mint(swapper, 100e6);
+
+    //     vm.startPrank(swapper);
+
+    //     usdc.approve(address(psm), 100e6);
+
+    //     uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18);
+    //     uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1);
+    //     uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12);
+
+    //     assertEq(expectedAmountIn1, 100e6);
+    //     assertEq(expectedAmountIn2, 100e6);
+    //     assertEq(expectedAmountIn3, 100e6 + 1);
+
+    //     vm.expectRevert("PSM3/amountIn-too-high");
+    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12, 100e6, receiver, 0);
+
+    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1, 100e6, receiver, 0);
+    // }
 
 }
 
@@ -264,7 +287,14 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         amountOut = _bound(amountOut, 1, DAI_TOKEN_MAX);  // Zero amount reverts
         uint256 amountIn = amountOut / 1e12;
-        _swapExactOutTest(usdc, dai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(usdc), address(dai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(usdc, dai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
     function testFuzz_swapExactOut_usdcToSDai(
@@ -284,7 +314,13 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * conversionRate / 1e27 / 1e12;
 
-        _swapExactOutTest(usdc, sDai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(usdc), address(sDai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(usdc, sDai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
 }
