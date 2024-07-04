@@ -53,7 +53,7 @@ contract PSM3 is IPSM3 {
     /*** Swap functions                                                                         ***/
     /**********************************************************************************************/
 
-    function swap(
+    function swapExactIn(
         address assetIn,
         address assetOut,
         uint256 amountIn,
@@ -66,9 +66,32 @@ contract PSM3 is IPSM3 {
         require(amountIn != 0,          "PSM3/invalid-amountIn");
         require(receiver != address(0), "PSM3/invalid-receiver");
 
-        amountOut = previewSwap(assetIn, assetOut, amountIn);
+        amountOut = previewSwapExactIn(assetIn, assetOut, amountIn);
 
         require(amountOut >= minAmountOut, "PSM3/amountOut-too-low");
+
+        IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(assetOut).safeTransfer(receiver, amountOut);
+
+        emit Swap(assetIn, assetOut, msg.sender, receiver, amountIn, amountOut, referralCode);
+    }
+
+    function swapExactOut(
+        address assetIn,
+        address assetOut,
+        uint256 amountOut,
+        uint256 maxAmountIn,
+        address receiver,
+        uint256 referralCode
+    )
+        external override returns (uint256 amountIn)
+    {
+        require(amountOut != 0,         "PSM3/invalid-amountOut");
+        require(receiver != address(0), "PSM3/invalid-receiver");
+
+        amountIn = previewSwapExactOut(assetIn, assetOut, amountOut);
+
+        require(amountIn <= maxAmountIn, "PSM3/amountIn-too-high");
 
         IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
         IERC20(assetOut).safeTransfer(receiver, amountOut);
@@ -154,25 +177,18 @@ contract PSM3 is IPSM3 {
     /*** Swap preview functions                                                                 ***/
     /**********************************************************************************************/
 
-    function previewSwap(address assetIn, address assetOut, uint256 amountIn)
+    function previewSwapExactIn(address assetIn, address assetOut, uint256 amountIn)
         public view override returns (uint256 amountOut)
     {
-        if (assetIn == address(asset0)) {
-            if      (assetOut == address(asset1)) return _previewOneToOneSwap(amountIn, _asset0Precision, _asset1Precision);
-            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, _asset0Precision);
-        }
+        // Round down to get amountOut
+        amountOut = _getSwapQuote(assetIn, assetOut, amountIn, false);
+    }
 
-        else if (assetIn == address(asset1)) {
-            if      (assetOut == address(asset0)) return _previewOneToOneSwap(amountIn, _asset1Precision, _asset0Precision);
-            else if (assetOut == address(asset2)) return _previewSwapToAsset2(amountIn, _asset1Precision);
-        }
-
-        else if (assetIn == address(asset2)) {
-            if      (assetOut == address(asset0)) return _previewSwapFromAsset2(amountIn, _asset0Precision);
-            else if (assetOut == address(asset1)) return _previewSwapFromAsset2(amountIn, _asset1Precision);
-        }
-
-        revert("PSM3/invalid-asset");
+    function previewSwapExactOut(address assetIn, address assetOut, uint256 amountOut)
+        public view override returns (uint256 amountIn)
+    {
+        // Round up to get amountIn
+        amountIn = _getSwapQuote(assetOut, assetIn, amountOut, true);
     }
 
     /**********************************************************************************************/
@@ -229,22 +245,8 @@ contract PSM3 is IPSM3 {
     }
 
     /**********************************************************************************************/
-    /*** Internal helper functions                                                              ***/
+    /*** Internal valuation functions (deposit/withdraw)                                        ***/
     /**********************************************************************************************/
-
-    function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
-        uint256 totalValue = getPsmTotalValue();
-        if (totalValue != 0) {
-            return _divUp(assetValue * totalShares, totalValue);
-        }
-        return assetValue;
-    }
-
-    function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        unchecked {
-            z = x != 0 ? ((x - 1) / y) + 1 : 0;
-        }
-    }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
         if      (asset == address(asset0)) return _getAsset0Value(amount);
@@ -269,40 +271,90 @@ contract PSM3 is IPSM3 {
             / _asset2Precision;
     }
 
-    function _isValidAsset(address asset) internal view returns (bool) {
-        return asset == address(asset0) || asset == address(asset1) || asset == address(asset2);
+    /**********************************************************************************************/
+    /*** Internal preview functions (swaps)                                                     ***/
+    /**********************************************************************************************/
+
+    function _getSwapQuote(address asset, address quoteAsset, uint256 amount, bool roundUp)
+        public view returns (uint256 quoteAmount)
+    {
+        if (asset == address(asset0)) {
+            if      (quoteAsset == address(asset1)) return _convertOneToOne(amount, _asset0Precision, _asset1Precision, roundUp);
+            else if (quoteAsset == address(asset2)) return _convertToAsset2(amount, _asset0Precision, roundUp);
+        }
+
+        else if (asset == address(asset1)) {
+            if      (quoteAsset == address(asset0)) return _convertOneToOne(amount, _asset1Precision, _asset0Precision, roundUp);
+            else if (quoteAsset == address(asset2)) return _convertToAsset2(amount, _asset1Precision, roundUp);
+        }
+
+        else if (asset == address(asset2)) {
+            if      (quoteAsset == address(asset0)) return _convertFromAsset2(amount, _asset0Precision, roundUp);
+            else if (quoteAsset == address(asset1)) return _convertFromAsset2(amount, _asset1Precision, roundUp);
+        }
+
+        revert("PSM3/invalid-asset");
     }
 
-    function _previewSwapToAsset2(uint256 amountIn, uint256 assetInPrecision)
+    function _convertToAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
-        return amountIn
-            * 1e27
-            / IRateProviderLike(rateProvider).getConversionRate()
-            * _asset2Precision
-            / assetInPrecision;
+        uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
+
+        if (!roundUp) return amount * 1e27 / rate * _asset2Precision / assetPrecision;
+
+        return _divUp(
+            _divUp(amount * 1e27, rate) * _asset2Precision,
+            assetPrecision
+        );
     }
 
-    function _previewSwapFromAsset2(uint256 amountIn, uint256 assetInPrecision)
+    function _convertFromAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
-        return amountIn
-            * IRateProviderLike(rateProvider).getConversionRate()
-            / 1e27
-            * assetInPrecision
-            / _asset2Precision;
+        uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
+
+        if (!roundUp) return amount * rate / 1e27 * assetPrecision / _asset2Precision;
+
+        return _divUp(
+            _divUp(amount * rate, 1e27) * assetPrecision,
+            _asset2Precision
+        );
     }
 
-    function _previewOneToOneSwap(
-        uint256 amountIn,
-        uint256 assetInPrecision,
-        uint256 assetOutPrecision
+    function _convertOneToOne(
+        uint256 amount,
+        uint256 assetPrecision,
+        uint256 convertAssetPrecision,
+        bool roundUp
     )
         internal pure returns (uint256)
     {
-        return amountIn
-            * assetOutPrecision
-            / assetInPrecision;
+        if (!roundUp) return amount * convertAssetPrecision / assetPrecision;
+
+        return _divUp(amount * convertAssetPrecision, assetPrecision);
+    }
+
+    /**********************************************************************************************/
+    /*** Internal helper functions                                                              ***/
+    /**********************************************************************************************/
+
+    function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
+        uint256 totalValue = getPsmTotalValue();
+        if (totalValue != 0) {
+            return _divUp(assetValue * totalShares, totalValue);
+        }
+        return assetValue;
+    }
+
+    function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        unchecked {
+            z = x != 0 ? ((x - 1) / y) + 1 : 0;
+        }
+    }
+
+    function _isValidAsset(address asset) internal view returns (bool) {
+        return asset == address(asset0) || asset == address(asset1) || asset == address(asset2);
     }
 
 }
