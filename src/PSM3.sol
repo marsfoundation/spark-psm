@@ -83,18 +83,18 @@ contract PSM3 is IPSM3 {
         address assetIn,
         address assetOut,
         uint256 amountOut,
-        uint256 minAmountIn,
+        uint256 maxAmountIn,
         address receiver,
         uint256 referralCode
     )
-        external //override
+        external override
     {
         require(amountOut != 0,         "PSM3/invalid-amountOut");
         require(receiver != address(0), "PSM3/invalid-receiver");
 
         uint256 amountIn = previewSwapExactOut(assetIn, assetOut, amountOut);
 
-        require(amountIn >= minAmountIn, "PSM3/amountIn-too-low");
+        require(amountIn <= maxAmountIn, "PSM3/amountIn-too-high");
 
         IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
         IERC20(assetOut).safeTransfer(receiver, amountOut);
