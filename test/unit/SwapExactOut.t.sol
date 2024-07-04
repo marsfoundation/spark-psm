@@ -166,8 +166,8 @@ contract PSMSwapExactOutSuccessTestsBase is PSMTestBase {
             amountOut,
             amountIn,
             receiver_,
-            0)
-        ;
+            0
+        );
 
         assertEq(returnedAmountIn, amountIn);
 
