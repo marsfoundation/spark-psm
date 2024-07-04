@@ -123,7 +123,7 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,      1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * conversionRate / 1e27;
 
@@ -189,7 +189,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,     1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * conversionRate / 1e27 / 1e12;
 
@@ -248,7 +248,7 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
         amountOut      = _bound(amountOut,      1,         DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * 1e27 / conversionRate;
 
@@ -265,7 +265,7 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
         amountOut      = bound(amountOut,      1,         USDC_TOKEN_MAX);
         conversionRate = bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountIn = amountOut * 1e27 / conversionRate * 1e12;
 
