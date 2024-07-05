@@ -149,69 +149,69 @@ contract PSMHarnessTests is PSMTestBase {
 
 contract GetPsmTotalValueTests is PSMTestBase {
 
-    function test_getPsmTotalValue_balanceChanges() public {
+    function test_totalAssets_balanceChanges() public {
         dai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 1e18);
+        assertEq(psm.totalAssets(), 1e18);
 
         usdc.mint(address(psm), 1e6);
 
-        assertEq(psm.getPsmTotalValue(), 2e18);
+        assertEq(psm.totalAssets(), 2e18);
 
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 3.25e18);
+        assertEq(psm.totalAssets(), 3.25e18);
 
         dai.burn(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 2.25e18);
+        assertEq(psm.totalAssets(), 2.25e18);
 
         usdc.burn(address(psm), 1e6);
 
-        assertEq(psm.getPsmTotalValue(), 1.25e18);
+        assertEq(psm.totalAssets(), 1.25e18);
 
         sDai.burn(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 0);
+        assertEq(psm.totalAssets(), 0);
     }
 
-    function test_getPsmTotalValue_conversionRateChanges() public {
-        assertEq(psm.getPsmTotalValue(), 0);
+    function test_totalAssets_conversionRateChanges() public {
+        assertEq(psm.totalAssets(), 0);
 
         dai.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 3.25e18);
+        assertEq(psm.totalAssets(), 3.25e18);
 
         mockRateProvider.__setConversionRate(1.5e27);
 
-        assertEq(psm.getPsmTotalValue(), 3.5e18);
+        assertEq(psm.totalAssets(), 3.5e18);
 
         mockRateProvider.__setConversionRate(0.8e27);
 
-        assertEq(psm.getPsmTotalValue(), 2.8e18);
+        assertEq(psm.totalAssets(), 2.8e18);
     }
 
-    function test_getPsmTotalValue_bothChange() public {
-        assertEq(psm.getPsmTotalValue(), 0);
+    function test_totalAssets_bothChange() public {
+        assertEq(psm.totalAssets(), 0);
 
         dai.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 3.25e18);
+        assertEq(psm.totalAssets(), 3.25e18);
 
         mockRateProvider.__setConversionRate(1.5e27);
 
-        assertEq(psm.getPsmTotalValue(), 3.5e18);
+        assertEq(psm.totalAssets(), 3.5e18);
 
         sDai.mint(address(psm), 1e18);
 
-        assertEq(psm.getPsmTotalValue(), 5e18);
+        assertEq(psm.totalAssets(), 5e18);
     }
 
-    function testFuzz_getPsmTotalValue(
+    function testFuzz_totalAssets(
         uint256 daiAmount,
         uint256 usdcAmount,
         uint256 sDaiAmount,
@@ -231,7 +231,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
         mockRateProvider.__setConversionRate(conversionRate);
 
         assertEq(
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             daiAmount + (usdcAmount * 1e12) + (sDaiAmount * conversionRate / 1e27)
         );
     }

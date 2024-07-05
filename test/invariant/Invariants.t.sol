@@ -53,7 +53,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
     function _checkInvariant_B() public view {
         assertApproxEqAbs(
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             psm.convertToAssetValue(psm.totalShares()),
             4
         );
@@ -65,7 +65,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             psm.convertToAssetValue(psm.shares(address(lpHandler.lps(1)))) +
             psm.convertToAssetValue(psm.shares(address(lpHandler.lps(2)))) +
             psm.convertToAssetValue(1e18),  // Seed amount
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             4
         );
     }
@@ -117,7 +117,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 lp1WithdrawsValue = _getLpTokenValue(lp1);
         uint256 lp2WithdrawsValue = _getLpTokenValue(lp2);
 
-        uint256 psmTotalValue = psm.getPsmTotalValue();
+        uint256 psmTotalValue = psm.totalAssets();
 
         uint256 startingSeedValue = psm.convertToAssetValue(1e18);
 
@@ -142,8 +142,8 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 seedValue = psm.convertToAssetValue(1e18);
 
         // PSM is empty (besides seed amount).
-        assertEq(psm.totalShares(),      1e18);
-        assertEq(psm.getPsmTotalValue(), seedValue);
+        assertEq(psm.totalShares(), 1e18);
+        assertEq(psm.totalAssets(), seedValue);
 
         // Tokens held by LPs are equal to the sum of their previous balance
         // plus the amount of value originally represented in the PSM's shares.
@@ -194,8 +194,8 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         );
 
         // All funds can always be withdrawn completely.
-        assertEq(psm.totalShares(),      0);
-        assertEq(psm.getPsmTotalValue(), 0);
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.totalAssets(), 0);
     }
 
 }
