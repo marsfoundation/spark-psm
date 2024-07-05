@@ -570,7 +570,6 @@ contract PSMWithdrawTests is PSMTestBase {
         vm.prank(user1);
         amount = psm.withdraw(address(sDai), user1, type(uint256).max);
 
-
         {
             // User1s remaining shares are used
             uint256 user1SDai = (user1Shares - expectedUser1SharesBurned)
