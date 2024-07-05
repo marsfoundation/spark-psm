@@ -30,7 +30,7 @@ contract SwapperHandler is HandlerBase {
         return swappers[indexSeed % swappers.length];
     }
 
-    function swap(
+    function swapExactIn(
         uint256 assetInSeed,
         uint256 assetOutSeed,
         uint256 swapperSeed,
@@ -53,7 +53,7 @@ contract SwapperHandler is HandlerBase {
 
         // By calculating the amount of assetIn we can get from the max asset out, we can
         // determine the max amount of assetIn we can swap since its the same both ways.
-        uint256 maxAmountIn = psm.previewSwap(
+        uint256 maxAmountIn = psm.previewSwapExactIn(
             address(assetOut),
             address(assetIn),
             assetOut.balanceOf(address(psm))
@@ -71,16 +71,18 @@ contract SwapperHandler is HandlerBase {
         minAmountOut = _bound(
             minAmountOut,
             0,
-            psm.previewSwap(address(assetIn), address(assetOut), amountIn)
+            psm.previewSwapExactIn(address(assetIn), address(assetOut), amountIn)
         );
 
         vm.startPrank(swapper);
         assetIn.mint(swapper, amountIn);
         assetIn.approve(address(psm), amountIn);
-        psm.swap(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
+        psm.swapExactIn(address(assetIn), address(assetOut), amountIn, minAmountOut, swapper, 0);
         vm.stopPrank();
 
         swapCount++;
     }
+
+    // TODO: Add swapExactOut in separate PR
 
 }

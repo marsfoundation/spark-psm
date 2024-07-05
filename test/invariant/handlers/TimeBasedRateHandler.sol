@@ -10,7 +10,6 @@ import { IDSROracle }    from "lib/xchain-dsr-oracle/src/interfaces/IDSROracle.s
 contract TimeBasedRateHandler is StdCheats, StdUtils {
 
     uint256 public dsr;
-    uint256 public chi;
     uint256 public rho;
 
     uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.000000021979553151239153027e27;

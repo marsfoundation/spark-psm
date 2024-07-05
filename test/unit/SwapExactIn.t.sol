@@ -7,7 +7,7 @@ import { PSM3 } from "src/PSM3.sol";
 
 import { MockERC20, MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
-contract PSMSwapFailureTests is PSMTestBase {
+contract PSMSwapExactInFailureTests is PSMTestBase {
 
     address public swapper  = makeAddr("swapper");
     address public receiver = makeAddr("receiver");
@@ -20,59 +20,59 @@ contract PSMSwapFailureTests is PSMTestBase {
         sDai.mint(address(psm), 100e18);
     }
 
-    function test_swap_amountZero() public {
+    function test_swapExactIn_amountZero() public {
         vm.expectRevert("PSM3/invalid-amountIn");
-        psm.swap(address(usdc), address(sDai), 0, 0, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 0, 0, receiver, 0);
     }
 
-    function test_swap_receiverZero() public {
+    function test_swapExactIn_receiverZero() public {
         vm.expectRevert("PSM3/invalid-receiver");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, address(0), 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, address(0), 0);
     }
 
-    function test_swap_invalid_assetIn() public {
+    function test_swapExactIn_invalid_assetIn() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.swap(makeAddr("other-token"), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(makeAddr("other-token"), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_invalid_assetOut() public {
+    function test_swapExactIn_invalid_assetOut() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.swap(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_bothAsset0() public {
+    function test_swapExactIn_bothAsset0() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.swap(address(dai), address(dai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(dai), address(dai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_bothAsset1() public {
+    function test_swapExactIn_bothAsset1() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.swap(address(usdc), address(usdc), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(usdc), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_bothAsset2() public {
+    function test_swapExactIn_bothAsset2() public {
         vm.expectRevert("PSM3/invalid-asset");
-        psm.swap(address(sDai), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(sDai), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_minAmountOutBoundary() public {
+    function test_swapExactIn_minAmountOutBoundary() public {
         usdc.mint(swapper, 100e6);
 
         vm.startPrank(swapper);
 
         usdc.approve(address(psm), 100e6);
 
-        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 100e6);
+        uint256 expectedAmountOut = psm.previewSwapExactIn(address(usdc), address(sDai), 100e6);
 
         assertEq(expectedAmountOut, 80e18);
 
         vm.expectRevert("PSM3/amountOut-too-low");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18 + 1, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18 + 1, receiver, 0);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_insufficientApproveBoundary() public {
+    function test_swapExactIn_insufficientApproveBoundary() public {
         usdc.mint(swapper, 100e6);
 
         vm.startPrank(swapper);
@@ -80,14 +80,14 @@ contract PSMSwapFailureTests is PSMTestBase {
         usdc.approve(address(psm), 100e6 - 1);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
 
         usdc.approve(address(psm), 100e6);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_insufficientUserBalanceBoundary() public {
+    function test_swapExactIn_insufficientUserBalanceBoundary() public {
         usdc.mint(swapper, 100e6 - 1);
 
         vm.startPrank(swapper);
@@ -95,14 +95,14 @@ contract PSMSwapFailureTests is PSMTestBase {
         usdc.approve(address(psm), 100e6);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
 
         usdc.mint(swapper, 1);
 
-        psm.swap(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swap_insufficientPsmBalanceBoundary() public {
+    function test_swapExactIn_insufficientPsmBalanceBoundary() public {
         // NOTE: Using 2 instead of 1 here because 1/1.25 rounds to 0, 2/1.25 rounds to 1
         //       this is because the conversion rate is divided out before the precision conversion
         //       is done.
@@ -112,19 +112,19 @@ contract PSMSwapFailureTests is PSMTestBase {
 
         usdc.approve(address(psm), 125e6 + 2);
 
-        uint256 expectedAmountOut = psm.previewSwap(address(usdc), address(sDai), 125e6 + 2);
+        uint256 expectedAmountOut = psm.previewSwapExactIn(address(usdc), address(sDai), 125e6 + 2);
 
         assertEq(expectedAmountOut, 100.000001e18);  // More than balance of sDAI
 
         vm.expectRevert("SafeERC20/transfer-failed");
-        psm.swap(address(usdc), address(sDai), 125e6 + 2, 100e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 125e6 + 2, 100e18, receiver, 0);
 
-        psm.swap(address(usdc), address(sDai), 125e6, 100e18, receiver, 0);
+        psm.swapExactIn(address(usdc), address(sDai), 125e6, 100e18, receiver, 0);
     }
 
 }
 
-contract PSMSwapSuccessTestsBase is PSMTestBase {
+contract PSMSwapExactInSuccessTestsBase is PSMTestBase {
 
     address public swapper  = makeAddr("swapper");
     address public receiver = makeAddr("receiver");
@@ -139,7 +139,7 @@ contract PSMSwapSuccessTestsBase is PSMTestBase {
         sDai.mint(address(psm), SDAI_TOKEN_MAX * 100);
     }
 
-    function _swapTest(
+    function _swapExactInTest(
         MockERC20 assetIn,
         MockERC20 assetOut,
         uint256 amountIn,
@@ -165,7 +165,16 @@ contract PSMSwapSuccessTestsBase is PSMTestBase {
         assertEq(assetOut.balanceOf(receiver_),    0);
         assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance);
 
-        psm.swap(address(assetIn), address(assetOut), amountIn, amountOut, receiver_, 0);
+        uint256 returnedAmountOut = psm.swapExactIn(
+            address(assetIn),
+            address(assetOut),
+            amountIn,
+            amountOut,
+            receiver_,
+            0
+        );
+
+        assertEq(returnedAmountOut, amountOut);
 
         assertEq(assetIn.allowance(swapper_, address(psm)), 0);
 
@@ -178,25 +187,25 @@ contract PSMSwapSuccessTestsBase is PSMTestBase {
 
 }
 
-contract PSMSwapDaiAssetInTests is PSMSwapSuccessTestsBase {
+contract PSMSwapExactInDaiAssetInTests is PSMSwapExactInSuccessTestsBase {
 
-    function test_swap_daiToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(dai, usdc, 100e18, 100e6, swapper, swapper);
+    function test_swapExactIn_daiToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(dai, usdc, 100e18, 100e6, swapper, swapper);
     }
 
-    function test_swap_daiToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(dai, sDai, 100e18, 80e18, swapper, swapper);
+    function test_swapExactIn_daiToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(dai, sDai, 100e18, 80e18, swapper, swapper);
     }
 
-    function test_swap_daiToUsdc_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(dai, usdc, 100e18, 100e6, swapper, receiver);
+    function test_swapExactIn_daiToUsdc_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(dai, usdc, 100e18, 100e6, swapper, receiver);
     }
 
-    function test_swap_daiToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(dai, sDai, 100e18, 80e18, swapper, receiver);
+    function test_swapExactIn_daiToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(dai, sDai, 100e18, 80e18, swapper, receiver);
     }
 
-    function testFuzz_swap_daiToUsdc(
+    function testFuzz_swapExactIn_daiToUsdc(
         uint256 amountIn,
         address fuzzSwapper,
         address fuzzReceiver
@@ -207,10 +216,10 @@ contract PSMSwapDaiAssetInTests is PSMSwapSuccessTestsBase {
 
         amountIn = _bound(amountIn, 1, DAI_TOKEN_MAX);  // Zero amount reverts
         uint256 amountOut = amountIn / 1e12;
-        _swapTest(dai, usdc, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(dai, usdc, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
-    function testFuzz_swap_daiToSDai(
+    function testFuzz_swapExactIn_daiToSDai(
         uint256 amountIn,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -226,30 +235,30 @@ contract PSMSwapDaiAssetInTests is PSMSwapSuccessTestsBase {
 
         uint256 amountOut = amountIn * 1e27 / conversionRate;
 
-        _swapTest(dai, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(dai, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
 }
 
-contract PSMSwapUsdcAssetInTests is PSMSwapSuccessTestsBase {
+contract PSMSwapExactInUsdcAssetInTests is PSMSwapExactInSuccessTestsBase {
 
-    function test_swap_usdcToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(usdc, dai, 100e6, 100e18, swapper, swapper);
+    function test_swapExactIn_usdcToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(usdc, dai, 100e6, 100e18, swapper, swapper);
     }
 
-    function test_swap_usdcToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(usdc, sDai, 100e6, 80e18, swapper, swapper);
+    function test_swapExactIn_usdcToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(usdc, sDai, 100e6, 80e18, swapper, swapper);
     }
 
-    function test_swap_usdcToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(usdc, dai, 100e6, 100e18, swapper, receiver);
+    function test_swapExactIn_usdcToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(usdc, dai, 100e6, 100e18, swapper, receiver);
     }
 
-    function test_swap_usdcToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(usdc, sDai, 100e6, 80e18, swapper, receiver);
+    function test_swapExactIn_usdcToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(usdc, sDai, 100e6, 80e18, swapper, receiver);
     }
 
-    function testFuzz_swap_usdcToDai(
+    function testFuzz_swapExactIn_usdcToDai(
         uint256 amountIn,
         address fuzzSwapper,
         address fuzzReceiver
@@ -260,10 +269,10 @@ contract PSMSwapUsdcAssetInTests is PSMSwapSuccessTestsBase {
 
         amountIn = _bound(amountIn, 1, USDC_TOKEN_MAX);  // Zero amount reverts
         uint256 amountOut = amountIn * 1e12;
-        _swapTest(usdc, dai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(usdc, dai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
-    function testFuzz_swap_usdcToSDai(
+    function testFuzz_swapExactIn_usdcToSDai(
         uint256 amountIn,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -280,30 +289,30 @@ contract PSMSwapUsdcAssetInTests is PSMSwapSuccessTestsBase {
 
         uint256 amountOut = amountIn * 1e27 / conversionRate * 1e12;
 
-        _swapTest(usdc, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(usdc, sDai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
 }
 
-contract PSMSwapSDaiAssetInTests is PSMSwapSuccessTestsBase {
+contract PSMSwapExactInSDaiAssetInTests is PSMSwapExactInSuccessTestsBase {
 
-    function test_swap_sDaiToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(sDai, dai, 100e18, 125e18, swapper, swapper);
+    function test_swapExactIn_sDaiToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(sDai, dai, 100e18, 125e18, swapper, swapper);
     }
 
-    function test_swap_sDaiToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(sDai, usdc, 100e18, 125e6, swapper, swapper);
+    function test_swapExactIn_sDaiToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(sDai, usdc, 100e18, 125e6, swapper, swapper);
     }
 
-    function test_swap_sDaiToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(sDai, dai, 100e18, 125e18, swapper, receiver);
+    function test_swapExactIn_sDaiToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(sDai, dai, 100e18, 125e18, swapper, receiver);
     }
 
-    function test_swap_sDaiToUsdc_differentReceiver() public assertAtomicPsmValueDoesNotChange {
-        _swapTest(sDai, usdc, 100e18, 125e6, swapper, receiver);
+    function test_swapExactIn_sDaiToUsdc_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+        _swapExactInTest(sDai, usdc, 100e18, 125e6, swapper, receiver);
     }
 
-    function testFuzz_swap_sDaiToDai(
+    function testFuzz_swapExactIn_sDaiToDai(
         uint256 amountIn,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -320,10 +329,10 @@ contract PSMSwapSDaiAssetInTests is PSMSwapSuccessTestsBase {
 
         uint256 amountOut = amountIn * conversionRate / 1e27;
 
-        _swapTest(sDai, dai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(sDai, dai, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
-    function testFuzz_swap_sDaiToUsdc(
+    function testFuzz_swapExactIn_sDaiToUsdc(
         uint256 amountIn,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -340,7 +349,7 @@ contract PSMSwapSDaiAssetInTests is PSMSwapSuccessTestsBase {
 
         uint256 amountOut = amountIn * conversionRate / 1e27 / 1e12;
 
-        _swapTest(sDai, usdc, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
+        _swapExactInTest(sDai, usdc, amountIn, amountOut, fuzzSwapper, fuzzReceiver);
     }
 
 }
