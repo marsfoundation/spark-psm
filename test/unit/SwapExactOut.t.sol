@@ -447,7 +447,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
         vars.lp0StartingValue = psm.convertToAssetValue(psm.shares(lp0));
         vars.lp1StartingValue = psm.convertToAssetValue(psm.shares(lp1));
         vars.lp2StartingValue = psm.convertToAssetValue(psm.shares(lp2));
-        vars.psmStartingValue = psm.getPsmTotalValue();
+        vars.psmStartingValue = psm.totalAssets();
 
         vm.startPrank(swapper);
 
@@ -467,7 +467,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
             vars.lp0CachedValue = psm.convertToAssetValue(psm.shares(lp0));
             vars.lp1CachedValue = psm.convertToAssetValue(psm.shares(lp1));
             vars.lp2CachedValue = psm.convertToAssetValue(psm.shares(lp2));
-            vars.psmCachedValue = psm.getPsmTotalValue();
+            vars.psmCachedValue = psm.totalAssets();
 
             assetIn.mint(swapper, amountIn);
             assetIn.approve(address(psm), amountIn);
@@ -477,26 +477,26 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
             assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue);
             assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue);
             assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue);
-            assertGe(psm.getPsmTotalValue(),                   vars.psmCachedValue);
+            assertGe(psm.totalAssets(),                        vars.psmCachedValue);
 
             // Up to 2e12 rounding on each swap
             assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue, 2e12);
             assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue, 2e12);
             assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue, 2e12);
-            assertApproxEqAbs(psm.getPsmTotalValue(),                   vars.psmCachedValue, 2e12);
+            assertApproxEqAbs(psm.totalAssets(),                        vars.psmCachedValue, 2e12);
         }
 
         // Rounding is always in favour of the users
         assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue);
         assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue);
         assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue);
-        assertGe(psm.getPsmTotalValue(),                   vars.psmStartingValue);
+        assertGe(psm.totalAssets(),                        vars.psmStartingValue);
 
         // Up to 2e12 rounding on each swap, for 1000 swaps
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue, 2000e12);
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue, 2000e12);
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue, 2000e12);
-        assertApproxEqAbs(psm.getPsmTotalValue(),                   vars.psmStartingValue, 2000e12);
+        assertApproxEqAbs(psm.totalAssets(),                        vars.psmStartingValue, 2000e12);
     }
 
     function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
