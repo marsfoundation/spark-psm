@@ -66,8 +66,8 @@ contract PSMPreviewSwapExactOut_FailureTests is PSMTestBase {
 contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
 
     function test_previewSwapExactIn_daiToUsdc() public view {
-        // assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12 - 1), 0);
-        // assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12),     1);
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12 - 1), 0);
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12),     1);
 
         assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e18), 1e6);
         assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 2e18), 2e6);
