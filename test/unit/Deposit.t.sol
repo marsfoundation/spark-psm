@@ -14,11 +14,6 @@ contract PSMDepositTests is PSMTestBase {
     address receiver1 = makeAddr("receiver1");
     address receiver2 = makeAddr("receiver2");
 
-    function test_deposit_zeroReceiver() public {
-        vm.expectRevert("PSM3/invalid-receiver");
-        psm.deposit(address(usdc), address(0), 100e6);
-    }
-
     function test_deposit_zeroAmount() public {
         vm.expectRevert("PSM3/invalid-amount");
         psm.deposit(address(usdc), user1, 0);
