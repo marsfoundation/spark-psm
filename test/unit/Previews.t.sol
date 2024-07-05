@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSMTestBase } from "test/PSMTestBase.sol";
+import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMPreviewSwapFailureTests is PSMTestBase {
 
@@ -61,7 +61,7 @@ contract PSMPreviewSwapDaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         DAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * 1e27 / conversionRate;
 
@@ -94,7 +94,7 @@ contract PSMPreviewSwapUSDCAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * 1e27 / conversionRate * 1e12;
 
@@ -115,7 +115,7 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * conversionRate / 1e27;
 
@@ -132,7 +132,7 @@ contract PSMPreviewSwapSDaiAssetInTests is PSMTestBase {
         amountIn       = _bound(amountIn,       1,         SDAI_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 amountOut = amountIn * conversionRate / 1e27 / 1e12;
 

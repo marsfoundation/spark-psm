@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSMTestBase } from "test/PSMTestBase.sol";
+import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 
 import { PSM3Harness } from "test/unit/harnesses/PSM3Harness.sol";
 
@@ -72,7 +72,7 @@ contract PSMHarnessTests is PSMTestBase {
         assertEq(psmHarness.getAsset2Value(3e18), 3.75e18);
         assertEq(psmHarness.getAsset2Value(4e18), 5e18);
 
-        rateProvider.__setConversionRate(1.6e27);
+        mockRateProvider.__setConversionRate(1.6e27);
 
         assertEq(psmHarness.getAsset2Value(1), 1);
         assertEq(psmHarness.getAsset2Value(2), 3);
@@ -84,7 +84,7 @@ contract PSMHarnessTests is PSMTestBase {
         assertEq(psmHarness.getAsset2Value(3e18), 4.8e18);
         assertEq(psmHarness.getAsset2Value(4e18), 6.4e18);
 
-        rateProvider.__setConversionRate(0.8e27);
+        mockRateProvider.__setConversionRate(0.8e27);
 
         assertEq(psmHarness.getAsset2Value(1), 0);
         assertEq(psmHarness.getAsset2Value(2), 1);
@@ -101,7 +101,7 @@ contract PSMHarnessTests is PSMTestBase {
         conversionRate = _bound(conversionRate, 0, 1000e27);
         amount         = _bound(amount,         0, SDAI_TOKEN_MAX);
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         assertEq(psmHarness.getAsset2Value(amount), amount * conversionRate / 1e27);
     }
@@ -184,11 +184,11 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 3.25e18);
 
-        rateProvider.__setConversionRate(1.5e27);
+        mockRateProvider.__setConversionRate(1.5e27);
 
         assertEq(psm.totalAssets(), 3.5e18);
 
-        rateProvider.__setConversionRate(0.8e27);
+        mockRateProvider.__setConversionRate(0.8e27);
 
         assertEq(psm.totalAssets(), 2.8e18);
     }
@@ -202,7 +202,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 3.25e18);
 
-        rateProvider.__setConversionRate(1.5e27);
+        mockRateProvider.__setConversionRate(1.5e27);
 
         assertEq(psm.totalAssets(), 3.5e18);
 
@@ -228,7 +228,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
         usdc.mint(address(psm), usdcAmount);
         sDai.mint(address(psm), sDaiAmount);
 
-        rateProvider.__setConversionRate(conversionRate);
+        mockRateProvider.__setConversionRate(conversionRate);
 
         assertEq(
             psm.totalAssets(),
