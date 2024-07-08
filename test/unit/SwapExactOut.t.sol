@@ -473,7 +473,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
             assetIn.approve(address(psm), amountIn);
             psm.swapExactOut(address(assetIn), address(assetOut), amountOut, amountIn, swapper, 0);
 
-            // Rounding is always in favour of the users
+            // Rounding is always in favour of the LPs
             assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue);
             assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue);
             assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue);
@@ -486,7 +486,7 @@ contract PSMSwapExactOutFuzzTests is PSMTestBase {
             assertApproxEqAbs(psm.totalAssets(),                        vars.psmCachedValue, 2e12);
         }
 
-        // Rounding is always in favour of the users
+        // Rounding is always in favour of the LPs
         assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue);
         assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue);
         assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue);
