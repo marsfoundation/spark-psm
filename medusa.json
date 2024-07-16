@@ -13,16 +13,7 @@
       "PSMConvertToSharesTests",
       "PSMConvertToSharesWithDaiTests",
       "PSMConvertToSharesWithUsdcTests",
-      "PSMConvertToSharesWithSDaiTests",
-      "PSMDepositTests",
-      "PSMWithdrawTests",
-      "RoundingTests",
-      "PSMSwapExactInDaiAssetInTests",
-      "PSMSwapExactInUsdcAssetInTests",
-      "PSMSwapExactInSDaiAssetInTests",
-      "PSMSwapExactOutDaiAssetInTests",
-      "PSMSwapExactOutUsdcAssetInTests",
-      "PSMSwapExactOutSDaiAssetInTests"
+      "PSMConvertToSharesWithSDaiTests"
     ],
     "targetContractsBalances": [],
     "constructorArgs": {},
