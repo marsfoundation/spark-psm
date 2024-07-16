@@ -14,3 +14,6 @@ docs/
 .env
 
 lcov.info
+
+# Medusa
+crytic-export
