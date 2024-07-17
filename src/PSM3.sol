@@ -106,8 +106,7 @@ contract PSM3 is IPSM3 {
     function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external override returns (uint256 newShares)
     {
-        require(receiver != address(0), "PSM3/invalid-receiver");
-        require(assetsToDeposit != 0,   "PSM3/invalid-amount");
+        require(assetsToDeposit != 0, "PSM3/invalid-amount");
 
         newShares = previewDeposit(asset, assetsToDeposit);
 
@@ -122,7 +121,6 @@ contract PSM3 is IPSM3 {
     function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw)
         external override returns (uint256 assetsWithdrawn)
     {
-        require(receiver != address(0),   "PSM3/invalid-receiver");
         require(maxAssetsToWithdraw != 0, "PSM3/invalid-amount");
 
         uint256 sharesToBurn;
@@ -216,15 +214,15 @@ contract PSM3 is IPSM3 {
         uint256 totalShares_ = totalShares;
 
         if (totalShares_ != 0) {
-            return numShares * getPsmTotalValue() / totalShares_;
+            return numShares * totalAssets() / totalShares_;
         }
         return numShares;
     }
 
     function convertToShares(uint256 assetValue) public view override returns (uint256) {
-        uint256 totalValue = getPsmTotalValue();
-        if (totalValue != 0) {
-            return assetValue * totalShares / totalValue;
+        uint256 totalAssets_ = totalAssets();
+        if (totalAssets_ != 0) {
+            return assetValue * totalShares / totalAssets_;
         }
         return assetValue;
     }
@@ -238,7 +236,7 @@ contract PSM3 is IPSM3 {
     /*** Asset value functions                                                                  ***/
     /**********************************************************************************************/
 
-    function getPsmTotalValue() public view override returns (uint256) {
+    function totalAssets() public view override returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))
             +  _getAsset2Value(asset2.balanceOf(address(this)));
@@ -340,7 +338,7 @@ contract PSM3 is IPSM3 {
     /**********************************************************************************************/
 
     function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
-        uint256 totalValue = getPsmTotalValue();
+        uint256 totalValue = totalAssets();
         if (totalValue != 0) {
             return _divUp(assetValue * totalShares, totalValue);
         }

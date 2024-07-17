@@ -50,7 +50,7 @@ contract LpHandler is HandlerBase {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
         vm.startPrank(lp);
@@ -71,7 +71,7 @@ contract LpHandler is HandlerBase {
         );
 
         assertGe(
-            psm.getPsmTotalValue() + 1,
+            psm.totalAssets() + 1,
             startingValue,
             "LpHandler/deposit/psm-total-value-decrease"
         );
@@ -89,7 +89,7 @@ contract LpHandler is HandlerBase {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
         vm.prank(lp);
@@ -110,7 +110,7 @@ contract LpHandler is HandlerBase {
         );
 
         assertLe(
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             startingValue + 1,
             "LpHandler/withdraw/psm-total-value-increase"
         );

@@ -14,11 +14,6 @@ contract PSMDepositTests is PSMTestBase {
     address receiver1 = makeAddr("receiver1");
     address receiver2 = makeAddr("receiver2");
 
-    function test_deposit_zeroReceiver() public {
-        vm.expectRevert("PSM3/invalid-receiver");
-        psm.deposit(address(usdc), address(0), 100e6);
-    }
-
     function test_deposit_zeroAmount() public {
         vm.expectRevert("PSM3/invalid-amount");
         psm.deposit(address(usdc), user1, 0);
@@ -300,7 +295,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
         assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 0);
 
-        assertEq(psm.getPsmTotalValue(), 250e18);
+        assertEq(psm.totalAssets(), 250e18);
 
         newShares = psm.deposit(address(sDai), receiver2, 100e18);
 
@@ -325,7 +320,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
         assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 150e18);
 
-        assertEq(psm.getPsmTotalValue(), 400e18);
+        assertEq(psm.totalAssets(), 400e18);
     }
 
     function testFuzz_deposit_multiUser_changeConversionRate(
@@ -398,14 +393,14 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 0);
 
-        assertApproxEqAbs(psm.getPsmTotalValue(), receiver1NewValue, 1);
+        assertApproxEqAbs(psm.totalAssets(), receiver1NewValue, 1);
 
         newShares = psm.deposit(address(sDai), receiver2, sDaiAmount2);
 
         // Using queried values here instead of derived to avoid larger errors getting introduced
         // Assertions above prove that these values are as expected.
         uint256 receiver2Shares
-            = (sDaiAmount2 * newRate / 1e27) * psm.totalShares() / psm.getPsmTotalValue();
+            = (sDaiAmount2 * newRate / 1e27) * psm.totalShares() / psm.totalAssets();
 
         assertApproxEqAbs(newShares, receiver2Shares, 2);
 
@@ -426,7 +421,7 @@ contract PSMDepositTests is PSMTestBase {
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver1)), receiver1NewValue, 1000);
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver2)), receiver2NewValue, 1000);
 
-        assertApproxEqAbs(psm.getPsmTotalValue(), receiver1NewValue + receiver2NewValue, 1000);
+        assertApproxEqAbs(psm.totalAssets(), receiver1NewValue + receiver2NewValue, 1000);
     }
 
 }

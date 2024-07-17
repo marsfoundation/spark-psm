@@ -16,13 +16,6 @@ contract PSMWithdrawTests is PSMTestBase {
     address receiver1 = makeAddr("receiver1");
     address receiver2 = makeAddr("receiver2");
 
-    function test_withdraw_zeroReceiver() public {
-        _deposit(address(usdc), user1, 100e6);
-
-        vm.expectRevert("PSM3/invalid-receiver");
-        psm.withdraw(address(usdc), address(0), 100e6);
-    }
-
     function test_withdraw_zeroAmount() public {
         _deposit(address(usdc), user1, 100e6);
 
@@ -339,7 +332,7 @@ contract PSMWithdrawTests is PSMTestBase {
         _checkPsmInvariant();
 
         assertEq(
-            usdc.balanceOf(receiver1) * 1e12 + psm.getPsmTotalValue(),
+            usdc.balanceOf(receiver1) * 1e12 + psm.totalAssets(),
             vars.totalValue
         );
 
@@ -366,7 +359,7 @@ contract PSMWithdrawTests is PSMTestBase {
         _checkPsmInvariant();
 
         assertEq(
-            (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12 + psm.getPsmTotalValue(),
+            (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12 + psm.totalAssets(),
             vars.totalValue
         );
 
@@ -406,7 +399,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertApproxEqAbs(
             (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12
                 + (sDai.balanceOf(receiver2) * rateProvider.getConversionRate() / 1e27)
-                + psm.getPsmTotalValue(),
+                + psm.totalAssets(),
             vars.totalValue,
             1
         );
@@ -539,7 +532,7 @@ contract PSMWithdrawTests is PSMTestBase {
         uint256 totalShares = user1Shares + user2Shares;
         uint256 totalValue  = usdcAmount * 1e12 + sDaiAmount * conversionRate / 1e27;
 
-        assertEq(psm.getPsmTotalValue(), totalValue);
+        assertEq(psm.totalAssets(), totalValue);
 
         assertEq(psm.totalShares(), totalShares);
         assertEq(psm.shares(user1), user1Shares);
@@ -573,10 +566,10 @@ contract PSMWithdrawTests is PSMTestBase {
         {
             // User1s remaining shares are used
             uint256 user1SDai = (user1Shares - expectedUser1SharesBurned)
-            * totalValue
-            / totalShares
-            * 1e27
-            / conversionRate;
+                * totalValue
+                / totalShares
+                * 1e27
+                / conversionRate;
 
             assertApproxEqAbs(sDai.balanceOf(user1),        user1SDai,              2);
             assertApproxEqAbs(sDai.balanceOf(user2),        0,                      0);

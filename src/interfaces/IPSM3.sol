@@ -292,6 +292,6 @@ interface IPSM3 {
      *  @dev View function that returns the total value of the balance of all assets in the PSM
      *       converted to asset0/asset1 terms denominated in 18 decimal precision.
      */
-    function getPsmTotalValue() external view returns (uint256);
+    function totalAssets() external view returns (uint256);
 
 }

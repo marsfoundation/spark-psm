@@ -97,7 +97,7 @@ contract SwapperHandler is HandlerBase {
         uint256 startingConversion        = psm.convertToAssetValue(1e18);
         uint256 startingConversionMillion = psm.convertToAssetValue(1e6 * 1e18);
         uint256 startingConversionLp0     = psm.convertToAssetValue(psm.shares(lp0));
-        uint256 startingValue             = psm.getPsmTotalValue();
+        uint256 startingValue             = psm.totalAssets();
 
         // 3. Perform action against protocol
         vm.startPrank(swapper);
@@ -164,7 +164,7 @@ contract SwapperHandler is HandlerBase {
 
         // PSM value can fluctuate by up to 0.00000002% on swaps because of USDC rounding
         assertApproxEqRel(
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             startingValue,
             0.000002e18,
             "SwapperHandler/swap/psm-total-value-change"
@@ -172,7 +172,7 @@ contract SwapperHandler is HandlerBase {
 
         // Decrease in value from rounding is capped at 2e12
         assertGe(
-            psm.getPsmTotalValue() + 2e12,
+            psm.totalAssets() + 2e12,
             startingValue,
             "SwapperHandler/swap/psm-total-value-decrease"
         );

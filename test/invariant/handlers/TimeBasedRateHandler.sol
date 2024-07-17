@@ -39,7 +39,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
         dsrOracle.setPotData(IDSROracle.PotData({
@@ -56,7 +56,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         );
 
         assertGe(
-            psm.getPsmTotalValue() + 1,
+            psm.totalAssets() + 1,
             startingValue,
             "TimeBasedRateHandler/setPotData/psm-total-value-decrease"
         );
@@ -71,7 +71,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
         skip(warpTime);
@@ -84,7 +84,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         );
 
         assertGe(
-            psm.getPsmTotalValue(),
+            psm.totalAssets(),
             startingValue,
             "RateSetterHandler/warp/psm-total-value-decrease"
         );

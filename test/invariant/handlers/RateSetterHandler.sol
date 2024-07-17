@@ -26,7 +26,7 @@ contract RateSetterHandler is HandlerBase {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
         rateProvider.__setConversionRate(rate);
@@ -39,7 +39,7 @@ contract RateSetterHandler is HandlerBase {
         );
 
         assertGe(
-            psm.getPsmTotalValue() + 1,
+            psm.totalAssets() + 1,
             startingValue,
             "RateSetterHandler/setRate/psm-total-value-decrease"
         );

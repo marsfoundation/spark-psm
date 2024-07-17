@@ -38,7 +38,7 @@ contract TransferHandler is HandlerBase {
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToShares(1e18);
-        uint256 startingValue      = psm.getPsmTotalValue();
+        uint256 startingValue      = psm.totalAssets();
 
         // Bounding to 10 million here because 1 trillion introduces unrealistic conditions with
         // large rounding errors. Would rather keep tolerances smaller with a lower upper bound
@@ -61,7 +61,7 @@ contract TransferHandler is HandlerBase {
         );
 
         assertGe(
-            psm.getPsmTotalValue() + 1,
+            psm.totalAssets() + 1,
             startingValue,
             "TransferHandler/transfer/psm-total-value-decrease"
         );

@@ -66,8 +66,13 @@ contract PSMPreviewSwapExactOut_FailureTests is PSMTestBase {
 contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
 
     function test_previewSwapExactIn_daiToUsdc() public view {
-        // assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12 - 1), 0);
-        // assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12),     1);
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e18 - 1), 1e6 - 1);
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e18),     1e6);
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e18 + 1), 1e6);
+
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12 - 1), 0);
+        assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e12),     1);
 
         assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 1e18), 1e6);
         assertEq(psm.previewSwapExactIn(address(dai), address(usdc), 2e18), 2e6);
@@ -81,6 +86,11 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactIn_daiToSDai() public view {
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 1e18 - 1), 0.8e18 - 1);
+        assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 1e18),     0.8e18);
+        assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 1e18 + 1), 0.8e18);
+
         assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 1e18), 0.8e18);
         assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 2e18), 1.6e18);
         assertEq(psm.previewSwapExactIn(address(dai), address(sDai), 3e18), 2.4e18);
@@ -102,6 +112,11 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
 contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
 
     function test_previewSwapExactOut_daiToUsdc() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 1e6 - 1), 0.999999e18);
+        assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 1e6),     1e18);
+        assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 1e6 + 1), 1.000001e18);
+
         assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 1e6), 1e18);
         assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 2e6), 2e18);
         assertEq(psm.previewSwapExactOut(address(dai), address(usdc), 3e6), 3e18);
@@ -114,6 +129,11 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactOut_daiToSDai() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 1e18 - 1), 1.25e18 - 1);
+        assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 1e18),     1.25e18);
+        assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 1e18 + 1), 1.25e18 + 2);
+
         assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 0.8e18), 1e18);
         assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 1.6e18), 2e18);
         assertEq(psm.previewSwapExactOut(address(dai), address(sDai), 2.4e18), 3e18);
@@ -138,6 +158,11 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
 contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
 
     function test_previewSwapExactIn_usdcToDai() public view {
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 1e6 - 1), 0.999999e18);
+        assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 1e6),     1e18);
+        assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 1e6 + 1), 1.000001e18);
+
         assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 1e6), 1e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 2e6), 2e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(dai), 3e6), 3e18);
@@ -150,6 +175,11 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactIn_usdcToSDai() public view {
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 1e6 - 1), 0.799999e18);
+        assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 1e6),     0.8e18);
+        assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 1e6 + 1), 0.8e18);
+
         assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 1e6), 0.8e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 2e6), 1.6e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(sDai), 3e6), 2.4e18);
@@ -171,6 +201,11 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
 contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
 
     function test_previewSwapExactOut_usdcToDai() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 1e18 - 1), 1e6);
+        assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 1e18),     1e6);
+        assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 1e18 + 1), 1e6 + 1);
+
         assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 1e18), 1e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 2e18), 2e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(dai), 3e18), 3e6);
@@ -186,6 +221,11 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactOut_usdcToSDai() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 1e18 - 1), 1.25e6);
+        assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 1e18),     1.25e6);
+        assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 1e18 + 1), 1.25e6 + 1);
+
         assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 0.8e18), 1e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 1.6e18), 2e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(sDai), 2.4e18), 3e6);
@@ -206,11 +246,40 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertLe(amountIn - expectedAmountIn, 1);
     }
 
+    function test_demoRoundingUp_usdcToSDai() public view {
+        uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(sDai), 0.8e18);
+        uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(sDai), 0.8e18 + 1);
+        uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(sDai), 0.8e18 + 0.8e12);
+        uint256 expectedAmountIn4 = psm.previewSwapExactOut(address(usdc), address(sDai), 0.8e18 + 0.8e12 + 1);
+
+        assertEq(expectedAmountIn1, 1e6);
+        assertEq(expectedAmountIn2, 1e6 + 1);
+        assertEq(expectedAmountIn3, 1e6 + 1);
+        assertEq(expectedAmountIn4, 1e6 + 2);
+    }
+
+    function test_demoRoundingUp_usdcToDai() public view {
+        uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(dai), 1e18);
+        uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(dai), 1e18 + 1);
+        uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(dai), 1e18 + 1e12);
+        uint256 expectedAmountIn4 = psm.previewSwapExactOut(address(usdc), address(dai), 1e18 + 1e12 + 1);
+
+        assertEq(expectedAmountIn1, 1e6);
+        assertEq(expectedAmountIn2, 1e6 + 1);
+        assertEq(expectedAmountIn3, 1e6 + 1);
+        assertEq(expectedAmountIn4, 1e6 + 2);
+    }
+
 }
 
 contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
 
     function test_previewSwapExactIn_sDaiToDai() public view {
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 1e18 - 1), 1.25e18 - 2);
+        assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 1e18),     1.25e18);
+        assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 1e18 + 1), 1.25e18 + 1);
+
         assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 1e18), 1.25e18);
         assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 2e18), 2.5e18);
         assertEq(psm.previewSwapExactIn(address(sDai), address(dai), 3e18), 3.75e18);
@@ -228,6 +297,11 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactIn_sDaiToUsdc() public view {
+        // Demo rounding down
+        assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 1e18 - 1), 1.25e6 - 1);
+        assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 1e18),     1.25e6);
+        assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 1e18 + 1), 1.25e6);
+
         assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 1e18), 1.25e6);
         assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 2e18), 2.5e6);
         assertEq(psm.previewSwapExactIn(address(sDai), address(usdc), 3e18), 3.75e6);
@@ -249,6 +323,11 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
 contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
 
     function test_previewSwapExactOut_sDaiToDai() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 1e18 - 1), 0.8e18);
+        assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 1e18),     0.8e18);
+        assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 1e18 + 1), 0.8e18 + 1);
+
         assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 1.25e18), 1e18);
         assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 2.5e18),  2e18);
         assertEq(psm.previewSwapExactOut(address(sDai), address(dai), 3.75e18), 3e18);
@@ -269,6 +348,11 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
     }
 
     function test_previewSwapExactOut_sDaiToUsdc() public view {
+        // Demo rounding up
+        assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 1e6 - 1), 0.8e18);
+        assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 1e6),     0.8e18);
+        assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 1e6 + 1), 0.800001e18);
+
         assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 1.25e6), 1e18);
         assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 2.5e6),  2e18);
         assertEq(psm.previewSwapExactOut(address(sDai), address(usdc), 3.75e6), 3e18);

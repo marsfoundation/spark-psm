@@ -29,7 +29,7 @@ For detailed implementation, refer to the contract code and `IPSM` interface doc
 On the deployment of the PSM, the deployer **MUST make an initial deposit to get AT LEAST 1e18 shares in order to protect the first depositor from getting attacked with a share inflation attack or DOS attack**. Share inflation attack is outlined further [here](https://github.com/marsfoundation/spark-automations/assets/44272939/9472a6d2-0361-48b0-b534-96a0614330d3). Technical details related to this can be found in `test/InflationAttack.t.sol`.
 
 The DOS attack is performed by:
-1. Attacker sends funds directly to the PSM. `getPsmTotalValue` now returns a non-zero value.
+1. Attacker sends funds directly to the PSM. `totalAssets` now returns a non-zero value.
 2. Victim calls deposit. `convertToShares` returns `amount * totalShares / totalValue`. In this case, `totalValue` is non-zero and `totalShares` is zero, so it performs `amount * 0 / totalValue` and returns zero.
 3. The victim has `transferFrom` called moving their funds into the PSM, but they receive zero shares so they cannot recover any of their underlying assets. This renders the PSM unusable for all users since this issue will persist. `totalShares` can never be increased in this state.
 
@@ -73,7 +73,7 @@ NOTE: These functions do not round in the same way as preview functions, so they
 
 #### Asset Value Functions
 
-- **`getPsmTotalValue`**: Returns the total value of all assets held by the PSM denominated in the base asset with 18 decimal precision. (e.g., USD).
+- **`totalAssets`**: Returns the total value of all assets held by the PSM denominated in the base asset with 18 decimal precision. (e.g., USD).
 
 ### Events
 
