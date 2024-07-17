@@ -106,8 +106,7 @@ contract PSM3 is IPSM3 {
     function deposit(address asset, address receiver, uint256 assetsToDeposit)
         external override returns (uint256 newShares)
     {
-        require(receiver != address(0), "PSM3/invalid-receiver");
-        require(assetsToDeposit != 0,   "PSM3/invalid-amount");
+        require(assetsToDeposit != 0, "PSM3/invalid-amount");
 
         newShares = previewDeposit(asset, assetsToDeposit);
 
@@ -122,7 +121,6 @@ contract PSM3 is IPSM3 {
     function withdraw(address asset, address receiver, uint256 maxAssetsToWithdraw)
         external override returns (uint256 assetsWithdrawn)
     {
-        require(receiver != address(0),   "PSM3/invalid-receiver");
         require(maxAssetsToWithdraw != 0, "PSM3/invalid-amount");
 
         uint256 sharesToBurn;

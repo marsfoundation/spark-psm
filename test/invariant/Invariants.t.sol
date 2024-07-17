@@ -25,7 +25,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     TransferHandler      public transferHandler;
     TimeBasedRateHandler public timeBasedRateHandler;
 
-    address BURN_ADDRESS = makeAddr("burn-address");
+    address BURN_ADDRESS = address(0);
 
     // NOTE [CRITICAL]: All invariant tests are operating under the assumption that the initial seed
     //                  deposit of 1e18 shares has been made. This is a key requirement and
