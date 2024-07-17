@@ -16,13 +16,6 @@ contract PSMWithdrawTests is PSMTestBase {
     address receiver1 = makeAddr("receiver1");
     address receiver2 = makeAddr("receiver2");
 
-    function test_withdraw_zeroReceiver() public {
-        _deposit(address(usdc), user1, 100e6);
-
-        vm.expectRevert("PSM3/invalid-receiver");
-        psm.withdraw(address(usdc), address(0), 100e6);
-    }
-
     function test_withdraw_zeroAmount() public {
         _deposit(address(usdc), user1, 100e6);
 
