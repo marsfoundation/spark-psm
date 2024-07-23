@@ -63,7 +63,7 @@ The deployment script [TODO] in this repo contains logic for the deployer to per
 - **`previewDeposit`**: Estimates the number of shares minted for a given deposit amount.
 - **`previewWithdraw`**: Estimates the number of shares burned and the amount of assets withdrawn for a specified amount.
 - **`previewSwapExactIn`**: Estimates the amount of `assetOut` received for a given amount of `assetIn` in a swap.
-- **`previewSwapExactIn`**: Estimates the amount of `assetIn` required to receive a given amount of `assetOut` in a swap.
+- **`previewSwapExactOut`**: Estimates the amount of `assetIn` required to receive a given amount of `assetOut` in a swap.
 
 #### Conversion Functions
 
