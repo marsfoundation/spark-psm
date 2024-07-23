@@ -103,19 +103,42 @@ contract PSMSwapExactOutFailureTests is PSMTestBase {
     }
 
     function test_swapExactOut_insufficientPsmBalanceBoundary() public {
-        // NOTE: Users can get up to 1e12 more sDAI from the swap because of rounding
-        // TODO: Figure out how to make this round down always
-        usdc.mint(swapper, 125e6);
+        // NOTE: Using higher amount so transfer fails
+        usdc.mint(swapper, 125e6 + 1);
 
         vm.startPrank(swapper);
 
-        usdc.approve(address(psm), 125e6);
+        usdc.approve(address(psm), 125e6 + 1);
 
         vm.expectRevert("SafeERC20/transfer-failed");
-        psm.swapExactOut(address(usdc), address(sDai), 100e18 + 1, 125e6, receiver, 0);
+        psm.swapExactOut(address(usdc), address(sDai), 100e18 + 1, 125e6 + 1, receiver, 0);
 
-        psm.swapExactOut(address(usdc), address(sDai), 100e18, 125e6, receiver, 0);
+        psm.swapExactOut(address(usdc), address(sDai), 100e18, 125e6 + 1, receiver, 0);
     }
+
+    // TODO: Cover this case in previews
+    // function test_demoRoundingIssue() public {
+    //     sDai.mint(address(psm), 1_000_000e18);  // Mint so balance isn't an issue
+
+    //     usdc.mint(swapper, 100e6);
+
+    //     vm.startPrank(swapper);
+
+    //     usdc.approve(address(psm), 100e6);
+
+    //     uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18);
+    //     uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1);
+    //     uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12);
+
+    //     assertEq(expectedAmountIn1, 100e6);
+    //     assertEq(expectedAmountIn2, 100e6);
+    //     assertEq(expectedAmountIn3, 100e6 + 1);
+
+    //     vm.expectRevert("PSM3/amountIn-too-high");
+    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12, 100e6, receiver, 0);
+
+    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1, 100e6, receiver, 0);
+    // }
 
 }
 
@@ -230,7 +253,13 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * conversionRate / 1e27;
 
-        _swapExactOutTest(dai, sDai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(dai), address(sDai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(dai, sDai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
 }
@@ -264,7 +293,14 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         amountOut = _bound(amountOut, 1, DAI_TOKEN_MAX);  // Zero amount reverts
         uint256 amountIn = amountOut / 1e12;
-        _swapExactOutTest(usdc, dai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(usdc), address(dai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(usdc, dai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
     function testFuzz_swapExactOut_usdcToSDai(
@@ -284,7 +320,13 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * conversionRate / 1e27 / 1e12;
 
-        _swapExactOutTest(usdc, sDai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(usdc), address(sDai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(usdc, sDai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
 }
@@ -324,7 +366,13 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * 1e27 / conversionRate;
 
-        _swapExactOutTest(sDai, dai, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(sDai), address(dai), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all values are exact
+        assertLe(returnedAmountIn - amountIn, 1);
+
+        _swapExactOutTest(sDai, dai, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
     function testFuzz_swapExactOut_sDaiToUsdc(
@@ -344,7 +392,125 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
         uint256 amountIn = amountOut * 1e27 / conversionRate * 1e12;
 
-        _swapExactOutTest(sDai, usdc, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
+        uint256 returnedAmountIn = psm.previewSwapExactOut(address(sDai), address(usdc), amountOut);
+
+        // Assert that returnedAmount is within 1 of the expected amount and rounding up
+        // Use returnedAmountIn in helper function so all asserted values are exact
+        // Rounding can cause returnedAmountIn to be up to 1e12 higher than naive calculation
+        assertLe(returnedAmountIn - amountIn, 1e12);
+
+        _swapExactOutTest(sDai, usdc, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
+    }
+
+}
+
+contract PSMSwapExactOutFuzzTests is PSMTestBase {
+
+    address lp0 = makeAddr("lp0");
+    address lp1 = makeAddr("lp1");
+    address lp2 = makeAddr("lp2");
+
+    address swapper = makeAddr("swapper");
+
+    struct FuzzVars {
+        uint256 lp0StartingValue;
+        uint256 lp1StartingValue;
+        uint256 lp2StartingValue;
+        uint256 psmStartingValue;
+        uint256 lp0CachedValue;
+        uint256 lp1CachedValue;
+        uint256 lp2CachedValue;
+        uint256 psmCachedValue;
+    }
+
+    /// forge-config: default.fuzz.runs = 10
+    /// forge-config: pr.fuzz.runs = 100
+    /// forge-config: master.fuzz.runs = 10000
+    function testFuzz_swapExactOut(
+        uint256 conversionRate,
+        uint256 depositSeed
+    ) public {
+        // 1% to 200% conversion rate
+        mockRateProvider.__setConversionRate(_bound(conversionRate, 0.01e27, 2e27));
+
+        _deposit(address(dai), lp0, _bound(_hash(depositSeed, "lp0-dai"), 1, DAI_TOKEN_MAX));
+
+        _deposit(address(usdc), lp1, _bound(_hash(depositSeed, "lp1-usdc"), 1, USDC_TOKEN_MAX));
+        _deposit(address(sDai), lp1, _bound(_hash(depositSeed, "lp1-sdai"), 1, SDAI_TOKEN_MAX));
+
+        _deposit(address(dai),  lp2, _bound(_hash(depositSeed, "lp2-dai"),  1, DAI_TOKEN_MAX));
+        _deposit(address(usdc), lp2, _bound(_hash(depositSeed, "lp2-usdc"), 1, USDC_TOKEN_MAX));
+        _deposit(address(sDai), lp2, _bound(_hash(depositSeed, "lp2-sdai"), 1, SDAI_TOKEN_MAX));
+
+        FuzzVars memory vars;
+
+        vars.lp0StartingValue = psm.convertToAssetValue(psm.shares(lp0));
+        vars.lp1StartingValue = psm.convertToAssetValue(psm.shares(lp1));
+        vars.lp2StartingValue = psm.convertToAssetValue(psm.shares(lp2));
+        vars.psmStartingValue = psm.totalAssets();
+
+        vm.startPrank(swapper);
+
+        for (uint256 i; i < 10; ++i) {
+            MockERC20 assetIn  = _getAsset(_hash(i, "assetIn"));
+            MockERC20 assetOut = _getAsset(_hash(i, "assetOut"));
+
+            if (assetIn == assetOut) {
+                assetOut = _getAsset(_hash(i, "assetOut") + 1);
+            }
+
+            uint256 amountOut = _bound(_hash(i, "amountOut"), 0, assetOut.balanceOf(address(psm)));
+
+            uint256 amountIn
+                = psm.previewSwapExactOut(address(assetIn), address(assetOut), amountOut);
+
+            vars.lp0CachedValue = psm.convertToAssetValue(psm.shares(lp0));
+            vars.lp1CachedValue = psm.convertToAssetValue(psm.shares(lp1));
+            vars.lp2CachedValue = psm.convertToAssetValue(psm.shares(lp2));
+            vars.psmCachedValue = psm.totalAssets();
+
+            assetIn.mint(swapper, amountIn);
+            assetIn.approve(address(psm), amountIn);
+            psm.swapExactOut(address(assetIn), address(assetOut), amountOut, amountIn, swapper, 0);
+
+            // Rounding is always in favour of the LPs
+            assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue);
+            assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue);
+            assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue);
+            assertGe(psm.totalAssets(),                        vars.psmCachedValue);
+
+            // Up to 2e12 rounding on each swap
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0CachedValue, 2e12);
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1CachedValue, 2e12);
+            assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2CachedValue, 2e12);
+            assertApproxEqAbs(psm.totalAssets(),                        vars.psmCachedValue, 2e12);
+        }
+
+        // Rounding is always in favour of the LPs
+        assertGe(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue);
+        assertGe(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue);
+        assertGe(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue);
+        assertGe(psm.totalAssets(),                        vars.psmStartingValue);
+
+        // Up to 2e12 rounding on each swap, for 1000 swaps
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp0)), vars.lp0StartingValue, 2000e12);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp1)), vars.lp1StartingValue, 2000e12);
+        assertApproxEqAbs(psm.convertToAssetValue(psm.shares(lp2)), vars.lp2StartingValue, 2000e12);
+        assertApproxEqAbs(psm.totalAssets(),                        vars.psmStartingValue, 2000e12);
+    }
+
+    function _hash(uint256 number_, string memory salt) internal pure returns (uint256 hash_) {
+        hash_ = uint256(keccak256(abi.encode(number_, salt)));
+    }
+
+    function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {
+        uint256 index = indexSeed % 3;
+
+        if (index == 0) return dai;
+        if (index == 1) return usdc;
+        if (index == 2) return sDai;
+
+        else revert("Invalid index");
     }
 
 }
