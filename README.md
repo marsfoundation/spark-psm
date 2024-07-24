@@ -17,7 +17,7 @@ The conversion between a base asset and `asset2` is provided by a rate provider 
 
 The conversion rate between assets and shares is based on the total value of assets held by the PSM. The total value is calculated by converting the assets to their equivalent value in the base asset with 18 decimal precision. The shares represent the ownership of the underlying assets in the PSM. Since three assets are used, each with different precisions and values, they are converted to a common base asset-denominated value for share conversions.
 
-For detailed implementation, refer to the contract code and `IPSM` interface documentation.
+For detailed implementation, refer to the contract code and `IPSM3` interface documentation.
 
 ## Contracts
 
@@ -50,7 +50,8 @@ The deployment script [TODO] in this repo contains logic for the deployer to per
 
 #### Swap Functions
 
-- **`swap`**: Allows swapping of assets based on current conversion rates. Ensures the output amount meets the minimum required before executing the transfer and emitting the swap event. Includes a referral code.
+- **`swapExactIn`**: Allows swapping of assets based on current conversion rates, specifying an `amountIn` of the asset to swap. Ensures the derived output amount is above the `minAmountOut` specified by the user before executing the transfer and emitting the swap event. Includes a referral code.
+- **`swapExactOut`**: Allows swapping of assets based on current conversion rates, specifying an `amountOut` of the asset to receive from the swap. Ensures the derived input amount is below the `maxAmountIn` specified by the user before executing the transfer and emitting the swap event. Includes a referral code.
 
 #### Liquidity Provision Functions
 
@@ -61,7 +62,8 @@ The deployment script [TODO] in this repo contains logic for the deployer to per
 
 - **`previewDeposit`**: Estimates the number of shares minted for a given deposit amount.
 - **`previewWithdraw`**: Estimates the number of shares burned and the amount of assets withdrawn for a specified amount.
-- **`previewSwap`**: Estimates the amount of one asset received for a given amount of another asset in a swap.
+- **`previewSwapExactIn`**: Estimates the amount of `assetOut` received for a given amount of `assetIn` in a swap.
+- **`previewSwapExactOut`**: Estimates the amount of `assetIn` required to receive a given amount of `assetOut` in a swap.
 
 #### Conversion Functions
 
