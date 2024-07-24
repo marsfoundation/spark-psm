@@ -153,9 +153,9 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             address swapper = swapperHandler.swappers(i);
 
             totalValueSwappedOut +=
-                swapperHandler.swapsIn(swapper, address(usdc)) * 1e12 +
-                swapperHandler.swapsIn(swapper, address(dai)) +
-                swapperHandler.swapsIn(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+                swapperHandler.swapsOut(swapper, address(usdc)) * 1e12 +
+                swapperHandler.swapsOut(swapper, address(dai)) +
+                swapperHandler.swapsOut(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
         }
 
         assertEq(totalValueSwappedIn, totalValueSwappedOut);
@@ -521,7 +521,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
