@@ -37,7 +37,7 @@ contract TransferHandler is HandlerBase {
         address   sender = makeAddr(senderSeed);
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // Bounding to 10 million here because 1 trillion introduces unrealistic conditions with

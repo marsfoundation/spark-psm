@@ -38,7 +38,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         uint256 chi  = rate == 0 ? 1e27 : rate;
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
@@ -70,7 +70,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         uint256 warpTime = _bound(skipTime, 0, 45 days);
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol

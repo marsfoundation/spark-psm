@@ -25,7 +25,7 @@ contract RateSetterHandler is HandlerBase {
         rate += _bound(rateIncrease, 0, 0.2e27);
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
