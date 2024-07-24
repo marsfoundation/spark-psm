@@ -342,7 +342,7 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
@@ -385,7 +385,7 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
@@ -431,7 +431,7 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
