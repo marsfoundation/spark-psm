@@ -16,6 +16,7 @@ contract PSMPreviewWithdraw_FailureTests is PSMTestBase {
 
 contract PSMPreviewWithdraw_ZeroAssetsTests is PSMTestBase {
 
+    // Always returns zero because there is no balance of assets in the PSM in this case
     function test_previewWithdraw_zeroTotalAssets() public {
         ( uint256 shares1, uint256 assets1 ) = psm.previewWithdraw(address(dai),  1e18);
         ( uint256 shares2, uint256 assets2 ) = psm.previewWithdraw(address(usdc), 1e6);
@@ -107,6 +108,76 @@ contract PSMPreviewWithdraw_SuccessTests is PSMTestBase {
         ( uint256 shares, uint256 assets ) = psm.previewWithdraw(address(sDai), 1e18 + 1);
         assertEq(shares, 1.25e18);
         assertEq(assets, 1e18);
+    }
+
+}
+
+contract PSMPreviewWithdraw_SuccessFuzzTests is PSMTestBase {
+
+    struct TestParams {
+        uint256 amount1;
+        uint256 amount2;
+        uint256 amount3;
+        uint256 previewAmount1;
+        uint256 previewAmount2;
+        uint256 previewAmount3;
+        uint256 conversionRate;
+    }
+
+    function testFuzz_previewWithdraw(TestParams memory params) public {
+        params.amount1 = _bound(params.amount1, 1, DAI_TOKEN_MAX);
+        params.amount2 = _bound(params.amount2, 1, USDC_TOKEN_MAX);
+        params.amount3 = _bound(params.amount3, 1, SDAI_TOKEN_MAX);
+
+        // Only covering case of amount being below underlying to focus on value conversion
+        // and avoid reimplementation of contract logic for dealing with capping amounts
+        params.previewAmount1 = _bound(params.previewAmount1, 0, params.amount1);
+        params.previewAmount2 = _bound(params.previewAmount2, 0, params.amount2);
+        params.previewAmount3 = _bound(params.previewAmount3, 0, params.amount3);
+
+        _deposit(address(dai),  address(this), params.amount1);
+        _deposit(address(usdc), address(this), params.amount2);
+        _deposit(address(sDai), address(this), params.amount3);
+
+        ( uint256 shares1, uint256 assets1 ) = psm.previewWithdraw(address(dai),  params.previewAmount1);
+        ( uint256 shares2, uint256 assets2 ) = psm.previewWithdraw(address(usdc), params.previewAmount2);
+        ( uint256 shares3, uint256 assets3 ) = psm.previewWithdraw(address(sDai), params.previewAmount3);
+
+        uint256 totalSharesMinted = params.amount1 + params.amount2 * 1e12 + params.amount3 * 1.25e27 / 1e27;
+        uint256 totalValue        = totalSharesMinted;
+
+        assertEq(shares1, params.previewAmount1                  * totalSharesMinted / totalValue);
+        assertEq(shares2, params.previewAmount2 * 1e12           * totalSharesMinted / totalValue);
+        assertEq(shares3, params.previewAmount3 * 1.25e27 / 1e27 * totalSharesMinted / totalValue);
+
+        assertEq(assets1, params.previewAmount1);
+        assertEq(assets2, params.previewAmount2);
+        assertEq(assets3, params.previewAmount3);
+
+        params.conversionRate = _bound(params.conversionRate, 0.001e27, 1000e27);
+        mockRateProvider.__setConversionRate(params.conversionRate);
+
+        // sDai value accrual changes the value of shares in the PSM
+        totalValue = params.amount1 + params.amount2 * 1e12 + params.amount3 * params.conversionRate / 1e27;
+
+        ( shares1, assets1 ) = psm.previewWithdraw(address(dai),  params.previewAmount1);
+        ( shares2, assets2 ) = psm.previewWithdraw(address(usdc), params.previewAmount2);
+        ( shares3, assets3 ) = psm.previewWithdraw(address(sDai), params.previewAmount3);
+
+        uint256 sDaiConvertedAmount = params.previewAmount3 * params.conversionRate / 1e27;
+
+        assertApproxEqAbs(shares1, params.previewAmount1        * totalSharesMinted / totalValue, 1);
+        assertApproxEqAbs(shares2, params.previewAmount2 * 1e12 * totalSharesMinted / totalValue, 1);
+        assertApproxEqAbs(shares3, sDaiConvertedAmount          * totalSharesMinted / totalValue, 1);
+
+        // Assert shares are always rounded up
+        assertGe(shares1, params.previewAmount1        * totalSharesMinted / totalValue);
+        assertGe(shares2, params.previewAmount2 * 1e12 * totalSharesMinted / totalValue);
+        assertGe(shares3, sDaiConvertedAmount          * totalSharesMinted / totalValue);
+
+        assertApproxEqAbs(assets1, params.previewAmount1, 1);
+        assertApproxEqAbs(assets2, params.previewAmount2, 1);
+        assertApproxEqAbs(assets3, params.previewAmount3, 1);
     }
 
 }
