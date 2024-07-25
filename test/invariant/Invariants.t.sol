@@ -93,46 +93,44 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     }
 
     function _checkInvariant_E() public view {
-        uint256 expectedUsdcBalance = 0;
-        uint256 expectedDaiBalance  = 1e18;  // Seed amount
-        uint256 expectedSDaiBalance = 0;
+        uint256 expectedUsdcInflows = 0;
+        uint256 expectedDaiInflows  = 1e18;  // Seed amount
+        uint256 expectedSDaiInflows = 0;
+
+        uint256 expectedUsdcOutflows = 0;
+        uint256 expectedDaiOutflows  = 0;
+        uint256 expectedSDaiOutflows = 0;
 
         for(uint256 i; i < 3; i++) {
             address lp      = lpHandler.lps(i);
             address swapper = swapperHandler.swappers(i);
 
-            expectedUsdcBalance += lpHandler.lpDeposits(lp, address(usdc));
-            expectedDaiBalance  += lpHandler.lpDeposits(lp, address(dai));
-            expectedSDaiBalance += lpHandler.lpDeposits(lp, address(sDai));
+            expectedUsdcInflows += lpHandler.lpDeposits(lp, address(usdc));
+            expectedDaiInflows  += lpHandler.lpDeposits(lp, address(dai));
+            expectedSDaiInflows += lpHandler.lpDeposits(lp, address(sDai));
 
-            expectedUsdcBalance += swapperHandler.swapsIn(swapper, address(usdc));
-            expectedDaiBalance  += swapperHandler.swapsIn(swapper, address(dai));
-            expectedSDaiBalance += swapperHandler.swapsIn(swapper, address(sDai));
+            expectedUsdcInflows += swapperHandler.swapsIn(swapper, address(usdc));
+            expectedDaiInflows  += swapperHandler.swapsIn(swapper, address(dai));
+            expectedSDaiInflows += swapperHandler.swapsIn(swapper, address(sDai));
+
+            expectedUsdcOutflows += lpHandler.lpWithdrawals(lp, address(usdc));
+            expectedDaiOutflows  += lpHandler.lpWithdrawals(lp, address(dai));
+            expectedSDaiOutflows += lpHandler.lpWithdrawals(lp, address(sDai));
+
+            expectedUsdcOutflows += swapperHandler.swapsOut(swapper, address(usdc));
+            expectedDaiOutflows  += swapperHandler.swapsOut(swapper, address(dai));
+            expectedSDaiOutflows += swapperHandler.swapsOut(swapper, address(sDai));
         }
 
         if (address(transferHandler) != address(0)) {
-            expectedUsdcBalance += transferHandler.transfersIn(address(usdc));
-            expectedDaiBalance  += transferHandler.transfersIn(address(dai));
-            expectedSDaiBalance += transferHandler.transfersIn(address(sDai));
+            expectedUsdcInflows += transferHandler.transfersIn(address(usdc));
+            expectedDaiInflows  += transferHandler.transfersIn(address(dai));
+            expectedSDaiInflows += transferHandler.transfersIn(address(sDai));
         }
 
-        // Loop twice to avoid underflows between LPs
-        for(uint256 i; i < 3; i++) {
-            address lp      = lpHandler.lps(i);
-            address swapper = swapperHandler.swappers(i);
-
-            expectedUsdcBalance -= lpHandler.lpWithdrawals(lp, address(usdc));
-            expectedDaiBalance  -= lpHandler.lpWithdrawals(lp, address(dai));
-            expectedSDaiBalance -= lpHandler.lpWithdrawals(lp, address(sDai));
-
-            expectedUsdcBalance -= swapperHandler.swapsOut(swapper, address(usdc));
-            expectedDaiBalance  -= swapperHandler.swapsOut(swapper, address(dai));
-            expectedSDaiBalance -= swapperHandler.swapsOut(swapper, address(sDai));
-        }
-
-        assertEq(usdc.balanceOf(address(psm)), expectedUsdcBalance);
-        assertEq(dai.balanceOf(address(psm)),  expectedDaiBalance);
-        assertEq(sDai.balanceOf(address(psm)), expectedSDaiBalance);
+        assertEq(usdc.balanceOf(address(psm)), expectedUsdcInflows - expectedUsdcOutflows);
+        assertEq(dai.balanceOf(address(psm)),  expectedDaiInflows  - expectedDaiOutflows);
+        assertEq(sDai.balanceOf(address(psm)), expectedSDaiInflows - expectedSDaiOutflows);
     }
 
     function _checkInvariant_F() public view {
@@ -142,24 +140,26 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         for(uint256 i; i < 3; i++) {
             address swapper = swapperHandler.swappers(i);
 
-            totalValueSwappedIn +=
-                swapperHandler.swapsIn(swapper, address(usdc)) * 1e12 +
-                swapperHandler.swapsIn(swapper, address(dai)) +
-                swapperHandler.swapsIn(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+            uint256 valueSwappedIn  = swapperHandler.valueSwappedIn(swapper);
+            uint256 valueSwappedOut = swapperHandler.valueSwappedOut(swapper);
+
+            assertApproxEqAbs(
+                valueSwappedIn,
+                valueSwappedOut,
+                swapperHandler.swapperSwapCount(swapper) * 2e12
+            );
+            assertGe(valueSwappedIn, valueSwappedOut);
+
+            totalValueSwappedIn  += valueSwappedIn;
+            totalValueSwappedOut += valueSwappedOut;
         }
 
-        // Loop twice to avoid underflows between LPs
-        for(uint256 i; i < 3; i++) {
-            address swapper = swapperHandler.swappers(i);
-
-            totalValueSwappedOut +=
-                swapperHandler.swapsOut(swapper, address(usdc)) * 1e12 +
-                swapperHandler.swapsOut(swapper, address(dai)) +
-                swapperHandler.swapsOut(swapper, address(sDai)) * rateProvider.getConversionRate() / 1e27;
-        }
-
-        // Rounding error of up to 1e12 per swap, always rounding in favour of the PSM
-        assertApproxEqAbs(totalValueSwappedIn, totalValueSwappedOut, swapperHandler.swapCount() * 1e12);
+        // Rounding error of up to 2e12 per swap, always rounding in favour of the PSM
+        assertApproxEqAbs(
+            totalValueSwappedIn,
+            totalValueSwappedOut,
+            swapperHandler.swapCount() * 2e12
+        );
         assertGe(totalValueSwappedIn, totalValueSwappedOut);
     }
 

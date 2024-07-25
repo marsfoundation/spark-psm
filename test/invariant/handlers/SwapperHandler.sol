@@ -3,7 +3,9 @@ pragma solidity ^0.8.13;
 
 import { MockERC20 } from "erc20-helpers/MockERC20.sol";
 
-import { console, HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
+import { HandlerBase, PSM3 } from "test/invariant/handlers/HandlerBase.sol";
+
+import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
 
 contract SwapperHandler is HandlerBase {
 
@@ -11,8 +13,14 @@ contract SwapperHandler is HandlerBase {
 
     address[] public swappers;
 
+    IRateProviderLike public rateProvider;
+
     mapping(address user => mapping(address asset => uint256 deposits)) public swapsIn;
     mapping(address user => mapping(address asset => uint256 deposits)) public swapsOut;
+
+    mapping(address user => uint256) public valueSwappedIn;
+    mapping(address user => uint256) public valueSwappedOut;
+    mapping(address user => uint256) public swapperSwapCount;
 
     // Used for assertions, assumption made that LpHandler is used with at least 1 LP.
     address public lp0;
@@ -30,6 +38,8 @@ contract SwapperHandler is HandlerBase {
         assets[0] = asset0;
         assets[1] = asset1;
         assets[2] = asset2;
+
+        rateProvider = IRateProviderLike(psm.rateProvider());
 
         for (uint256 i = 0; i < swapperCount; i++) {
             swappers.push(makeAddr(string(abi.encodePacked("swapper-", vm.toString(i)))));
@@ -114,8 +124,17 @@ contract SwapperHandler is HandlerBase {
         vm.stopPrank();
 
         // 4. Update ghost variable(s)
+        // TODO: Determine if asset delineation is needed
         swapsIn[swapper][address(assetIn)]   += amountIn;
         swapsOut[swapper][address(assetOut)] += amountOut;
+
+        uint256 valueIn  = _getAssetValue(address(assetIn),  amountIn);
+        uint256 valueOut = _getAssetValue(address(assetOut), amountOut);
+
+        valueSwappedIn[swapper]  += valueIn;
+        valueSwappedOut[swapper] += valueOut;
+
+        swapperSwapCount[swapper]++;
 
         // 5. Perform action-specific assertions
 
@@ -177,8 +196,26 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/psm-total-value-decrease"
         );
 
+        // High rates introduce larger rounding errors
+        uint256 rateIntroducedRounding = rateProvider.getConversionRate() / 1e27;
+
+        assertApproxEqAbs(
+            valueIn,
+            valueOut, 1e12 + rateIntroducedRounding * 1e12,
+            "SwapperHandler/swap/value-mismatch"
+        );
+
+        assertGe(valueIn, valueOut, "SwapperHandler/swap/value-out-greater-than-in");
+
         // 6. Update metrics tracking state
         swapCount++;
+    }
+
+    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
+        if      (asset == address(assets[0])) return amount;
+        else if (asset == address(assets[1])) return amount * 1e12;
+        else if (asset == address(assets[2])) return amount * rateProvider.getConversionRate() / 1e27;
+        else revert("SwapperHandler/asset-not-found");
     }
 
     // TODO: Add swapExactOut in separate PR
