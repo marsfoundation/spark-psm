@@ -47,4 +47,5 @@ contract RateSetterHandler is HandlerBase {
         // 5. Update metrics tracking state
         setRateCount++;
     }
+
 }
