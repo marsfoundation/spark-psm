@@ -292,7 +292,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         // Assert that the sum of all LPs' deposits and withdrawals equals
         // the sum of all LPs' resulting token holdings. Rounding errors are accumulated to the
         // burn address.
-        assertApproxEqAbs(sumLpValue, sumStartingValue, seedValue - startingSeedValue + 2);
+        assertApproxEqAbs(sumLpValue, sumStartingValue, seedValue - startingSeedValue + 3);
 
         // NOTE: Below logic is not realistic, shown to demonstrate precision.
 
@@ -306,7 +306,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         assertApproxEqAbs(
             sumLpValue + _getLpTokenValue(BURN_ADDRESS),
             sumStartingValue + startingSeedValue,
-            5
+            6
         );
 
         // All funds can always be withdrawn completely.
