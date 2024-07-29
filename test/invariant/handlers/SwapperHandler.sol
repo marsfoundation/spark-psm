@@ -146,8 +146,6 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-change"
         );
 
-        // TODO: Try removing negative tolerances
-
         // Demonstrate rounding scales with shares
         assertApproxEqAbs(
             psm.convertToAssetValue(1_000_000e18),
@@ -156,9 +154,9 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-change-million"
         );
 
-        // Decrease in value from rounding is capped at 2e12 on a million
+        // Rounding is always in favour of the protocol
         assertGe(
-            psm.convertToAssetValue(1_000_000e18) + 2e12,
+            psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
             "SwapperHandler/swap/conversion-rate-million-decrease"
         );
@@ -174,9 +172,9 @@ contract SwapperHandler is HandlerBase {
             );
         }
 
-        // Decrease in value from rounding is capped at 2e12
+        // Rounding is always in favour of the user
         assertGe(
-            psm.convertToAssetValue(psm.shares(lp0)) + 2e12,
+            psm.convertToAssetValue(psm.shares(lp0)),
             startingConversionLp0,
             "SwapperHandler/swap/conversion-rate-lp-decrease"
         );
@@ -189,9 +187,9 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/psm-total-value-change"
         );
 
-        // Decrease in value from rounding is capped at 2e12
+        // Rounding is always in favour of the protocol
         assertGe(
-            psm.totalAssets() + 2e12,
+            psm.totalAssets(),
             startingValue,
             "SwapperHandler/swap/psm-total-value-decrease"
         );
