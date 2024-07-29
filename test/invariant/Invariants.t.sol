@@ -143,10 +143,12 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             uint256 valueSwappedIn  = swapperHandler.valueSwappedIn(swapper);
             uint256 valueSwappedOut = swapperHandler.valueSwappedOut(swapper);
 
+            // TODO: Paramaterize the TimeBasedHandler and make this function take parameters.
+            //       At really high rates the rounding errors can be quite large.
             assertApproxEqAbs(
                 valueSwappedIn,
                 valueSwappedOut,
-                swapperHandler.swapperSwapCount(swapper) * 2e12
+                swapperHandler.swapperSwapCount(swapper) * 3e12
             );
             assertGe(valueSwappedIn, valueSwappedOut);
 
@@ -154,11 +156,11 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             totalValueSwappedOut += valueSwappedOut;
         }
 
-        // Rounding error of up to 2e12 per swap, always rounding in favour of the PSM
+        // Rounding error of up to 3e12 per swap, always rounding in favour of the PSM
         assertApproxEqAbs(
             totalValueSwappedIn,
             totalValueSwappedOut,
-            swapperHandler.swapCount() * 2e12
+            swapperHandler.swapCount() * 3e12
         );
         assertGe(totalValueSwappedIn, totalValueSwappedOut);
     }
@@ -523,7 +525,7 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
@@ -586,7 +588,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
@@ -657,7 +659,7 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         _checkInvariant_E();
     }
 
-    function skip_invariant_F() public view {
+    function invariant_F() public view {
         _checkInvariant_F();
     }
 
