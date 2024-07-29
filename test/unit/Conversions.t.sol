@@ -706,10 +706,9 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         // 1.50/1.10 = 1.3636... shares
         mockRateProvider.__setConversionRate(1.5e27);
 
-        // TODO: Reinvestigate this, interesting difference in rounding
         assertEq(psm.convertToShares(address(sDai), 1), 0);
         assertEq(psm.convertToShares(address(sDai), 2), 2);
-        assertEq(psm.convertToShares(address(sDai), 3), 3);
+        assertEq(psm.convertToShares(address(sDai), 3), 3);  // 3 * 1.5 / 1.1 = 3 because of rounding on first operation
         assertEq(psm.convertToShares(address(sDai), 4), 5);
 
         assertEq(psm.convertToShares(address(sDai), 1e18), 1.363636363636363636e18);

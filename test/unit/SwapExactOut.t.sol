@@ -116,30 +116,6 @@ contract PSMSwapExactOutFailureTests is PSMTestBase {
         psm.swapExactOut(address(usdc), address(sDai), 100e18, 125e6 + 1, receiver, 0);
     }
 
-    // TODO: Cover this case in previews
-    // function test_demoRoundingIssue() public {
-    //     sDai.mint(address(psm), 1_000_000e18);  // Mint so balance isn't an issue
-
-    //     usdc.mint(swapper, 100e6);
-
-    //     vm.startPrank(swapper);
-
-    //     usdc.approve(address(psm), 100e6);
-
-    //     uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18);
-    //     uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1);
-    //     uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12);
-
-    //     assertEq(expectedAmountIn1, 100e6);
-    //     assertEq(expectedAmountIn2, 100e6);
-    //     assertEq(expectedAmountIn3, 100e6 + 1);
-
-    //     vm.expectRevert("PSM3/amountIn-too-high");
-    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12, 100e6, receiver, 0);
-
-    //     psm.swapExactOut(address(usdc), address(sDai), 80e18 + 0.8e12 - 1, 100e6, receiver, 0);
-    // }
-
 }
 
 contract PSMSwapExactOutSuccessTestsBase is PSMTestBase {
