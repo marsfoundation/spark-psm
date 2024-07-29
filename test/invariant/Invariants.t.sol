@@ -281,7 +281,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             = sumLpValue - (lp0WithdrawsValue + lp1WithdrawsValue + lp2WithdrawsValue);
 
         // Assert that all funds were withdrawn equals the original value of the PSM minus the
-        // 1e18 share seed deposit.
+        // 1e18 share seed deposit, rounding for each LP.
         assertApproxEqAbs(totalWithdrawals, psmTotalValue - seedValue, 3);
 
         // Get the starting sum of all LPs' deposits and withdrawals.
