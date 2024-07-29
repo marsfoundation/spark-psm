@@ -12,7 +12,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
     uint256 public dsr;
 
-    uint256 constant TWENTY_HUNDRED_PCT_APY_DSR = 1.000000005781378656804591712e27;
+    uint256 constant TWENTY_PCT_APY_DSR = 1.000000005781378656804591712e27;
 
     DSRAuthOracle public dsrOracle;
 
@@ -26,7 +26,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
     // This acts as a receiver on an L2.
     function setPotData(uint256 newDsr) external {
         // 1. Setup and bounds
-        dsr = _bound(newDsr, 1e27, TWENTY_HUNDRED_PCT_APY_DSR);
+        dsr = _bound(newDsr, 1e27, TWENTY_PCT_APY_DSR);
 
         uint256 rho = block.timestamp;
 
