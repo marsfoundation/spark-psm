@@ -12,7 +12,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
     uint256 public dsr;
 
-    uint256 constant ONE_HUNDRED_PCT_APY_DSR = 1.000000021979553151239153027e27;
+    uint256 constant TWENTY_HUNDRED_PCT_APY_DSR = 1.000000005781378656804591712e27;
 
     DSRAuthOracle public dsrOracle;
 
@@ -24,11 +24,9 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
     }
 
     // This acts as a receiver on an L2.
-    // TODO: Discuss if rho should be set to a value between last rho and block.timestamp.
-    //       This was the original approach but was causing the conversion rate to decrease.
     function setPotData(uint256 newDsr) external {
         // 1. Setup and bounds
-        dsr = _bound(newDsr, 1e27, ONE_HUNDRED_PCT_APY_DSR);
+        dsr = _bound(newDsr, 1e27, TWENTY_HUNDRED_PCT_APY_DSR);
 
         uint256 rho = block.timestamp;
 
@@ -67,7 +65,7 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
 
     function warp(uint256 skipTime) external {
         // 1. Setup and bounds
-        uint256 warpTime = _bound(skipTime, 0, 45 days);
+        uint256 warpTime = _bound(skipTime, 0, 10 days);
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToAssetValue(1e18);

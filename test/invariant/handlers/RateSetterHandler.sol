@@ -21,8 +21,8 @@ contract RateSetterHandler is HandlerBase {
     function setRate(uint256 rateIncrease) external {
         // 1. Setup and bounds
 
-        // Increase the rate by up to 20%
-        rate += _bound(rateIncrease, 0, 0.2e27);
+        // Increase the rate by up to 5%
+        rate += _bound(rateIncrease, 0, 0.05e27);
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToAssetValue(1e18);

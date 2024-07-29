@@ -124,7 +124,6 @@ contract SwapperHandler is HandlerBase {
         vm.stopPrank();
 
         // 4. Update ghost variable(s)
-        // TODO: Determine if asset delineation is needed
         swapsIn[swapper][address(assetIn)]   += amountIn;
         swapsOut[swapper][address(assetOut)] += amountOut;
 
@@ -147,8 +146,9 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-change"
         );
 
+        // TODO: Try removing negative tolerances
+
         // Demonstrate rounding scales with shares
-        // TODO: Reinvestigate this assertion once swap fuzz tests are in place
         assertApproxEqAbs(
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
@@ -156,7 +156,7 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swap/conversion-rate-change-million"
         );
 
-        // Decrease in value from rounding is capped at 2e12
+        // Decrease in value from rounding is capped at 2e12 on a million
         assertGe(
             psm.convertToAssetValue(1_000_000e18) + 2e12,
             startingConversionMillion,

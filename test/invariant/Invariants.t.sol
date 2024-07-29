@@ -44,7 +44,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     function _checkInvariant_A() public view {
         uint256 lpShares = 1e18;  // Seed amount
 
-        // TODO: Update to be dynamic
+        // NOTE: Can be refactored to be dynamic
         for (uint256 i = 0; i < 3; i++) {
             lpShares += psm.shares(lpHandler.lps(i));
         }
