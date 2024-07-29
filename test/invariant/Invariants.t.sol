@@ -98,6 +98,13 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         return daiValue + usdcValue + sDaiValue;
     }
 
+    function _getLpAPR(address lp, uint256 initialValue, uint256 warpTime)
+        internal view returns (uint256)
+    {
+        uint256 lpValue = psm.convertToAssetValue(psm.shares(lp));
+        return (lpValue - initialValue) * 1e18 * 365 days / initialValue / warpTime;
+    }
+
     /**********************************************************************************************/
     /*** After invariant hook functions                                                         ***/
     /**********************************************************************************************/
@@ -196,6 +203,43 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         // All funds can always be withdrawn completely.
         assertEq(psm.totalShares(), 0);
         assertEq(psm.totalAssets(), 0);
+    }
+
+    function _warpAndAssertConsistentValueAccrual() public {
+        address lp0 = lpHandler.lps(0);
+        address lp1 = lpHandler.lps(1);
+        address lp2 = lpHandler.lps(2);
+
+        // Ensure that all users have a minimum balance of shares to improve precision
+        _deposit(address(dai), lp0, 100_000e18);
+        _deposit(address(dai), lp1, 100_000e18);
+        _deposit(address(dai), lp2, 100_000e18);
+
+        uint256 lp0Value = psm.convertToAssetValue(psm.shares(lp0));
+        uint256 lp1Value = psm.convertToAssetValue(psm.shares(lp1));
+        uint256 lp2Value = psm.convertToAssetValue(psm.shares(lp2));
+
+        skip(1 days);
+
+        uint256 lp0Apr1 = _getLpAPR(lp0, lp0Value, 1 days);
+
+        uint256 tolerance = 0.000_000_000_001e18;
+
+        // Check that the other LPs have the same APR.
+        assertApproxEqRel(_getLpAPR(lp1, lp1Value, 1 days), lp0Apr1, tolerance);
+        assertApproxEqRel(_getLpAPR(lp2, lp2Value, 1 days), lp0Apr1, tolerance);
+
+        skip(364 days);
+
+        uint256 lp0Apr2 = _getLpAPR(lp0, lp0Value, 365 days);
+
+        // Since value accrues compounding per second, the APR representation will increase
+        assertGe(lp0Apr2, lp0Apr1);
+
+        // Check that the APY remains the same after a year, comparing to LP0 to also ensure
+        // consistency across LPs.
+        assertApproxEqRel(_getLpAPR(lp1, lp1Value, 365 days), lp0Apr2, tolerance);
+        assertApproxEqRel(_getLpAPR(lp2, lp2Value, 365 days), lp0Apr2, tolerance);
     }
 
 }
@@ -372,6 +416,12 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
     }
 
     function afterInvariant() public {
+        uint256 snapshot = vm.snapshot();
+
+        _warpAndAssertConsistentValueAccrual();
+
+        vm.revertTo(snapshot);
+
         _withdrawAllPositions();
     }
 
@@ -423,6 +473,12 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
     }
 
     function afterInvariant() public {
+        uint256 snapshot = vm.snapshot();
+
+        _warpAndAssertConsistentValueAccrual();
+
+        vm.revertTo(snapshot);
+
         _withdrawAllPositions();
     }
 
