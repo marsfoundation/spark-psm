@@ -33,7 +33,7 @@ The DOS attack is performed by:
 2. Victim calls deposit. `convertToShares` returns `amount * totalShares / totalValue`. In this case, `totalValue` is non-zero and `totalShares` is zero, so it performs `amount * 0 / totalValue` and returns zero.
 3. The victim has `transferFrom` called moving their funds into the PSM, but they receive zero shares so they cannot recover any of their underlying assets. This renders the PSM unusable for all users since this issue will persist. `totalShares` can never be increased in this state.
 
-The deployment script [TODO] in this repo contains logic for the deployer to perform this initial deposit, so it is **HIGHLY RECOMMENDED** to use this deployment script when deploying the PSM. Reasoning for the technical implementation approach taken is outlined in more detail [here](https://github.com/marsfoundation/spark-psm/pull/2).
+The deployment library (`deploy/PSM3Deploy.sol`) in this repo contains logic for the deployer to perform this initial deposit, so it is **HIGHLY RECOMMENDED** to use this deployment library when deploying the PSM. Reasoning for the technical implementation approach taken is outlined in more detail [here](https://github.com/marsfoundation/spark-psm/pull/2).
 
 ## PSM Contract Details
 
