@@ -11,7 +11,7 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMDeployTests is PSMTestBase {
 
-    function test_init() public {
+    function test_deploy() public {
         deal(address(dai), address(this), 1e18);
 
         PSM3 newPsm = PSM3(PSM3Deploy.deploy(
