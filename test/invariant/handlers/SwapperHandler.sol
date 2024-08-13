@@ -133,17 +133,15 @@ contract SwapperHandler is HandlerBase {
         valueSwappedIn[swapper]  += valueIn;
         valueSwappedOut[swapper] += valueOut;
 
-        swapperSwapCount[swapper]++;
-
         // 5. Perform action-specific assertions
 
-        // Rounding because of USDC precision, a the conversion rate of a
+        // Rounding because of USDC precision, the conversion rate of a
         // user's position can fluctuate by up to 2e12 per 1e18 shares
         assertApproxEqAbs(
             psm.convertToAssetValue(1e18),
             startingConversion,
             2e12,
-            "SwapperHandler/swap/conversion-rate-change"
+            "SwapperHandler/swapExactIn/conversion-rate-change"
         );
 
         // Demonstrate rounding scales with shares
@@ -151,14 +149,14 @@ contract SwapperHandler is HandlerBase {
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
             2_000_000e12, // 2e18 of value
-            "SwapperHandler/swap/conversion-rate-change-million"
+            "SwapperHandler/swapExactIn/conversion-rate-change-million"
         );
 
         // Rounding is always in favour of the protocol
         assertGe(
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
-            "SwapperHandler/swap/conversion-rate-million-decrease"
+            "SwapperHandler/swapExactIn/conversion-rate-million-decrease"
         );
 
         // Disregard this assertion if the LP has less than a dollar of value
@@ -168,7 +166,7 @@ contract SwapperHandler is HandlerBase {
                 psm.convertToAssetValue(psm.shares(lp0)),
                 startingConversionLp0,
                 0.000002e18,
-                "SwapperHandler/swap/conversion-rate-change-lp"
+                "SwapperHandler/swapExactIn/conversion-rate-change-lp"
             );
         }
 
@@ -176,7 +174,7 @@ contract SwapperHandler is HandlerBase {
         assertGe(
             psm.convertToAssetValue(psm.shares(lp0)),
             startingConversionLp0,
-            "SwapperHandler/swap/conversion-rate-lp-decrease"
+            "SwapperHandler/swapExactIn/conversion-rate-lp-decrease"
         );
 
         // PSM value can fluctuate by up to 0.00000002% on swaps because of USDC rounding
@@ -184,14 +182,14 @@ contract SwapperHandler is HandlerBase {
             psm.totalAssets(),
             startingValue,
             0.000002e18,
-            "SwapperHandler/swap/psm-total-value-change"
+            "SwapperHandler/swapExactIn/psm-total-value-change"
         );
 
         // Rounding is always in favour of the protocol
         assertGe(
             psm.totalAssets(),
             startingValue,
-            "SwapperHandler/swap/psm-total-value-decrease"
+            "SwapperHandler/swapExactIn/psm-total-value-decrease"
         );
 
         // High rates introduce larger rounding errors
@@ -200,12 +198,157 @@ contract SwapperHandler is HandlerBase {
         assertApproxEqAbs(
             valueIn,
             valueOut, 1e12 + rateIntroducedRounding * 1e12,
-            "SwapperHandler/swap/value-mismatch"
+            "SwapperHandler/swapExactIn/value-mismatch"
         );
 
-        assertGe(valueIn, valueOut, "SwapperHandler/swap/value-out-greater-than-in");
+        assertGe(valueIn, valueOut, "SwapperHandler/swapExactIn/value-out-greater-than-in");
 
         // 6. Update metrics tracking state
+        swapperSwapCount[swapper]++;
+        swapCount++;
+    }
+
+    function swapExactOut(
+        uint256 assetInSeed,
+        uint256 assetOutSeed,
+        uint256 swapperSeed,
+        uint256 amountOut
+    )
+        public
+    {
+        // 1. Setup and bounds
+
+        // Prevent overflow in if statement below
+        assetOutSeed = _bound(assetOutSeed, 0, type(uint256).max - 2);
+
+        MockERC20 assetIn  = _getAsset(assetInSeed);
+        MockERC20 assetOut = _getAsset(assetOutSeed);
+        address   swapper  = _getSwapper(swapperSeed);
+
+        // Handle case where randomly selected assets match
+        if (assetIn == assetOut) {
+            assetOut = _getAsset(assetOutSeed + 2);
+        }
+
+        // If there's zero balance a swap can't be performed
+        if (assetOut.balanceOf(address(psm)) == 0) {
+            zeroBalanceCount++;
+            return;
+        }
+
+        amountOut = _bound(amountOut, 1, assetOut.balanceOf(address(psm)));
+
+        // Not testing this functionality, just want a successful swap
+        uint256 maxAmountIn = type(uint256).max;
+
+        // 2. Cache starting state
+        uint256 startingConversion        = psm.convertToAssetValue(1e18);
+        uint256 startingConversionMillion = psm.convertToAssetValue(1e6 * 1e18);
+        uint256 startingConversionLp0     = psm.convertToAssetValue(psm.shares(lp0));
+        uint256 startingValue             = psm.totalAssets();
+
+        // 3. Perform action against protocol
+        uint256 amountInNeeded = psm.previewSwapExactOut(
+            address(assetIn),
+            address(assetOut),
+            amountOut
+        );
+
+        vm.startPrank(swapper);
+        assetIn.mint(swapper, amountInNeeded);
+        assetIn.approve(address(psm), amountInNeeded);
+        uint256 amountIn = psm.swapExactOut(
+            address(assetIn),
+            address(assetOut),
+            amountOut,
+            maxAmountIn,
+            swapper,
+            0
+        );
+        vm.stopPrank();
+
+        // 4. Update ghost variable(s)
+        swapsIn[swapper][address(assetIn)]   += amountIn;
+        swapsOut[swapper][address(assetOut)] += amountOut;
+
+        uint256 valueIn  = _getAssetValue(address(assetIn),  amountIn);
+        uint256 valueOut = _getAssetValue(address(assetOut), amountOut);
+
+        valueSwappedIn[swapper]  += valueIn;
+        valueSwappedOut[swapper] += valueOut;
+
+        // 5. Perform action-specific assertions
+
+        // Rounding because of USDC precision, the conversion rate of a
+        // user's position can fluctuate by up to 2e12 per 1e18 shares
+        assertApproxEqAbs(
+            psm.convertToAssetValue(1e18),
+            startingConversion,
+            2e12,
+            "SwapperHandler/swapExactOut/conversion-rate-change"
+        );
+
+        // Demonstrate rounding scales with shares
+        assertApproxEqAbs(
+            psm.convertToAssetValue(1_000_000e18),
+            startingConversionMillion,
+            2_000_000e12, // 2e18 of value
+            "SwapperHandler/swapExactOut/conversion-rate-change-million"
+        );
+
+        // Rounding is always in favour of the protocol
+        assertGe(
+            psm.convertToAssetValue(1_000_000e18),
+            startingConversionMillion,
+            "SwapperHandler/swapExactOut/conversion-rate-million-decrease"
+        );
+
+        // Disregard this assertion if the LP has less than a dollar of value
+        if (startingConversionLp0 > 1e18) {
+            // Position values can fluctuate by up to 0.00000002% on swaps
+            assertApproxEqRel(
+                psm.convertToAssetValue(psm.shares(lp0)),
+                startingConversionLp0,
+                0.000002e18,
+                "SwapperHandler/swapExactOut/conversion-rate-change-lp"
+            );
+        }
+
+        // Rounding is always in favour of the user
+        assertGe(
+            psm.convertToAssetValue(psm.shares(lp0)),
+            startingConversionLp0,
+            "SwapperHandler/swapExactOut/conversion-rate-lp-decrease"
+        );
+
+        // PSM value can fluctuate by up to 0.00000002% on swaps because of USDC rounding
+        assertApproxEqRel(
+            psm.totalAssets(),
+            startingValue,
+            0.000002e18,
+            "SwapperHandler/swapExactOut/psm-total-value-change"
+        );
+
+        // Rounding is always in favour of the protocol
+        assertGe(
+            psm.totalAssets(),
+            startingValue,
+            "SwapperHandler/swapExactOut/psm-total-value-decrease"
+        );
+
+        // High rates introduce larger rounding errors
+        uint256 rateIntroducedRounding = rateProvider.getConversionRate() / 1e27;
+
+        assertApproxEqAbs(
+            valueIn,
+            valueOut, 1e12 + rateIntroducedRounding * 1e12,
+            "SwapperHandler/swapExactOut/value-mismatch"
+        );
+
+        assertGe(valueIn, valueOut, "SwapperHandler/swapExactOut/value-out-greater-than-in");
+
+        // 6. Update metrics tracking state
+        swapperSwapCount[swapper]++;
         swapCount++;
     }
 
