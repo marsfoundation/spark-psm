@@ -3,60 +3,38 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { PSM3 } from "src/PSM3.sol";
-
 import { PSM3Deploy } from "deploy/PSM3Deploy.sol";
-import { PSM3Init }   from "deploy/PSM3Init.sol";
+
+import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
 contract PSMDeployTests is PSMTestBase {
 
-    function test_deploy() public {
-        psm = PSM3(PSM3Deploy.deploy(
-            address(dai),
-            address(usdc),
-            address(sDai),
-            address(rateProvider)
-        ));
-
-        assertEq(address(psm.asset0()),       address(dai));
-        assertEq(address(psm.asset1()),       address(usdc));
-        assertEq(address(psm.asset2()),       address(sDai));
-        assertEq(address(psm.rateProvider()), address(rateProvider));
-    }
-
     function test_init() public {
         deal(address(dai), address(this), 1e18);
 
-        psm = PSM3(PSM3Deploy.deploy(
+        PSM3 newPsm = PSM3(PSM3Deploy.deploy(
             address(dai),
             address(usdc),
             address(sDai),
             address(rateProvider)
         ));
 
-        assertEq(dai.allowance(address(this), address(psm)), 0);
+        assertEq(address(newPsm.asset0()),       address(dai));
+        assertEq(address(newPsm.asset1()),       address(usdc));
+        assertEq(address(newPsm.asset2()),       address(sDai));
+        assertEq(address(newPsm.rateProvider()), address(rateProvider));
 
-        assertEq(dai.balanceOf(address(this)), 1e18);
-        assertEq(dai.balanceOf(address(psm)),  0);
-
-        assertEq(psm.totalAssets(),         0);
-        assertEq(psm.totalShares(),         0);
-        assertEq(psm.shares(address(this)), 0);
-        assertEq(psm.shares(address(0)),    0);
-
-        PSM3Init.init(address(psm), address(dai));
-
-        assertEq(dai.allowance(address(this), address(psm)), 0);
+        assertEq(dai.allowance(address(this), address(newPsm)), 0);
 
         assertEq(dai.balanceOf(address(this)), 0);
-        assertEq(dai.balanceOf(address(psm)),  1e18);
+        assertEq(dai.balanceOf(address(newPsm)),  1e18);
 
-        assertEq(psm.totalAssets(),         1e18);
-        assertEq(psm.totalShares(),         1e18);
-        assertEq(psm.shares(address(this)), 0);
-        assertEq(psm.shares(address(0)),    1e18);
+        assertEq(newPsm.totalAssets(),         1e18);
+        assertEq(newPsm.totalShares(),         1e18);
+        assertEq(newPsm.shares(address(this)), 0);
+        assertEq(newPsm.shares(address(0)),    1e18);
     }
 
 }
