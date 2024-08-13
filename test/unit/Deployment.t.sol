@@ -28,8 +28,8 @@ contract PSMDeployTests is PSMTestBase {
 
         assertEq(dai.allowance(address(this), address(newPsm)), 0);
 
-        assertEq(dai.balanceOf(address(this)), 0);
-        assertEq(dai.balanceOf(address(newPsm)),  1e18);
+        assertEq(dai.balanceOf(address(this)),   0);
+        assertEq(dai.balanceOf(address(newPsm)), 1e18);
 
         assertEq(newPsm.totalAssets(),         1e18);
         assertEq(newPsm.totalShares(),         1e18);
