@@ -755,7 +755,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
 
         uint256 newSDaiValue = newValue * 1e27 / conversionRate;
 
-        // New conversion rate can be up to 1000x higher
+        // Depositing derived sDAI amount yields the same amount of shares (approx)
         assertApproxEqAbs(
             psm.convertToShares(address(sDai), newSDaiValue),
             vars.expectedShares,
@@ -819,7 +819,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
 
         uint256 newSDaiValue = newValue * 1e27 / conversionRate;
 
-        // New conversion rate can be up to 2000x lower (2e27 to 0.001e27)
+        // Depositing derived sDAI amount yields the same amount of shares (approx)
         assertApproxEqAbs(
             psm.convertToShares(address(sDai), newSDaiValue),
             vars.expectedShares,

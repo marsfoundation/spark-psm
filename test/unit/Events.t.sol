@@ -112,4 +112,5 @@ contract PSMEventTests is PSMTestBase {
         emit Swap(assetIn, assetOut, sender, receiver, amountIn, expectedAmountOut, referralCode);
         psm.swapExactIn(assetIn, assetOut, amountIn, 0, receiver, referralCode);
     }
+
 }
