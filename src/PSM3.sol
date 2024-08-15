@@ -127,6 +127,7 @@ contract PSM3 is IPSM3 {
 
         ( sharesToBurn, assetsWithdrawn ) = previewWithdraw(asset, maxAssetsToWithdraw);
 
+        // `previewWithdraw` ensures that `sharesToBurn` <= `shares[msg.sender]`
         unchecked {
             shares[msg.sender] -= sharesToBurn;
             totalShares        -= sharesToBurn;
@@ -274,7 +275,7 @@ contract PSM3 is IPSM3 {
     /**********************************************************************************************/
 
     function _getSwapQuote(address asset, address quoteAsset, uint256 amount, bool roundUp)
-        public view returns (uint256 quoteAmount)
+        internal view returns (uint256 quoteAmount)
     {
         if (asset == address(asset0)) {
             if      (quoteAsset == address(asset1)) return _convertOneToOne(amount, _asset0Precision, _asset1Precision, roundUp);
