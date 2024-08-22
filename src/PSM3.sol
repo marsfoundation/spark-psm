@@ -5,6 +5,8 @@ import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
 
+import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+
 import { IPSM3 }             from "src/interfaces/IPSM3.sol";
 import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
 
@@ -302,8 +304,8 @@ contract PSM3 is IPSM3 {
 
         if (!roundUp) return amount * 1e27 / rate * _asset2Precision / assetPrecision;
 
-        return _divUp(
-            _divUp(amount * 1e27, rate) * _asset2Precision,
+        return Math.ceilDiv(
+            Math.ceilDiv(amount * 1e27, rate) * _asset2Precision,
             assetPrecision
         );
     }
@@ -315,8 +317,8 @@ contract PSM3 is IPSM3 {
 
         if (!roundUp) return amount * rate / 1e27 * assetPrecision / _asset2Precision;
 
-        return _divUp(
-            _divUp(amount * rate, 1e27) * assetPrecision,
+        return Math.ceilDiv(
+            Math.ceilDiv(amount * rate, 1e27) * assetPrecision,
             _asset2Precision
         );
     }
@@ -331,7 +333,7 @@ contract PSM3 is IPSM3 {
     {
         if (!roundUp) return amount * convertAssetPrecision / assetPrecision;
 
-        return _divUp(amount * convertAssetPrecision, assetPrecision);
+        return Math.ceilDiv(amount * convertAssetPrecision, assetPrecision);
     }
 
     /**********************************************************************************************/
@@ -341,15 +343,9 @@ contract PSM3 is IPSM3 {
     function _convertToSharesRoundUp(uint256 assetValue) internal view returns (uint256) {
         uint256 totalValue = totalAssets();
         if (totalValue != 0) {
-            return _divUp(assetValue * totalShares, totalValue);
+            return Math.ceilDiv(assetValue * totalShares, totalValue);
         }
         return assetValue;
-    }
-
-    function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        unchecked {
-            z = x != 0 ? ((x - 1) / y) + 1 : 0;
-        }
     }
 
     function _isValidAsset(address asset) internal view returns (bool) {
