@@ -123,7 +123,7 @@ interface IPSM3 {
      *  @param  minAmountOut Minimum amount of the asset to receive.
      *  @param  receiver     Address of the receiver of the swapped assets.
      *  @param  referralCode Referral code for the swap.
-     *  @return amountOut    Resulting mount of the asset that will be received in the swap.
+     *  @return amountOut    Resulting amount of the asset that will be received in the swap.
      */
     function swapExactIn(
         address assetIn,
