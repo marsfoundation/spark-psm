@@ -347,6 +347,7 @@ contract PSM3 is IPSM3 {
     }
 
     function _divUp(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        require(y != 0, "PSM3/invalid-divisor");
         unchecked {
             z = x != 0 ? ((x - 1) / y) + 1 : 0;
         }
