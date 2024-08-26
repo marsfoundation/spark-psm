@@ -36,5 +36,6 @@ runs = 1_000_000
 remappings = [
     "ds-test/=lib/erc20-helpers/lib/forge-std/lib/ds-test/src/",
     "erc20-helpers/=lib/erc20-helpers/src/",
-    "forge-std/=lib/forge-std/src/"
+    "forge-std/=lib/forge-std/src/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/",
 ]
