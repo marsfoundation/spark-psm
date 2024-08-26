@@ -7,6 +7,8 @@ import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
 
+import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
+
 contract PSMConstructorTests is PSMTestBase {
 
     function test_constructor_invalidAsset0() public {
@@ -42,6 +44,12 @@ contract PSMConstructorTests is PSMTestBase {
     function test_constructor_asset1Asset2Match() public {
         vm.expectRevert("PSM3/asset1-asset2-same");
         new PSM3(address(dai), address(usdc), address(usdc), address(rateProvider));
+    }
+
+    function test_constructor_rateProviderZero() public {
+        MockRateProvider(address(rateProvider)).__setConversionRate(0);
+        vm.expectRevert("PSM3/rate-provider-returns-zero");
+        new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
     }
 
     function test_constructor() public {

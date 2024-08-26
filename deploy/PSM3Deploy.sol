@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { PSM3 } from "src/PSM3.sol";
-
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
+
+import { PSM3 } from "src/PSM3.sol";
 
 library PSM3Deploy {
 

@@ -46,6 +46,11 @@ contract PSM3 is IPSM3 {
 
         rateProvider = rateProvider_;
 
+        require(
+            IRateProviderLike(rateProvider_).getConversionRate() != 0,
+            "PSM3/rate-provider-returns-zero"
+        );
+
         _asset0Precision = 10 ** IERC20(asset0_).decimals();
         _asset1Precision = 10 ** IERC20(asset1_).decimals();
         _asset2Precision = 10 ** IERC20(asset2_).decimals();
