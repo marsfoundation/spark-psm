@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.13;
 
-import { PSM3 } from "src/PSM3.sol";
-
 import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
+
+import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
+import { PSM3 }              from "src/PSM3.sol";
 
 library PSM3Deploy {
 
@@ -19,6 +20,11 @@ library PSM3Deploy {
 
         IERC20(asset0).approve(psm, 1e18);
         PSM3(psm).deposit(asset0, address(0), 1e18);
+
+        require(
+            IRateProviderLike(rateProvider).getConversionRate() != 0,
+            "PSM3Deploy/rate-provider-returns-zero"
+        );
     }
 
 }
