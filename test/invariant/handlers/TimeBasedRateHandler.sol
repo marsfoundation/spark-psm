@@ -28,12 +28,9 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
         // 1. Setup and bounds
         dsr = _bound(newDsr, 1e27, TWENTY_PCT_APY_DSR);
 
+        // Update rho to be current, update chi based on current rate
         uint256 rho = block.timestamp;
-
-        // If chi hasn't been set yet, set to 1e27, else recalculate it in the same way it would
-        // happen during a refresh at `rho`
-        uint256 rate = dsrOracle.getConversionRate(rho);
-        uint256 chi  = rate == 0 ? 1e27 : rate;
+        uint256 chi = dsrOracle.getConversionRate(rho);
 
         // 2. Cache starting state
         uint256 startingConversion = psm.convertToAssetValue(1e18);
