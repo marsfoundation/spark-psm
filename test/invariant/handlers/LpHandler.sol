@@ -49,7 +49,7 @@ contract LpHandler is HandlerBase {
         amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
@@ -63,11 +63,20 @@ contract LpHandler is HandlerBase {
         lpDeposits[lp][address(asset)] += amount;
 
         // 5. Perform action-specific assertions
+
+        // Larger tolerance for rounding errors because of asset valuation changing
         assertApproxEqAbs(
-            psm.convertToShares(1e18),
+            psm.convertToAssetValue(1e18),
             startingConversion,
-            2,
+            1e12,
             "LpHandler/deposit/conversion-rate-change"
+        );
+
+        // Exchange rate always increases, never decreases from rounding
+        assertGe(
+            psm.convertToAssetValue(1e18),
+            startingConversion,
+            "LpHandler/deposit/conversion-rate-decrease"
         );
 
         assertGe(
@@ -88,7 +97,7 @@ contract LpHandler is HandlerBase {
         amount = _bound(amount, 1, 1e12 * 10 ** asset.decimals());
 
         // 2. Cache starting state
-        uint256 startingConversion = psm.convertToShares(1e18);
+        uint256 startingConversion = psm.convertToAssetValue(1e18);
         uint256 startingValue      = psm.totalAssets();
 
         // 3. Perform action against protocol
@@ -103,10 +112,17 @@ contract LpHandler is HandlerBase {
 
         // Larger tolerance for rounding errors because of burning more shares on USDC withdraw
         assertApproxEqAbs(
-            psm.convertToShares(1e18),
+            psm.convertToAssetValue(1e18),
             startingConversion,
             1e12,
             "LpHandler/withdraw/conversion-rate-change"
+        );
+
+        // Exchange rate always increases, never decreases from rounding
+        assertGe(
+            psm.convertToAssetValue(1e18),
+            startingConversion,
+            "LpHandler/withdraw/conversion-rate-decrease"
         );
 
         assertLe(

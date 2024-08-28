@@ -412,7 +412,7 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
         targetContract(address(transferHandler));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
