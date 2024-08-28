@@ -155,7 +155,7 @@ contract PSM3 is IPSM3 {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
-        return convertToShares(_getAssetValue(asset, assetsToDeposit));
+        return convertToShares(_getAssetValue(asset, assetsToDeposit, false));
     }
 
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
@@ -169,7 +169,7 @@ contract PSM3 is IPSM3 {
             ? assetBalance
             : maxAssetsToWithdraw;
 
-        sharesToBurn = _convertToSharesRoundUp(_getAssetValueRoundUp(asset, assetsWithdrawn));
+        sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn, true));
 
         uint256 userShares = shares[msg.sender];
 
@@ -237,7 +237,7 @@ contract PSM3 is IPSM3 {
 
     function convertToShares(address asset, uint256 assets) public view override returns (uint256) {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
-        return convertToShares(_getAssetValue(asset, assets));
+        return convertToShares(_getAssetValue(asset, assets, false));
     }
 
     /**********************************************************************************************/
@@ -245,8 +245,8 @@ contract PSM3 is IPSM3 {
     /**********************************************************************************************/
 
     function totalAssets() public view override returns (uint256) {
-        return _getAsset0Value(asset0.balanceOf(address(this)), false)
-            +  _getAsset1Value(asset1.balanceOf(address(this)), false)
+        return _getAsset0Value(asset0.balanceOf(address(this)))
+            +  _getAsset1Value(asset1.balanceOf(address(this)))
             +  _getAsset2Value(asset2.balanceOf(address(this)), false);
     }
 
@@ -254,30 +254,19 @@ contract PSM3 is IPSM3 {
     /*** Internal valuation functions (deposit/withdraw)                                        ***/
     /**********************************************************************************************/
 
-    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
-        if      (asset == address(asset0)) return _getAsset0Value(amount, false);
-        else if (asset == address(asset1)) return _getAsset1Value(amount, false);
-        else if (asset == address(asset2)) return _getAsset2Value(amount, false);
+    function _getAssetValue(address asset, uint256 amount, bool roundUp) internal view returns (uint256) {
+        if      (asset == address(asset0)) return _getAsset0Value(amount);
+        else if (asset == address(asset1)) return _getAsset1Value(amount);
+        else if (asset == address(asset2)) return _getAsset2Value(amount, roundUp);
         else revert("PSM3/invalid-asset");
     }
 
-    function _getAssetValueRoundUp(address asset, uint256 amount) internal view returns (uint256) {
-        if      (asset == address(asset0)) return _getAsset0Value(amount, true);
-        else if (asset == address(asset1)) return _getAsset1Value(amount, true);
-        else if (asset == address(asset2)) return _getAsset2Value(amount, true);
-        else revert("PSM3/invalid-asset");
+    function _getAsset0Value(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / _asset0Precision;
     }
 
-    function _getAsset0Value(uint256 amount, bool roundUp) internal view returns (uint256) {
-        if (!roundUp) return amount * 1e18 / _asset0Precision;
-
-        return Math.ceilDiv(amount * 1e18, _asset0Precision);
-    }
-
-    function _getAsset1Value(uint256 amount, bool roundUp) internal view returns (uint256) {
-        if (!roundUp) return amount * 1e18 / _asset1Precision;
-
-        return Math.ceilDiv(amount * 1e18, _asset1Precision);
+    function _getAsset1Value(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / _asset1Precision;
     }
 
     function _getAsset2Value(uint256 amount, bool roundUp) internal view returns (uint256) {
