@@ -597,12 +597,10 @@ contract PSMWithdrawTests is PSMTestBase {
 
         uint256 user2ResultingValue = sDai.balanceOf(user2) * conversionRate / 1e27;  // Use 1.5 conversion rate
 
-        uint256 dustTotalAssets = psm.totalAssets();
-
-        assertLe(dustTotalAssets, 1000);
+        assertLe(psm.totalAssets(), 1000);
 
         // Equal to starting value
-        assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue - dustTotalAssets, 2);
+        assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue - psm.totalAssets(), 2);
 
         // Value gains are the same for both users, accurate to 0.02%
         assertApproxEqRel(
