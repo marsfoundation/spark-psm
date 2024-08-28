@@ -13,15 +13,17 @@ contract PSM3Harness is PSM3 {
     }
 
     function getAsset0Value(uint256 amount) external view returns (uint256) {
-        return _getAsset0Value(amount);
+        return _getAsset0Value(amount, false);
     }
 
     function getAsset1Value(uint256 amount) external view returns (uint256) {
-        return _getAsset1Value(amount);
+        return _getAsset1Value(amount, false);
     }
 
     function getAsset2Value(uint256 amount) external view returns (uint256) {
-        return _getAsset2Value(amount);
+        return _getAsset2Value(amount, false);
     }
+
+    // TODO: Add roundups
 
 }

@@ -309,9 +309,9 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             6
         );
 
-        // All funds can always be withdrawn completely.
+        // All funds can always be withdrawn completely (rounding in withdrawal against users).
         assertEq(psm.totalShares(), 0);
-        assertEq(psm.totalAssets(), 0);
+        assertLe(psm.totalAssets(), 5);
     }
 
     function _warpAndAssertConsistentValueAccrual() public {
