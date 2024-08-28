@@ -155,7 +155,7 @@ contract PSM3 is IPSM3 {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
-        return convertToShares(_getAssetValue(asset, assetsToDeposit, false));
+        return convertToShares(_getAssetValue(asset, assetsToDeposit, false));  // Round down
     }
 
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
@@ -169,6 +169,7 @@ contract PSM3 is IPSM3 {
             ? assetBalance
             : maxAssetsToWithdraw;
 
+        // Get shares to burn, rounding up for both calculations
         sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn, true));
 
         uint256 userShares = shares[msg.sender];
@@ -237,7 +238,7 @@ contract PSM3 is IPSM3 {
 
     function convertToShares(address asset, uint256 assets) public view override returns (uint256) {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
-        return convertToShares(_getAssetValue(asset, assets, false));
+        return convertToShares(_getAssetValue(asset, assets, false));  // Round down
     }
 
     /**********************************************************************************************/
@@ -247,7 +248,7 @@ contract PSM3 is IPSM3 {
     function totalAssets() public view override returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))
-            +  _getAsset2Value(asset2.balanceOf(address(this)), false);
+            +  _getAsset2Value(asset2.balanceOf(address(this)), false);  // Round down
     }
 
     /**********************************************************************************************/

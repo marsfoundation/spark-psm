@@ -8,7 +8,9 @@ contract PSM3Harness is PSM3 {
     constructor(address asset0_, address asset1_, address asset2_, address rateProvider_)
         PSM3(asset0_, asset1_, asset2_, rateProvider_) {}
 
-    function getAssetValue(address asset, uint256 amount, bool roundUp) external view returns (uint256) {
+    function getAssetValue(address asset, uint256 amount, bool roundUp)
+        external view returns (uint256)
+    {
         return _getAssetValue(asset, amount, roundUp);
     }
 
@@ -23,6 +25,5 @@ contract PSM3Harness is PSM3 {
     function getAsset2Value(uint256 amount, bool roundUp) external view returns (uint256) {
         return _getAsset2Value(amount, roundUp);
     }
-
 
 }
