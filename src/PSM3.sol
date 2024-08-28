@@ -54,6 +54,10 @@ contract PSM3 is IPSM3 {
         _asset0Precision = 10 ** IERC20(asset0_).decimals();
         _asset1Precision = 10 ** IERC20(asset1_).decimals();
         _asset2Precision = 10 ** IERC20(asset2_).decimals();
+
+        // Necessary to ensure rounding works as expected
+        require(_asset0Precision <= 1e18, "PSM3/asset0-precision-too-high");
+        require(_asset1Precision <= 1e18, "PSM3/asset1-precision-too-high");
     }
 
     /**********************************************************************************************/
