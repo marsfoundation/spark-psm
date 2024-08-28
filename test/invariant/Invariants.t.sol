@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 
 import { DSRAuthOracle } from "lib/xchain-dsr-oracle/src/DSRAuthOracle.sol";
+import { IDSROracle }    from "lib/xchain-dsr-oracle/src/interfaces/IDSROracle.sol";
 
 import { PSM3 } from "src/PSM3.sol";
 
@@ -542,6 +543,16 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
         DSRAuthOracle dsrOracle = new DSRAuthOracle();
 
+        // Workaround to initialize PSM with an oracle that does not return zero
+        // This gets overwritten by the handler
+        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
+        dsrOracle.setPotData(IDSROracle.PotData({
+            dsr: uint96(1e27),
+            chi: uint120(1e27),
+            rho: uint40(block.timestamp)
+        }));
+        dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
+
         // Redeploy PSM with new rate provider
         psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
 
@@ -610,6 +621,16 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         super.setUp();
 
         DSRAuthOracle dsrOracle = new DSRAuthOracle();
+
+        // Workaround to initialize PSM with an oracle that does not return zero
+        // This gets overwritten by the handler
+        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
+        dsrOracle.setPotData(IDSROracle.PotData({
+            dsr: uint96(1e27),
+            chi: uint120(1e27),
+            rho: uint40(block.timestamp)
+        }));
+        dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
         psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
