@@ -94,7 +94,7 @@ contract PSMPreviewWithdraw_SuccessTests is PSMTestBase {
 
     function test_previewWithdraw_sdai_amountLtUnderlyingBalanceAndLtPsmBalance() public view {
         ( uint256 shares, uint256 assets ) = psm.previewWithdraw(address(sDai), 1e18 - 1);
-        assertEq(shares, 1.25e18 - 2);
+        assertEq(shares, 1.25e18 - 1);
         assertEq(assets, 1e18 - 1);
     }
 
@@ -146,9 +146,10 @@ contract PSMPreviewWithdraw_SuccessFuzzTests is PSMTestBase {
         uint256 totalSharesMinted = params.amount1 + params.amount2 * 1e12 + params.amount3 * 1.25e27 / 1e27;
         uint256 totalValue        = totalSharesMinted;
 
-        assertEq(shares1, params.previewAmount1                  * totalSharesMinted / totalValue);
-        assertEq(shares2, params.previewAmount2 * 1e12           * totalSharesMinted / totalValue);
-        assertEq(shares3, params.previewAmount3 * 1.25e27 / 1e27 * totalSharesMinted / totalValue);
+        // Assert shares are always rounded up, max of 1 wei difference except for sUSDS
+        assertLe(shares1 - (params.previewAmount1                  * totalSharesMinted / totalValue), 1);
+        assertLe(shares2 - (params.previewAmount2 * 1e12           * totalSharesMinted / totalValue), 1);
+        assertLe(shares3 - (params.previewAmount3 * 1.25e27 / 1e27 * totalSharesMinted / totalValue), 3);
 
         assertEq(assets1, params.previewAmount1);
         assertEq(assets2, params.previewAmount2);
@@ -166,14 +167,11 @@ contract PSMPreviewWithdraw_SuccessFuzzTests is PSMTestBase {
 
         uint256 sDaiConvertedAmount = params.previewAmount3 * params.conversionRate / 1e27;
 
-        assertApproxEqAbs(shares1, params.previewAmount1        * totalSharesMinted / totalValue, 1);
-        assertApproxEqAbs(shares2, params.previewAmount2 * 1e12 * totalSharesMinted / totalValue, 1);
-        assertApproxEqAbs(shares3, sDaiConvertedAmount          * totalSharesMinted / totalValue, 1);
-
-        // Assert shares are always rounded up
-        assertGe(shares1, params.previewAmount1        * totalSharesMinted / totalValue);
-        assertGe(shares2, params.previewAmount2 * 1e12 * totalSharesMinted / totalValue);
-        assertGe(shares3, sDaiConvertedAmount          * totalSharesMinted / totalValue);
+        // Assert shares are always rounded up, max of 1 wei difference except for sUSDS
+        // totalSharesMinted / totalValue is an integer amount that scales as the rate scales by orders of magnitude
+        assertLe(shares1 - (params.previewAmount1        * totalSharesMinted / totalValue), 1);
+        assertLe(shares2 - (params.previewAmount2 * 1e12 * totalSharesMinted / totalValue), 1);
+        assertLe(shares3 - (sDaiConvertedAmount          * totalSharesMinted / totalValue), 3 + totalSharesMinted / totalValue);
 
         assertApproxEqAbs(assets1, params.previewAmount1, 1);
         assertApproxEqAbs(assets2, params.previewAmount2, 1);

@@ -487,11 +487,11 @@ contract PSMWithdrawTests is PSMTestBase {
         vm.prank(user2);
         amount = psm.withdraw(address(sDai), user2, type(uint256).max);
 
-        assertEq(amount, 100e18 - user1SDai);  // Remaining funds in PSM
+        assertEq(amount, 100e18 - user1SDai - 1);  // Remaining funds in PSM (rounding)
 
         assertEq(sDai.balanceOf(user1),        user1SDai);
-        assertEq(sDai.balanceOf(user2),        100e18 - user1SDai);
-        assertEq(sDai.balanceOf(address(psm)), 0);
+        assertEq(sDai.balanceOf(user2),        100e18 - user1SDai - 1);  // Rounding
+        assertEq(sDai.balanceOf(address(psm)), 1);                       // Rounding
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -501,9 +501,9 @@ contract PSMWithdrawTests is PSMTestBase {
         uint256 user2ResultingValue = sDai.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
 
         assertEq(user1ResultingValue, 111.111111111111111110e18);
-        assertEq(user2ResultingValue, 138.888888888888888889e18);
+        assertEq(user2ResultingValue, 138.888888888888888888e18);
 
-        assertEq(user1ResultingValue + user2ResultingValue, 249.999999999999999999e18);
+        assertEq(user1ResultingValue + user2ResultingValue, 249.999999999999999998e18);
 
         // Value gains are the same for both users
         assertEq((user1ResultingValue - 100e18) * 1e18 / 100e18, 0.111111111111111111e18);
@@ -518,9 +518,12 @@ contract PSMWithdrawTests is PSMTestBase {
         public
     {
         // Use higher lower bounds to get returns at the end to be more accurate
+        // Always increase exchange rate so accrual of value can be checked.
+        // Since rounding is against user if it stays the same the value can decrease and
+        // the check will underflow
         usdcAmount     = _bound(usdcAmount,     1e6,     USDC_TOKEN_MAX);
         sDaiAmount     = _bound(sDaiAmount,     1e18,    SDAI_TOKEN_MAX);
-        conversionRate = _bound(conversionRate, 1.25e27, 1000e27);
+        conversionRate = _bound(conversionRate, 1.26e27, 1000e27);
 
         _deposit(address(usdc), user1, usdcAmount);
         _deposit(address(sDai), user2, sDaiAmount);
@@ -585,17 +588,19 @@ contract PSMWithdrawTests is PSMTestBase {
             assertApproxEqAbs(sDai.balanceOf(address(psm)), 0,                      2);
         }
 
-        assertLe(psm.totalShares(), 1);
-        assertLe(psm.shares(user1), 1);
-        assertLe(psm.shares(user2), 1);
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+        assertEq(psm.shares(user2), 0);
 
         uint256 user1ResultingValue
             = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * conversionRate / 1e27;
 
         uint256 user2ResultingValue = sDai.balanceOf(user2) * conversionRate / 1e27;  // Use 1.5 conversion rate
 
+        assertLe(psm.totalAssets(), 1000);
+
         // Equal to starting value
-        assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue, 2);
+        assertApproxEqAbs(user1ResultingValue + user2ResultingValue, totalValue - psm.totalAssets(), 2);
 
         // Value gains are the same for both users, accurate to 0.02%
         assertApproxEqRel(

@@ -3,6 +3,8 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
+import { MockERC20 } from "erc20-helpers/MockERC20.sol";
+
 import { PSM3 } from "src/PSM3.sol";
 
 import { PSMTestBase } from "test/PSMTestBase.sol";
@@ -50,6 +52,28 @@ contract PSMConstructorTests is PSMTestBase {
         MockRateProvider(address(rateProvider)).__setConversionRate(0);
         vm.expectRevert("PSM3/rate-provider-returns-zero");
         new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
+    }
+
+    function test_constructor_asset0DecimalsToHighBoundary() public {
+        MockERC20 asset0 = new MockERC20("Asset0", "A0", 19);
+
+        vm.expectRevert("PSM3/asset0-precision-too-high");
+        new PSM3(address(asset0), address(usdc), address(sDai), address(rateProvider));
+
+        asset0 = new MockERC20("Asset0", "A0", 18);
+
+        new PSM3(address(asset0), address(usdc), address(sDai), address(rateProvider));
+    }
+
+    function test_constructor_asset1DecimalsToHighBoundary() public {
+        MockERC20 asset1 = new MockERC20("Asset1", "A1", 19);
+
+        vm.expectRevert("PSM3/asset1-precision-too-high");
+        new PSM3(address(dai), address(asset1), address(sDai), address(rateProvider));
+
+        asset1 = new MockERC20("Asset1", "A1", 18);
+
+        new PSM3(address(dai), address(asset1), address(sDai), address(rateProvider));
     }
 
     function test_constructor() public {

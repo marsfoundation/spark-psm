@@ -54,6 +54,10 @@ contract PSM3 is IPSM3 {
         _asset0Precision = 10 ** IERC20(asset0_).decimals();
         _asset1Precision = 10 ** IERC20(asset1_).decimals();
         _asset2Precision = 10 ** IERC20(asset2_).decimals();
+
+        // Necessary to ensure rounding works as expected
+        require(_asset0Precision <= 1e18, "PSM3/asset0-precision-too-high");
+        require(_asset1Precision <= 1e18, "PSM3/asset1-precision-too-high");
     }
 
     /**********************************************************************************************/
@@ -155,7 +159,7 @@ contract PSM3 is IPSM3 {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
 
         // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
-        return convertToShares(_getAssetValue(asset, assetsToDeposit));
+        return convertToShares(_getAssetValue(asset, assetsToDeposit, false));  // Round down
     }
 
     function previewWithdraw(address asset, uint256 maxAssetsToWithdraw)
@@ -169,7 +173,8 @@ contract PSM3 is IPSM3 {
             ? assetBalance
             : maxAssetsToWithdraw;
 
-        sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn));
+        // Get shares to burn, rounding up for both calculations
+        sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn, true));
 
         uint256 userShares = shares[msg.sender];
 
@@ -237,7 +242,7 @@ contract PSM3 is IPSM3 {
 
     function convertToShares(address asset, uint256 assets) public view override returns (uint256) {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
-        return convertToShares(_getAssetValue(asset, assets));
+        return convertToShares(_getAssetValue(asset, assets, false));  // Round down
     }
 
     /**********************************************************************************************/
@@ -247,17 +252,17 @@ contract PSM3 is IPSM3 {
     function totalAssets() public view override returns (uint256) {
         return _getAsset0Value(asset0.balanceOf(address(this)))
             +  _getAsset1Value(asset1.balanceOf(address(this)))
-            +  _getAsset2Value(asset2.balanceOf(address(this)));
+            +  _getAsset2Value(asset2.balanceOf(address(this)), false);  // Round down
     }
 
     /**********************************************************************************************/
     /*** Internal valuation functions (deposit/withdraw)                                        ***/
     /**********************************************************************************************/
 
-    function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
+    function _getAssetValue(address asset, uint256 amount, bool roundUp) internal view returns (uint256) {
         if      (asset == address(asset0)) return _getAsset0Value(amount);
         else if (asset == address(asset1)) return _getAsset1Value(amount);
-        else if (asset == address(asset2)) return _getAsset2Value(amount);
+        else if (asset == address(asset2)) return _getAsset2Value(amount, roundUp);
         else revert("PSM3/invalid-asset");
     }
 
@@ -269,12 +274,17 @@ contract PSM3 is IPSM3 {
         return amount * 1e18 / _asset1Precision;
     }
 
-    function _getAsset2Value(uint256 amount) internal view returns (uint256) {
+    function _getAsset2Value(uint256 amount, bool roundUp) internal view returns (uint256) {
         // NOTE: Multiplying by 1e18 and dividing by 1e27 cancels to 1e9 in denominator
-        return amount
+        if (!roundUp) return amount
             * IRateProviderLike(rateProvider).getConversionRate()
             / 1e9
             / _asset2Precision;
+
+        return Math.ceilDiv(
+            Math.ceilDiv(amount * IRateProviderLike(rateProvider).getConversionRate(), 1e9),
+            _asset2Precision
+        );
     }
 
     /**********************************************************************************************/
