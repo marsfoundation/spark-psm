@@ -359,8 +359,8 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler      = new LpHandler(psm, usdc, dai, sDai, 3);
+        swapperHandler = new SwapperHandler(psm, usdc, dai, sDai, 3);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -404,9 +404,9 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler       = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler  = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        transferHandler = new TransferHandler(psm, dai, usdc, sDai);
+        lpHandler       = new LpHandler(psm, usdc, dai, sDai, 3);
+        swapperHandler  = new SwapperHandler(psm, usdc, dai, sDai, 3);
+        transferHandler = new TransferHandler(psm, usdc, dai, sDai);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -447,9 +447,9 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        lpHandler         = new LpHandler(psm, usdc, dai, sDai, 3);
         rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
-        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        swapperHandler    = new SwapperHandler(psm, usdc, dai, sDai, 3);
 
         targetContract(address(lpHandler));
         targetContract(address(rateSetterHandler));
@@ -493,10 +493,10 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        lpHandler         = new LpHandler(psm, usdc, dai, sDai, 3);
         rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
-        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
+        swapperHandler    = new SwapperHandler(psm, usdc, dai, sDai, 3);
+        transferHandler   = new TransferHandler(psm, usdc, dai, sDai);
 
         targetContract(address(lpHandler));
         targetContract(address(rateSetterHandler));
@@ -554,13 +554,13 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(owner, address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(dai), address(sDai), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(dai), BURN_ADDRESS, 1e18);
 
-        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler            = new LpHandler(psm, usdc, dai, sDai, 3);
+        swapperHandler       = new SwapperHandler(psm, usdc, dai, sDai, 3);
         timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
@@ -580,7 +580,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
@@ -633,15 +633,15 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(owner, address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(dai), address(sDai), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(dai), BURN_ADDRESS, 1e18);
 
-        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler            = new LpHandler(psm, usdc, dai, sDai, 3);
+        swapperHandler       = new SwapperHandler(psm, usdc, dai, sDai, 3);
         timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
-        transferHandler      = new TransferHandler(psm, dai, usdc, sDai);
+        transferHandler      = new TransferHandler(psm, usdc, dai, sDai);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.

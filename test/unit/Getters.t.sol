@@ -15,51 +15,51 @@ contract PSMHarnessTests is PSMTestBase {
         super.setUp();
         psmHarness = new PSM3Harness(
             address(owner),
-            address(dai),
             address(usdc),
+            address(dai),
             address(sDai),
             address(rateProvider)
         );
     }
 
-    function test_getAsset0Value() public view {
-        assertEq(psmHarness.getAsset0Value(1), 1);
-        assertEq(psmHarness.getAsset0Value(2), 2);
-        assertEq(psmHarness.getAsset0Value(3), 3);
-
-        assertEq(psmHarness.getAsset0Value(100e18), 100e18);
-        assertEq(psmHarness.getAsset0Value(200e18), 200e18);
-        assertEq(psmHarness.getAsset0Value(300e18), 300e18);
-
-        assertEq(psmHarness.getAsset0Value(100_000_000_000e18), 100_000_000_000e18);
-        assertEq(psmHarness.getAsset0Value(200_000_000_000e18), 200_000_000_000e18);
-        assertEq(psmHarness.getAsset0Value(300_000_000_000e18), 300_000_000_000e18);
-    }
-
-    function testFuzz_getAsset0Value(uint256 amount) public view {
-        amount = _bound(amount, 0, 1e45);
-
-        assertEq(psmHarness.getAsset0Value(amount), amount);
-    }
-
     function test_getAsset1Value() public view {
-        assertEq(psmHarness.getAsset1Value(1), 1e12);
-        assertEq(psmHarness.getAsset1Value(2), 2e12);
-        assertEq(psmHarness.getAsset1Value(3), 3e12);
+        assertEq(psmHarness.getAsset1Value(1), 1);
+        assertEq(psmHarness.getAsset1Value(2), 2);
+        assertEq(psmHarness.getAsset1Value(3), 3);
 
-        assertEq(psmHarness.getAsset1Value(100e6), 100e18);
-        assertEq(psmHarness.getAsset1Value(200e6), 200e18);
-        assertEq(psmHarness.getAsset1Value(300e6), 300e18);
+        assertEq(psmHarness.getAsset1Value(100e18), 100e18);
+        assertEq(psmHarness.getAsset1Value(200e18), 200e18);
+        assertEq(psmHarness.getAsset1Value(300e18), 300e18);
 
-        assertEq(psmHarness.getAsset1Value(100_000_000_000e6), 100_000_000_000e18);
-        assertEq(psmHarness.getAsset1Value(200_000_000_000e6), 200_000_000_000e18);
-        assertEq(psmHarness.getAsset1Value(300_000_000_000e6), 300_000_000_000e18);
+        assertEq(psmHarness.getAsset1Value(100_000_000_000e18), 100_000_000_000e18);
+        assertEq(psmHarness.getAsset1Value(200_000_000_000e18), 200_000_000_000e18);
+        assertEq(psmHarness.getAsset1Value(300_000_000_000e18), 300_000_000_000e18);
     }
 
     function testFuzz_getAsset1Value(uint256 amount) public view {
         amount = _bound(amount, 0, 1e45);
 
-        assertEq(psmHarness.getAsset1Value(amount), amount * 1e12);
+        assertEq(psmHarness.getAsset1Value(amount), amount);
+    }
+
+    function test_getAsset0Value() public view {
+        assertEq(psmHarness.getAsset0Value(1), 1e12);
+        assertEq(psmHarness.getAsset0Value(2), 2e12);
+        assertEq(psmHarness.getAsset0Value(3), 3e12);
+
+        assertEq(psmHarness.getAsset0Value(100e6), 100e18);
+        assertEq(psmHarness.getAsset0Value(200e6), 200e18);
+        assertEq(psmHarness.getAsset0Value(300e6), 300e18);
+
+        assertEq(psmHarness.getAsset0Value(100_000_000_000e6), 100_000_000_000e18);
+        assertEq(psmHarness.getAsset0Value(200_000_000_000e6), 200_000_000_000e18);
+        assertEq(psmHarness.getAsset0Value(300_000_000_000e6), 300_000_000_000e18);
+    }
+
+    function testFuzz_getAsset0Value(uint256 amount) public view {
+        amount = _bound(amount, 0, 1e45);
+
+        assertEq(psmHarness.getAsset0Value(amount), amount * 1e12);
     }
 
     function test_getAsset2Value() public {
@@ -144,37 +144,37 @@ contract PSMHarnessTests is PSMTestBase {
     }
 
     function test_getAssetValue() public view {
-        assertEq(psmHarness.getAssetValue(address(dai), 1, false), psmHarness.getAsset0Value(1));
-        assertEq(psmHarness.getAssetValue(address(dai), 2, false), psmHarness.getAsset0Value(2));
-        assertEq(psmHarness.getAssetValue(address(dai), 3, false), psmHarness.getAsset0Value(3));
+        assertEq(psmHarness.getAssetValue(address(usdc), 1, false), psmHarness.getAsset0Value(1));
+        assertEq(psmHarness.getAssetValue(address(usdc), 2, false), psmHarness.getAsset0Value(2));
+        assertEq(psmHarness.getAssetValue(address(usdc), 3, false), psmHarness.getAsset0Value(3));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1, true), psmHarness.getAsset0Value(1));
-        assertEq(psmHarness.getAssetValue(address(dai), 2, true), psmHarness.getAsset0Value(2));
-        assertEq(psmHarness.getAssetValue(address(dai), 3, true), psmHarness.getAsset0Value(3));
+        assertEq(psmHarness.getAssetValue(address(usdc), 1, true), psmHarness.getAsset0Value(1));
+        assertEq(psmHarness.getAssetValue(address(usdc), 2, true), psmHarness.getAsset0Value(2));
+        assertEq(psmHarness.getAssetValue(address(usdc), 3, true), psmHarness.getAsset0Value(3));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1e18, false), psmHarness.getAsset0Value(1e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 2e18, false), psmHarness.getAsset0Value(2e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 3e18, false), psmHarness.getAsset0Value(3e18));
+        assertEq(psmHarness.getAssetValue(address(usdc), 1e6, false), psmHarness.getAsset0Value(1e6));
+        assertEq(psmHarness.getAssetValue(address(usdc), 2e6, false), psmHarness.getAsset0Value(2e6));
+        assertEq(psmHarness.getAssetValue(address(usdc), 3e6, false), psmHarness.getAsset0Value(3e6));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1e18, true), psmHarness.getAsset0Value(1e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 2e18, true), psmHarness.getAsset0Value(2e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 3e18, true), psmHarness.getAsset0Value(3e18));
+        assertEq(psmHarness.getAssetValue(address(usdc), 1e6, true), psmHarness.getAsset0Value(1e6));
+        assertEq(psmHarness.getAssetValue(address(usdc), 2e6, true), psmHarness.getAsset0Value(2e6));
+        assertEq(psmHarness.getAssetValue(address(usdc), 3e6, true), psmHarness.getAsset0Value(3e6));
 
-        assertEq(psmHarness.getAssetValue(address(usdc), 1, false), psmHarness.getAsset1Value(1));
-        assertEq(psmHarness.getAssetValue(address(usdc), 2, false), psmHarness.getAsset1Value(2));
-        assertEq(psmHarness.getAssetValue(address(usdc), 3, false), psmHarness.getAsset1Value(3));
+        assertEq(psmHarness.getAssetValue(address(dai), 1, false), psmHarness.getAsset1Value(1));
+        assertEq(psmHarness.getAssetValue(address(dai), 2, false), psmHarness.getAsset1Value(2));
+        assertEq(psmHarness.getAssetValue(address(dai), 3, false), psmHarness.getAsset1Value(3));
 
-        assertEq(psmHarness.getAssetValue(address(usdc), 1, true), psmHarness.getAsset1Value(1));
-        assertEq(psmHarness.getAssetValue(address(usdc), 2, true), psmHarness.getAsset1Value(2));
-        assertEq(psmHarness.getAssetValue(address(usdc), 3, true), psmHarness.getAsset1Value(3));
+        assertEq(psmHarness.getAssetValue(address(dai), 1, true), psmHarness.getAsset1Value(1));
+        assertEq(psmHarness.getAssetValue(address(dai), 2, true), psmHarness.getAsset1Value(2));
+        assertEq(psmHarness.getAssetValue(address(dai), 3, true), psmHarness.getAsset1Value(3));
 
-        assertEq(psmHarness.getAssetValue(address(usdc), 1e6, false), psmHarness.getAsset1Value(1e6));
-        assertEq(psmHarness.getAssetValue(address(usdc), 2e6, false), psmHarness.getAsset1Value(2e6));
-        assertEq(psmHarness.getAssetValue(address(usdc), 3e6, false), psmHarness.getAsset1Value(3e6));
+        assertEq(psmHarness.getAssetValue(address(dai), 1e18, false), psmHarness.getAsset1Value(1e18));
+        assertEq(psmHarness.getAssetValue(address(dai), 2e18, false), psmHarness.getAsset1Value(2e18));
+        assertEq(psmHarness.getAssetValue(address(dai), 3e18, false), psmHarness.getAsset1Value(3e18));
 
-        assertEq(psmHarness.getAssetValue(address(usdc), 1e6, true), psmHarness.getAsset1Value(1e6));
-        assertEq(psmHarness.getAssetValue(address(usdc), 2e6, true), psmHarness.getAsset1Value(2e6));
-        assertEq(psmHarness.getAssetValue(address(usdc), 3e6, true), psmHarness.getAsset1Value(3e6));
+        assertEq(psmHarness.getAssetValue(address(dai), 1e18, true), psmHarness.getAsset1Value(1e18));
+        assertEq(psmHarness.getAssetValue(address(dai), 2e18, true), psmHarness.getAsset1Value(2e18));
+        assertEq(psmHarness.getAssetValue(address(dai), 3e18, true), psmHarness.getAsset1Value(3e18));
 
         assertEq(psmHarness.getAssetValue(address(sDai), 1, false), psmHarness.getAsset2Value(1, false));
         assertEq(psmHarness.getAssetValue(address(sDai), 2, false), psmHarness.getAsset2Value(2, false));
@@ -197,10 +197,10 @@ contract PSMHarnessTests is PSMTestBase {
         amount = _bound(amount, 0, SDAI_TOKEN_MAX);
 
         // `asset0` and `asset1` return the same values whether `roundUp` is true or false
-        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getAsset0Value(amount));
-        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getAsset0Value(amount));
-        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getAsset1Value(amount));
-        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getAsset1Value(amount));
+        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getAsset0Value(amount));
+        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getAsset0Value(amount));
+        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getAsset1Value(amount));
+        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getAsset1Value(amount));
 
         // `asset2` returns different values depending on the value of `roundUp`, but always same as underlying function
         assertEq(psmHarness.getAssetValue(address(sDai), amount, false), psmHarness.getAsset2Value(amount, false));

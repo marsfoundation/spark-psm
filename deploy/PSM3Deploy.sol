@@ -18,8 +18,8 @@ library PSM3Deploy {
     {
         psm = address(new PSM3(owner, asset0, asset1, asset2, rateProvider));
 
-        IERC20(asset0).approve(psm, 1e18);
-        PSM3(psm).deposit(asset0, address(0), 1e18);
+        IERC20(asset1).approve(psm, 1e18);
+        PSM3(psm).deposit(asset1, address(0), 1e18);
     }
 
 }

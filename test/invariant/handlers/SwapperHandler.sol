@@ -353,8 +353,8 @@ contract SwapperHandler is HandlerBase {
     }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
-        if      (asset == address(assets[0])) return amount;
-        else if (asset == address(assets[1])) return amount * 1e12;
+        if      (asset == address(assets[0])) return amount * 1e12;
+        else if (asset == address(assets[1])) return amount;
         else if (asset == address(assets[2])) return amount * rateProvider.getConversionRate() / 1e27;
         else revert("SwapperHandler/asset-not-found");
     }

@@ -19,8 +19,13 @@ contract PSM3 is IPSM3, Ownable {
     uint256 internal immutable _asset1Precision;
     uint256 internal immutable _asset2Precision;
 
-    // NOTE: Assumption is made that asset2 is the yield-bearing counterpart of asset0 and asset1.
-    //       Examples: asset0 = USDC, asset1 = DAI, asset2 = sDAI
+    // NOTE(CRITICAL): Multiple assumptions are made about the initial configuration of this
+    //                 contract that are critical to it functioning correctly.
+    //                 These assumptions are:
+    //                 Assumption 1: `asset2` is the yield-bearing counterpart of asset0 and asset1.
+    //                 Assumption 2: `asset0` is the only asset that can be used with a `pocket`.
+    //                 Example: asset0 = USDC, asset1 = DAI, asset2 = sDAI
+
     IERC20 public override immutable asset0;
     IERC20 public override immutable asset1;
     IERC20 public override immutable asset2;

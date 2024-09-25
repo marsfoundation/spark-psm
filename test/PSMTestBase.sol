@@ -33,9 +33,9 @@ contract PSMTestBase is Test {
     }
 
     // 1,000,000,000,000 of each token
-    uint256 public constant USDC_TOKEN_MAX = 1e18;
-    uint256 public constant SDAI_TOKEN_MAX = 1e30;
     uint256 public constant DAI_TOKEN_MAX  = 1e30;
+    uint256 public constant SDAI_TOKEN_MAX = 1e30;
+    uint256 public constant USDC_TOKEN_MAX = 1e18;
 
     function setUp() public virtual {
         dai  = new MockERC20("dai",  "dai",  18);
@@ -49,7 +49,7 @@ contract PSMTestBase is Test {
 
         rateProvider = IRateProviderLike(address(mockRateProvider));
 
-        psm = new PSM3(owner, address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(owner, address(usdc), address(dai), address(sDai), address(rateProvider));
 
         vm.label(address(dai),  "DAI");
         vm.label(address(usdc), "USDC");
