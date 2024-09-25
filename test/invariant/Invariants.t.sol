@@ -554,7 +554,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(admin, address(dai), address(usdc), address(sDai), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(dai), BURN_ADDRESS, 1e18);
@@ -633,7 +633,7 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(admin, address(dai), address(usdc), address(sDai), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(dai), BURN_ADDRESS, 1e18);

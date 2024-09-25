@@ -5,12 +5,13 @@ import { IERC20 } from "erc20-helpers/interfaces/IERC20.sol";
 
 import { SafeERC20 } from "erc20-helpers/SafeERC20.sol";
 
-import { Math } from "openzeppelin-contracts/contracts/utils/math/Math.sol";
+import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import { Math }    from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
 import { IPSM3 }             from "src/interfaces/IPSM3.sol";
 import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
 
-contract PSM3 is IPSM3 {
+contract PSM3 is IPSM3, Ownable {
 
     using SafeERC20 for IERC20;
 
@@ -25,12 +26,21 @@ contract PSM3 is IPSM3 {
     IERC20 public override immutable asset2;
 
     address public override immutable rateProvider;
+    address public override immutable pocket;
 
     uint256 public override totalShares;
 
     mapping(address user => uint256 shares) public override shares;
 
-    constructor(address asset0_, address asset1_, address asset2_, address rateProvider_) {
+    constructor(
+        address owner_,
+        address asset0_,
+        address asset1_,
+        address asset2_,
+        address rateProvider_
+    )
+        Ownable(owner_)
+    {
         require(asset0_       != address(0), "PSM3/invalid-asset0");
         require(asset1_       != address(0), "PSM3/invalid-asset1");
         require(asset2_       != address(0), "PSM3/invalid-asset2");
@@ -45,6 +55,7 @@ contract PSM3 is IPSM3 {
         asset2 = IERC20(asset2_);
 
         rateProvider = rateProvider_;
+        pocket       = address(this);
 
         require(
             IRateProviderLike(rateProvider_).getConversionRate() != 0,

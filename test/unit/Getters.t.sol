@@ -14,6 +14,7 @@ contract PSMHarnessTests is PSMTestBase {
     function setUp() public override {
         super.setUp();
         psmHarness = new PSM3Harness(
+            address(admin),
             address(dai),
             address(usdc),
             address(sDai),

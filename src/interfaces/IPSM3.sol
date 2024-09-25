@@ -88,6 +88,13 @@ interface IPSM3 {
     function asset2() external view returns (IERC20);
 
     /**
+     *  @dev    Returns the address of the pocket, an address that holds custody of USDC in the
+     *          PSM and can deploy it to yield-bearing strategies. Settable by the owner.
+     *  @return The address of the pocket.
+     */
+    function pocket() external view returns (address);
+
+    /**
      *  @dev    Returns the address of the rate provider, a contract that provides the conversion
      *          rate between asset2 and the other two assets in the PSM (e.g., sDAI to USD).
      *  @return The address of the rate provider.

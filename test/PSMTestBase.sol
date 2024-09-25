@@ -13,6 +13,8 @@ import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
 
 contract PSMTestBase is Test {
 
+    address public admin = makeAddr("admin");
+
     PSM3 public psm;
 
     // NOTE: Using DAI, sDAI and USDC as example assets
@@ -47,7 +49,7 @@ contract PSMTestBase is Test {
 
         rateProvider = IRateProviderLike(address(mockRateProvider));
 
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(admin, address(dai), address(usdc), address(sDai), address(rateProvider));
 
         vm.label(address(dai),  "DAI");
         vm.label(address(usdc), "USDC");
