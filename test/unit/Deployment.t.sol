@@ -15,14 +15,14 @@ contract PSMDeployTests is PSMTestBase {
         deal(address(dai), address(this), 1e18);
 
         PSM3 newPsm = PSM3(PSM3Deploy.deploy(
-            address(admin),
+            address(owner),
             address(dai),
             address(usdc),
             address(sDai),
             address(rateProvider)
         ));
 
-        assertEq(address(newPsm.owner()),        address(admin));
+        assertEq(address(newPsm.owner()),        address(owner));
         assertEq(address(newPsm.asset0()),       address(dai));
         assertEq(address(newPsm.asset1()),       address(usdc));
         assertEq(address(newPsm.asset2()),       address(sDai));

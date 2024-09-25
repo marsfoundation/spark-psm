@@ -8,7 +8,7 @@ import { PSM3 } from "src/PSM3.sol";
 library PSM3Deploy {
 
     function deploy(
-        address admin,
+        address owner,
         address asset0,
         address asset1,
         address asset2,
@@ -16,7 +16,7 @@ library PSM3Deploy {
     )
         external returns (address psm)
     {
-        psm = address(new PSM3(admin, asset0, asset1, asset2, rateProvider));
+        psm = address(new PSM3(owner, asset0, asset1, asset2, rateProvider));
 
         IERC20(asset0).approve(psm, 1e18);
         PSM3(psm).deposit(asset0, address(0), 1e18);
