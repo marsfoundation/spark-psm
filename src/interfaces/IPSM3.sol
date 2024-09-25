@@ -9,6 +9,13 @@ interface IPSM3 {
     /*** Events                                                                                 ***/
     /**********************************************************************************************/
 
+    // TODO: Add natspec
+    event PocketSet(
+        address indexed oldPocket,
+        address indexed newPocket,
+        uint256 amountTransferred
+    );
+
     /**
      *  @dev   Emitted when an asset is swapped in the PSM.
      *  @param assetIn       Address of the asset swapped in.

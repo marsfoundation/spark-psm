@@ -26,7 +26,8 @@ contract PSM3 is IPSM3, Ownable {
     IERC20 public override immutable asset2;
 
     address public override immutable rateProvider;
-    address public override immutable pocket;
+
+    address public override pocket;
 
     uint256 public override totalShares;
 
@@ -69,6 +70,27 @@ contract PSM3 is IPSM3, Ownable {
         // Necessary to ensure rounding works as expected
         require(_asset0Precision <= 1e18, "PSM3/asset0-precision-too-high");
         require(_asset1Precision <= 1e18, "PSM3/asset1-precision-too-high");
+    }
+
+    /**********************************************************************************************/
+    /*** Owner functions                                                                        ***/
+    /**********************************************************************************************/
+
+    // TODO: Add override
+    function setPocket(address newPocket) external onlyOwner {
+        require(newPocket != address(0), "PSM3/invalid-pocket");
+
+        uint256 amountToTransfer = asset0.balanceOf(pocket);
+
+        if (pocket == address(this)) {
+            asset0.safeTransfer(newPocket, amountToTransfer);
+        } else {
+            asset0.safeTransferFrom(pocket, newPocket, amountToTransfer);
+        }
+
+        pocket = newPocket;
+
+        emit PocketSet(pocket, newPocket, amountToTransfer);
     }
 
     /**********************************************************************************************/
