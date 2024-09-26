@@ -40,17 +40,17 @@ contract PSMSwapExactInFailureTests is PSMTestBase {
         psm.swapExactIn(address(usdc), makeAddr("other-token"), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swapExactIn_bothAsset0() public {
-        vm.expectRevert("PSM3/invalid-asset");
-        psm.swapExactIn(address(dai), address(dai), 100e6, 80e18, receiver, 0);
-    }
-
-    function test_swapExactIn_bothAsset1() public {
+    function test_swapExactIn_bothUsdc() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.swapExactIn(address(usdc), address(usdc), 100e6, 80e18, receiver, 0);
     }
 
-    function test_swapExactIn_bothAsset2() public {
+    function test_swapExactIn_bothUsds() public {
+        vm.expectRevert("PSM3/invalid-asset");
+        psm.swapExactIn(address(dai), address(dai), 100e6, 80e18, receiver, 0);
+    }
+
+    function test_swapExactIn_bothSUsds() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.swapExactIn(address(sDai), address(sDai), 100e6, 80e18, receiver, 0);
     }

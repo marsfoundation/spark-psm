@@ -18,18 +18,18 @@ contract PSMConstructorTests is PSMTestBase {
         new PSM3(address(0), address(usdc), address(dai), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_invalidAsset0() public {
-        vm.expectRevert("PSM3/invalid-asset0");
+    function test_constructor_invalidUsdc() public {
+        vm.expectRevert("PSM3/invalid-usdc");
         new PSM3(owner, address(0), address(dai), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_invalidAsset1() public {
-        vm.expectRevert("PSM3/invalid-asset1");
+    function test_constructor_invalidUsds() public {
+        vm.expectRevert("PSM3/invalid-usds");
         new PSM3(owner, address(usdc), address(0), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_invalidAsset2() public {
-        vm.expectRevert("PSM3/invalid-asset2");
+    function test_constructor_invalidSUsds() public {
+        vm.expectRevert("PSM3/invalid-susds");
         new PSM3(owner, address(usdc), address(dai), address(0), address(rateProvider));
     }
 
@@ -38,18 +38,18 @@ contract PSMConstructorTests is PSMTestBase {
         new PSM3(owner, address(usdc), address(dai), address(sDai), address(0));
     }
 
-    function test_constructor_asset0Asset1Match() public {
-        vm.expectRevert("PSM3/asset0-asset1-same");
+    function test_constructor_usdcUsdsMatch() public {
+        vm.expectRevert("PSM3/usdc-usds-same");
         new PSM3(owner, address(usdc), address(usdc), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_asset0Asset2Match() public {
-        vm.expectRevert("PSM3/asset0-asset2-same");
+    function test_constructor_usdcSUsdsMatch() public {
+        vm.expectRevert("PSM3/usdc-susds-same");
         new PSM3(owner, address(usdc), address(dai), address(usdc), address(rateProvider));
     }
 
-    function test_constructor_asset1Asset2Match() public {
-        vm.expectRevert("PSM3/asset1-asset2-same");
+    function test_constructor_usdsSUsdsMatch() public {
+        vm.expectRevert("PSM3/usds-susds-same");
         new PSM3(owner, address(usdc), address(dai), address(dai), address(rateProvider));
     }
 
@@ -59,26 +59,26 @@ contract PSMConstructorTests is PSMTestBase {
         new PSM3(owner, address(usdc), address(dai), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_asset0DecimalsToHighBoundary() public {
-        MockERC20 asset0 = new MockERC20("Asset0", "A0", 19);
+    function test_constructor_usdcDecimalsToHighBoundary() public {
+        MockERC20 usdc = new MockERC20("USDC", "USDC", 19);
 
-        vm.expectRevert("PSM3/asset0-precision-too-high");
-        new PSM3(owner, address(asset0), address(dai), address(sDai), address(rateProvider));
+        vm.expectRevert("PSM3/usdc-precision-too-high");
+        new PSM3(owner, address(usdc), address(dai), address(sDai), address(rateProvider));
 
-        asset0 = new MockERC20("Asset0", "A0", 18);
+        usdc = new MockERC20("USDC", "USDC", 18);
 
-        new PSM3(owner, address(asset0), address(dai), address(sDai), address(rateProvider));
+        new PSM3(owner, address(usdc), address(dai), address(sDai), address(rateProvider));
     }
 
-    function test_constructor_asset1DecimalsToHighBoundary() public {
-        MockERC20 asset1 = new MockERC20("Asset1", "A1", 19);
+    function test_constructor_usdsDecimalsToHighBoundary() public {
+        MockERC20 usds = new MockERC20("USDS", "USDS", 19);
 
-        vm.expectRevert("PSM3/asset1-precision-too-high");
-        new PSM3(owner, address(usdc), address(asset1), address(sDai), address(rateProvider));
+        vm.expectRevert("PSM3/usds-precision-too-high");
+        new PSM3(owner, address(usdc), address(usds), address(sDai), address(rateProvider));
 
-        asset1 = new MockERC20("Asset1", "A1", 18);
+        usds = new MockERC20("USDS", "USDS", 18);
 
-        new PSM3(owner, address(usdc), address(asset1), address(sDai), address(rateProvider));
+        new PSM3(owner, address(usdc), address(usds), address(sDai), address(rateProvider));
     }
 
     function test_constructor() public {
@@ -86,9 +86,9 @@ contract PSMConstructorTests is PSMTestBase {
         psm = new PSM3(owner, address(usdc), address(dai), address(sDai), address(rateProvider));
 
         assertEq(address(psm.owner()),        address(owner));
-        assertEq(address(psm.asset0()),       address(usdc));
-        assertEq(address(psm.asset1()),       address(dai));
-        assertEq(address(psm.asset2()),       address(sDai));
+        assertEq(address(psm.usdc()),         address(usdc));
+        assertEq(address(psm.usds()),         address(dai));
+        assertEq(address(psm.susds()),        address(sDai));
         assertEq(address(psm.rateProvider()), address(rateProvider));
     }
 

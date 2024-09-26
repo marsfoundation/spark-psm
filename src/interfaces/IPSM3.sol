@@ -10,11 +10,11 @@ interface IPSM3 {
     /**********************************************************************************************/
 
     /**
-     *  @dev   Emitted when a new pocket is set in the PSM, transferring the balance of asset0
+     *  @dev   Emitted when a new pocket is set in the PSM, transferring the balance of USDC.
      *         of the old pocket to the new pocket.
      *  @param oldPocket         Address of the old `pocket`.
      *  @param newPocket         Address of the new `pocket`.
-     *  @param amountTransferred Amount of asset0 transferred from the old pocket to the new pocket.
+     *  @param amountTransferred Amount of USDC transferred from the old pocket to the new pocket.
      */
     event PocketSet(
         address indexed oldPocket,
@@ -79,26 +79,24 @@ interface IPSM3 {
     /**********************************************************************************************/
 
     /**
-     *  @dev    Returns the IERC20 interface representing asset0. This asset is one of the non-yield
-     *          bearing assets in the PSM (e.g., USDC or DAI).
-     *  @return The IERC20 interface of asset0.
+     *  @dev    Returns the IERC20 interface representing USDC.
+     *  @return The IERC20 interface of USDC.
      */
-    function asset0() external view returns (IERC20);
+    function usdc() external view returns (IERC20);
 
     /**
-     *  @dev    Returns the IERC20 interface representing asset1. This asset is one of the non-yield
-     *          bearing assets in the PSM (e.g., USDC or DAI).
-     *  @return The IERC20 interface of asset1.
+     *  @dev    Returns the IERC20 interface representing USDS.
+     *  @return The IERC20 interface of USDS.
      */
-    function asset1() external view returns (IERC20);
+    function usds() external view returns (IERC20);
 
     /**
-     *  @dev    Returns the IERC20 interface representing asset2. This asset is the yield-bearing
+     *  @dev    Returns the IERC20 interface representing sUSDS. This asset is the yield-bearing
      *          asset in the PSM (e.g., sDAI). The value of this asset is queried from the
      *          rate provider.
-     *  @return The IERC20 interface of asset2.
+     *  @return The IERC20 interface of sUSDS.
      */
-    function asset2() external view returns (IERC20);
+    function susds() external view returns (IERC20);
 
     /**
      *  @dev    Returns the address of the pocket, an address that holds custody of USDC in the
@@ -109,7 +107,7 @@ interface IPSM3 {
 
     /**
      *  @dev    Returns the address of the rate provider, a contract that provides the conversion
-     *          rate between asset2 and the other two assets in the PSM (e.g., sDAI to USD).
+     *          rate between sUSDS and the other two assets in the PSM (e.g., sDAI to USD).
      *  @return The address of the rate provider.
      */
     function rateProvider() external view returns (address);
@@ -133,7 +131,7 @@ interface IPSM3 {
     /**********************************************************************************************/
 
     /**
-     *  @dev    Sets the address of the pocket, an address that holds custody of asset0 in the PSM
+     *  @dev    Sets the address of the pocket, an address that holds custody of USDC in the PSM
      *          and can deploy it to yield-bearing strategies. This function will transfer the
      *          balance of USDC in the PSM to the new pocket. Callable only by the owner.
      *  @param  newPocket Address of the new pocket.
@@ -292,16 +290,16 @@ interface IPSM3 {
      *  @dev    View function that converts an amount of a given shares to the equivalent
      *          amount of assetValue.
      *  @param  numShares  Number of shares to convert to assetValue.
-     *  @return assetValue Value of assets in asset0 denominated in 18 decimals.
+     *  @return assetValue Value of assets in USDC denominated in 18 decimals.
      */
     function convertToAssetValue(uint256 numShares) external view returns (uint256);
 
     /**
      *  @dev    View function that converts an amount of assetValue (18 decimal value denominated in
-     *          asset0 and asset1) to shares in the PSM based on the current exchange rate.
+     *          USDC and USDS) to shares in the PSM based on the current exchange rate.
      *          Note that this rounds down on calculation so is intended to be used for quoting the
      *          current exchange rate.
-     *  @param  assetValue 18 decimal value denominated in asset0 (e.g., 1e6 USDC = 1e18)
+     *  @param  assetValue 18 decimal value denominated in USDC (e.g., 1e6 USDC = 1e18)
      *  @return shares     Number of shares that the assetValue is equivalent to.
      */
     function convertToShares(uint256 assetValue) external view returns (uint256);
@@ -322,7 +320,7 @@ interface IPSM3 {
 
     /**
      *  @dev View function that returns the total value of the balance of all assets in the PSM
-     *       converted to asset0/asset1 terms denominated in 18 decimal precision.
+     *       converted to USDC/USDS terms denominated in 18 decimal precision.
      */
     function totalAssets() external view returns (uint256);
 

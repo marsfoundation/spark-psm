@@ -77,19 +77,19 @@ contract PSMConvertToAssetsTests is PSMTestBase {
         assertEq(psm.convertToAssets(address(sDai), 3e18), 2.4e18);
     }
 
-    function testFuzz_convertToAssets_asset0(uint256 amount) public view {
+    function testFuzz_convertToAssets_usdc(uint256 amount) public view {
         amount = _bound(amount, 0, DAI_TOKEN_MAX);
 
         assertEq(psm.convertToAssets(address(dai), amount), amount);
     }
 
-    function testFuzz_convertToAssets_asset1(uint256 amount) public view {
+    function testFuzz_convertToAssets_usds(uint256 amount) public view {
         amount = _bound(amount, 0, USDC_TOKEN_MAX);
 
         assertEq(psm.convertToAssets(address(usdc), amount), amount / 1e12);
     }
 
-    function testFuzz_convertToAssets_asset2(uint256 conversionRate, uint256 amount) public {
+    function testFuzz_convertToAssets_susds(uint256 conversionRate, uint256 amount) public {
         // NOTE: 0.0001e27 considered lower bound for overflow considerations
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
         amount         = _bound(amount,         0,         SDAI_TOKEN_MAX);

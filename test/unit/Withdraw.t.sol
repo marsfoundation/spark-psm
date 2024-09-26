@@ -23,7 +23,7 @@ contract PSMWithdrawTests is PSMTestBase {
         psm.withdraw(address(usdc), receiver1, 0);
     }
 
-    function test_withdraw_notAsset0OrAsset1() public {
+    function test_withdraw_notUsdcOrUsds() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.withdraw(makeAddr("new-asset"), receiver1, 100e6);
     }

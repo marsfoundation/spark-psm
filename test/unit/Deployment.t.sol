@@ -23,9 +23,9 @@ contract PSMDeployTests is PSMTestBase {
         ));
 
         assertEq(address(newPsm.owner()),        address(owner));
-        assertEq(address(newPsm.asset0()),       address(usdc));
-        assertEq(address(newPsm.asset1()),       address(dai));
-        assertEq(address(newPsm.asset2()),       address(sDai));
+        assertEq(address(newPsm.usdc()),         address(usdc));
+        assertEq(address(newPsm.usds()),         address(dai));
+        assertEq(address(newPsm.susds()),        address(sDai));
         assertEq(address(newPsm.rateProvider()), address(rateProvider));
 
         assertEq(dai.allowance(address(this), address(newPsm)), 0);

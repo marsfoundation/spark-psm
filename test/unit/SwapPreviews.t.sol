@@ -17,17 +17,17 @@ contract PSMPreviewSwapExactIn_FailureTests is PSMTestBase {
         psm.previewSwapExactIn(address(usdc), makeAddr("other-token"), 1);
     }
 
-    function test_previewSwapExactIn_bothAsset0() public {
-        vm.expectRevert("PSM3/invalid-asset");
-        psm.previewSwapExactIn(address(dai), address(dai), 1);
-    }
-
-    function test_previewSwapExactIn_bothAsset1() public {
+    function test_previewSwapExactIn_bothUsdc() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwapExactIn(address(usdc), address(usdc), 1);
     }
 
-    function test_previewSwapExactIn_bothAsset2() public {
+    function test_previewSwapExactIn_bothUsds() public {
+        vm.expectRevert("PSM3/invalid-asset");
+        psm.previewSwapExactIn(address(dai), address(dai), 1);
+    }
+
+    function test_previewSwapExactIn_bothSUsds() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwapExactIn(address(sDai), address(sDai), 1);
     }
@@ -46,17 +46,17 @@ contract PSMPreviewSwapExactOut_FailureTests is PSMTestBase {
         psm.previewSwapExactOut(address(usdc), makeAddr("other-token"), 1);
     }
 
-    function test_previewSwapExactOut_bothAsset0() public {
+    function test_previewSwapExactOut_bothUsdc() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwapExactOut(address(dai), address(dai), 1);
     }
 
-    function test_previewSwapExactOut_bothAsset1() public {
+    function test_previewSwapExactOut_bothUsds() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwapExactOut(address(usdc), address(usdc), 1);
     }
 
-    function test_previewSwapExactOut_bothAsset2() public {
+    function test_previewSwapExactOut_bothSUsds() public {
         vm.expectRevert("PSM3/invalid-asset");
         psm.previewSwapExactOut(address(sDai), address(sDai), 1);
     }

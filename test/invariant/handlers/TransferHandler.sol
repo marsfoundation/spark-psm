@@ -17,13 +17,13 @@ contract TransferHandler is HandlerBase {
 
     constructor(
         PSM3      psm_,
-        MockERC20 asset0,
-        MockERC20 asset1,
-        MockERC20 asset2
+        MockERC20 usdc,
+        MockERC20 usds,
+        MockERC20 susds
     ) HandlerBase(psm_) {
-        assets[0] = asset0;
-        assets[1] = asset1;
-        assets[2] = asset2;
+        assets[0] = usdc;
+        assets[1] = usds;
+        assets[2] = susds;
     }
 
     function _getAsset(uint256 indexSeed) internal view returns (MockERC20) {

@@ -15,20 +15,13 @@ contract PSM3 is IPSM3, Ownable {
 
     using SafeERC20 for IERC20;
 
-    uint256 internal immutable _asset0Precision;
-    uint256 internal immutable _asset1Precision;
-    uint256 internal immutable _asset2Precision;
+    uint256 internal immutable _usdcPrecision;
+    uint256 internal immutable _usdsPrecision;
+    uint256 internal immutable _susdsPrecision;
 
-    // NOTE(CRITICAL): Multiple assumptions are made about the initial configuration of this
-    //                 contract that are critical to it functioning correctly.
-    //                 These assumptions are:
-    //                 Assumption 1: `asset2` is the yield-bearing counterpart of asset0 and asset1.
-    //                 Assumption 2: `asset0` is the only asset that can be used with a `pocket`.
-    //                 Example: asset0 = USDC, asset1 = DAI, asset2 = sDAI
-
-    IERC20 public override immutable asset0;
-    IERC20 public override immutable asset1;
-    IERC20 public override immutable asset2;
+    IERC20 public override immutable usdc;
+    IERC20 public override immutable usds;
+    IERC20 public override immutable susds;
 
     address public override immutable rateProvider;
 
@@ -40,25 +33,25 @@ contract PSM3 is IPSM3, Ownable {
 
     constructor(
         address owner_,
-        address asset0_,
-        address asset1_,
-        address asset2_,
+        address usdc_,
+        address usds_,
+        address susds_,
         address rateProvider_
     )
         Ownable(owner_)
     {
-        require(asset0_       != address(0), "PSM3/invalid-asset0");
-        require(asset1_       != address(0), "PSM3/invalid-asset1");
-        require(asset2_       != address(0), "PSM3/invalid-asset2");
+        require(usdc_         != address(0), "PSM3/invalid-usdc");
+        require(usds_         != address(0), "PSM3/invalid-usds");
+        require(susds_        != address(0), "PSM3/invalid-susds");
         require(rateProvider_ != address(0), "PSM3/invalid-rateProvider");
 
-        require(asset0_ != asset1_, "PSM3/asset0-asset1-same");
-        require(asset0_ != asset2_, "PSM3/asset0-asset2-same");
-        require(asset1_ != asset2_, "PSM3/asset1-asset2-same");
+        require(usdc_ != usds_,  "PSM3/usdc-usds-same");
+        require(usdc_ != susds_, "PSM3/usdc-susds-same");
+        require(usds_ != susds_, "PSM3/usds-susds-same");
 
-        asset0 = IERC20(asset0_);
-        asset1 = IERC20(asset1_);
-        asset2 = IERC20(asset2_);
+        usdc  = IERC20(usdc_);
+        usds  = IERC20(usds_);
+        susds = IERC20(susds_);
 
         rateProvider = rateProvider_;
         pocket       = address(this);
@@ -68,13 +61,13 @@ contract PSM3 is IPSM3, Ownable {
             "PSM3/rate-provider-returns-zero"
         );
 
-        _asset0Precision = 10 ** IERC20(asset0_).decimals();
-        _asset1Precision = 10 ** IERC20(asset1_).decimals();
-        _asset2Precision = 10 ** IERC20(asset2_).decimals();
+        _usdcPrecision  = 10 ** IERC20(usdc_).decimals();
+        _usdsPrecision  = 10 ** IERC20(usds_).decimals();
+        _susdsPrecision = 10 ** IERC20(susds_).decimals();
 
         // Necessary to ensure rounding works as expected
-        require(_asset0Precision <= 1e18, "PSM3/asset0-precision-too-high");
-        require(_asset1Precision <= 1e18, "PSM3/asset1-precision-too-high");
+        require(_usdcPrecision <= 1e18, "PSM3/usdc-precision-too-high");
+        require(_usdsPrecision <= 1e18, "PSM3/usds-precision-too-high");
     }
 
     /**********************************************************************************************/
@@ -84,12 +77,12 @@ contract PSM3 is IPSM3, Ownable {
     function setPocket(address newPocket) external override onlyOwner {
         require(newPocket != address(0), "PSM3/invalid-pocket");
 
-        uint256 amountToTransfer = asset0.balanceOf(pocket);
+        uint256 amountToTransfer = usdc.balanceOf(pocket);
 
         if (pocket == address(this)) {
-            asset0.safeTransfer(newPocket, amountToTransfer);
+            usdc.safeTransfer(newPocket, amountToTransfer);
         } else {
-            asset0.safeTransferFrom(pocket, newPocket, amountToTransfer);
+            usdc.safeTransferFrom(pocket, newPocket, amountToTransfer);
         }
 
         emit PocketSet(pocket, newPocket, amountToTransfer);
@@ -195,7 +188,7 @@ contract PSM3 is IPSM3, Ownable {
     {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
 
-        // Convert amount to 1e18 precision denominated in value of asset0 then convert to shares.
+        // Convert amount to 1e18 precision denominated in value of USD then convert to shares.
         return convertToShares(_getAssetValue(asset, assetsToDeposit, false));  // Round down
     }
 
@@ -250,13 +243,13 @@ contract PSM3 is IPSM3, Ownable {
 
         uint256 assetValue = convertToAssetValue(numShares);
 
-        if      (asset == address(asset0)) return assetValue * _asset0Precision / 1e18;
-        else if (asset == address(asset1)) return assetValue * _asset1Precision / 1e18;
+        if      (asset == address(usdc)) return assetValue * _usdcPrecision / 1e18;
+        else if (asset == address(usds)) return assetValue * _usdsPrecision / 1e18;
 
         // NOTE: Multiplying by 1e27 and dividing by 1e18 cancels to 1e9 in numerator
         return assetValue
             * 1e9
-            * _asset2Precision
+            * _susdsPrecision
             / IRateProviderLike(rateProvider).getConversionRate();
     }
 
@@ -287,9 +280,9 @@ contract PSM3 is IPSM3, Ownable {
     /**********************************************************************************************/
 
     function totalAssets() public view override returns (uint256) {
-        return _getAsset0Value(asset0.balanceOf(address(this)))
-            +  _getAsset1Value(asset1.balanceOf(address(this)))
-            +  _getAsset2Value(asset2.balanceOf(address(this)), false);  // Round down
+        return _getUsdcValue(usdc.balanceOf(address(this)))
+            +  _getUsdsValue(usds.balanceOf(address(this)))
+            +  _getSUsdsValue(susds.balanceOf(address(this)), false);  // Round down
     }
 
     /**********************************************************************************************/
@@ -297,30 +290,30 @@ contract PSM3 is IPSM3, Ownable {
     /**********************************************************************************************/
 
     function _getAssetValue(address asset, uint256 amount, bool roundUp) internal view returns (uint256) {
-        if      (asset == address(asset0)) return _getAsset0Value(amount);
-        else if (asset == address(asset1)) return _getAsset1Value(amount);
-        else if (asset == address(asset2)) return _getAsset2Value(amount, roundUp);
+        if      (asset == address(usdc))  return _getUsdcValue(amount);
+        else if (asset == address(usds))  return _getUsdsValue(amount);
+        else if (asset == address(susds)) return _getSUsdsValue(amount, roundUp);
         else revert("PSM3/invalid-asset");
     }
 
-    function _getAsset0Value(uint256 amount) internal view returns (uint256) {
-        return amount * 1e18 / _asset0Precision;
+    function _getUsdcValue(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / _usdcPrecision;
     }
 
-    function _getAsset1Value(uint256 amount) internal view returns (uint256) {
-        return amount * 1e18 / _asset1Precision;
+    function _getUsdsValue(uint256 amount) internal view returns (uint256) {
+        return amount * 1e18 / _usdsPrecision;
     }
 
-    function _getAsset2Value(uint256 amount, bool roundUp) internal view returns (uint256) {
+    function _getSUsdsValue(uint256 amount, bool roundUp) internal view returns (uint256) {
         // NOTE: Multiplying by 1e18 and dividing by 1e27 cancels to 1e9 in denominator
         if (!roundUp) return amount
             * IRateProviderLike(rateProvider).getConversionRate()
             / 1e9
-            / _asset2Precision;
+            / _susdsPrecision;
 
         return Math.ceilDiv(
             Math.ceilDiv(amount * IRateProviderLike(rateProvider).getConversionRate(), 1e9),
-            _asset2Precision
+            _susdsPrecision
         );
     }
 
@@ -331,47 +324,47 @@ contract PSM3 is IPSM3, Ownable {
     function _getSwapQuote(address asset, address quoteAsset, uint256 amount, bool roundUp)
         internal view returns (uint256 quoteAmount)
     {
-        if (asset == address(asset0)) {
-            if      (quoteAsset == address(asset1)) return _convertOneToOne(amount, _asset0Precision, _asset1Precision, roundUp);
-            else if (quoteAsset == address(asset2)) return _convertToAsset2(amount, _asset0Precision, roundUp);
+        if (asset == address(usdc)) {
+            if      (quoteAsset == address(usds))  return _convertOneToOne(amount, _usdcPrecision, _usdsPrecision, roundUp);
+            else if (quoteAsset == address(susds)) return _convertToSUsds(amount, _usdcPrecision, roundUp);
         }
 
-        else if (asset == address(asset1)) {
-            if      (quoteAsset == address(asset0)) return _convertOneToOne(amount, _asset1Precision, _asset0Precision, roundUp);
-            else if (quoteAsset == address(asset2)) return _convertToAsset2(amount, _asset1Precision, roundUp);
+        else if (asset == address(usds)) {
+            if      (quoteAsset == address(usdc))  return _convertOneToOne(amount, _usdsPrecision, _usdcPrecision, roundUp);
+            else if (quoteAsset == address(susds)) return _convertToSUsds(amount, _usdsPrecision, roundUp);
         }
 
-        else if (asset == address(asset2)) {
-            if      (quoteAsset == address(asset0)) return _convertFromAsset2(amount, _asset0Precision, roundUp);
-            else if (quoteAsset == address(asset1)) return _convertFromAsset2(amount, _asset1Precision, roundUp);
+        else if (asset == address(susds)) {
+            if      (quoteAsset == address(usdc)) return _convertFromSUsds(amount, _usdcPrecision, roundUp);
+            else if (quoteAsset == address(usds)) return _convertFromSUsds(amount, _usdsPrecision, roundUp);
         }
 
         revert("PSM3/invalid-asset");
     }
 
-    function _convertToAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
+    function _convertToSUsds(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
         uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
 
-        if (!roundUp) return amount * 1e27 / rate * _asset2Precision / assetPrecision;
+        if (!roundUp) return amount * 1e27 / rate * _susdsPrecision / assetPrecision;
 
         return Math.ceilDiv(
-            Math.ceilDiv(amount * 1e27, rate) * _asset2Precision,
+            Math.ceilDiv(amount * 1e27, rate) * _susdsPrecision,
             assetPrecision
         );
     }
 
-    function _convertFromAsset2(uint256 amount, uint256 assetPrecision, bool roundUp)
+    function _convertFromSUsds(uint256 amount, uint256 assetPrecision, bool roundUp)
         internal view returns (uint256)
     {
         uint256 rate = IRateProviderLike(rateProvider).getConversionRate();
 
-        if (!roundUp) return amount * rate / 1e27 * assetPrecision / _asset2Precision;
+        if (!roundUp) return amount * rate / 1e27 * assetPrecision / _susdsPrecision;
 
         return Math.ceilDiv(
             Math.ceilDiv(amount * rate, 1e27) * assetPrecision,
-            _asset2Precision
+            _susdsPrecision
         );
     }
 
@@ -401,7 +394,7 @@ contract PSM3 is IPSM3, Ownable {
     }
 
     function _isValidAsset(address asset) internal view returns (bool) {
-        return asset == address(asset0) || asset == address(asset1) || asset == address(asset2);
+        return asset == address(usdc) || asset == address(usds) || asset == address(susds);
     }
 
 }
