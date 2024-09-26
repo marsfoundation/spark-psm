@@ -42,11 +42,16 @@ The deployment library (`deploy/PSM3Deploy.sol`) in this repo contains logic for
 - **`asset0`**: Non-yield-bearing base asset (e.g., USDC).
 - **`asset1`**: Another non-yield-bearing base asset that is directly correlated to `asset0` (e.g., DAI).
 - **`asset2`**: Yield-bearing version of both `asset0` and `asset1` (e.g., sDAI).
+- **`pocket`**: Address that holds custody of asset0. The `pocket` can deploy asset0 to yield-bearing strategies. Defaulted to the address of the PSM itself.
 - **`rateProvider`**: Contract that returns a conversion rate between and `asset2` and the base asset (e.g., sDAI to USD) in 1e27 precision.
 - **`totalShares`**: Total shares in the PSM. Shares represent the ownership of the underlying assets in the PSM.
 - **`shares`**: Mapping of user addresses to their shares.
 
 ### Functions
+
+#### Admin Functions
+
+- **`setPocket`**: Sets the `pocket` address. Only the `owner` can call this function. This is a very important and sensitive action because it transfers the entire balance of `asset0` to the new `pocket` address. OZ Ownable is used for this function, and `owner` will always be set to the governance proxy.
 
 #### Swap Functions
 
