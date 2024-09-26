@@ -19,6 +19,13 @@ contract PSMSetPocketFailureTests is PSMTestBase {
         psm.setPocket(address(0));
     }
 
+    function test_setPocket_samePocket() public {
+        vm.prank(owner);
+        vm.expectRevert("PSM3/same-pocket");
+        psm.setPocket(address(psm));
+    }
+
+
     // NOTE: In practice this won't happen because pockets will infinite approve PSM
     function test_setPocket_insufficientAllowanceBoundary() public {
         address pocket1 = makeAddr("pocket1");

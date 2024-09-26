@@ -77,17 +77,21 @@ contract PSM3 is IPSM3, Ownable {
     function setPocket(address newPocket) external override onlyOwner {
         require(newPocket != address(0), "PSM3/invalid-pocket");
 
-        uint256 amountToTransfer = usdc.balanceOf(pocket);
+        address pocket_ = pocket;
 
-        if (pocket == address(this)) {
+        require(newPocket != pocket_, "PSM3/same-pocket");
+
+        uint256 amountToTransfer = usdc.balanceOf(pocket_);
+
+        if (pocket_ == address(this)) {
             usdc.safeTransfer(newPocket, amountToTransfer);
         } else {
-            usdc.safeTransferFrom(pocket, newPocket, amountToTransfer);
+            usdc.safeTransferFrom(pocket_, newPocket, amountToTransfer);
         }
 
-        emit PocketSet(pocket, newPocket, amountToTransfer);
-
         pocket = newPocket;
+
+        emit PocketSet(pocket_, newPocket, amountToTransfer);
     }
 
     /**********************************************************************************************/
