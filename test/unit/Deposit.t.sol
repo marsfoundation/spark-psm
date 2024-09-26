@@ -25,45 +25,45 @@ contract PSMDepositTests is PSMTestBase {
     }
 
     function test_deposit_insufficientApproveBoundary() public {
-        dai.mint(user1, 100e18);
+        usds.mint(user1, 100e18);
 
         vm.startPrank(user1);
 
-        dai.approve(address(psm), 100e18 - 1);
+        usds.approve(address(psm), 100e18 - 1);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.deposit(address(dai), user1, 100e18);
+        psm.deposit(address(usds), user1, 100e18);
 
-        dai.approve(address(psm), 100e18);
+        usds.approve(address(psm), 100e18);
 
-        psm.deposit(address(dai), user1, 100e18);
+        psm.deposit(address(usds), user1, 100e18);
     }
 
     function test_deposit_insufficientBalanceBoundary() public {
-        dai.mint(user1, 100e18 - 1);
+        usds.mint(user1, 100e18 - 1);
 
         vm.startPrank(user1);
 
-        dai.approve(address(psm), 100e18);
+        usds.approve(address(psm), 100e18);
 
         vm.expectRevert("SafeERC20/transfer-from-failed");
-        psm.deposit(address(dai), user1, 100e18);
+        psm.deposit(address(usds), user1, 100e18);
 
-        dai.mint(user1, 1);
+        usds.mint(user1, 1);
 
-        psm.deposit(address(dai), user1, 100e18);
+        psm.deposit(address(usds), user1, 100e18);
     }
 
     function test_deposit_firstDepositDai() public {
-        dai.mint(user1, 100e18);
+        usds.mint(user1, 100e18);
 
         vm.startPrank(user1);
 
-        dai.approve(address(psm), 100e18);
+        usds.approve(address(psm), 100e18);
 
-        assertEq(dai.allowance(user1, address(psm)), 100e18);
-        assertEq(dai.balanceOf(user1),               100e18);
-        assertEq(dai.balanceOf(address(psm)),        0);
+        assertEq(usds.allowance(user1, address(psm)), 100e18);
+        assertEq(usds.balanceOf(user1),               100e18);
+        assertEq(usds.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(),     0);
         assertEq(psm.shares(user1),     0);
@@ -71,13 +71,13 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        uint256 newShares = psm.deposit(address(dai), receiver1, 100e18);
+        uint256 newShares = psm.deposit(address(usds), receiver1, 100e18);
 
         assertEq(newShares, 100e18);
 
-        assertEq(dai.allowance(user1, address(psm)), 0);
-        assertEq(dai.balanceOf(user1),               0);
-        assertEq(dai.balanceOf(address(psm)),        100e18);
+        assertEq(usds.allowance(user1, address(psm)), 0);
+        assertEq(usds.balanceOf(user1),               0);
+        assertEq(usds.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(),     100e18);
         assertEq(psm.shares(user1),     0);
@@ -119,15 +119,15 @@ contract PSMDepositTests is PSMTestBase {
     }
 
     function test_deposit_firstDepositSDai() public {
-        sDai.mint(user1, 100e18);
+        susds.mint(user1, 100e18);
 
         vm.startPrank(user1);
 
-        sDai.approve(address(psm), 100e18);
+        susds.approve(address(psm), 100e18);
 
-        assertEq(sDai.allowance(user1, address(psm)), 100e18);
-        assertEq(sDai.balanceOf(user1),               100e18);
-        assertEq(sDai.balanceOf(address(psm)),        0);
+        assertEq(susds.allowance(user1, address(psm)), 100e18);
+        assertEq(susds.balanceOf(user1),               100e18);
+        assertEq(susds.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(),     0);
         assertEq(psm.shares(user1),     0);
@@ -135,13 +135,13 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        uint256 newShares = psm.deposit(address(sDai), receiver1, 100e18);
+        uint256 newShares = psm.deposit(address(susds), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
-        assertEq(sDai.allowance(user1, address(psm)), 0);
-        assertEq(sDai.balanceOf(user1),               0);
-        assertEq(sDai.balanceOf(address(psm)),        100e18);
+        assertEq(susds.allowance(user1, address(psm)), 0);
+        assertEq(susds.balanceOf(user1),               0);
+        assertEq(susds.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(),     125e18);
         assertEq(psm.shares(user1),     0);
@@ -161,14 +161,14 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, 100e18);
 
-        sDai.mint(user1, 100e18);
-        sDai.approve(address(psm), 100e18);
+        susds.mint(user1, 100e18);
+        susds.approve(address(psm), 100e18);
 
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
-        assertEq(sDai.allowance(user1, address(psm)), 100e18);
-        assertEq(sDai.balanceOf(user1),               100e18);
-        assertEq(sDai.balanceOf(address(psm)),        0);
+        assertEq(susds.allowance(user1, address(psm)), 100e18);
+        assertEq(susds.balanceOf(user1),               100e18);
+        assertEq(susds.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(),     100e18);
         assertEq(psm.shares(user1),     0);
@@ -176,15 +176,15 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, 100e18);
+        newShares = psm.deposit(address(susds), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
-        assertEq(sDai.allowance(user1, address(psm)), 0);
-        assertEq(sDai.balanceOf(user1),               0);
-        assertEq(sDai.balanceOf(address(psm)),        100e18);
+        assertEq(susds.allowance(user1, address(psm)), 0);
+        assertEq(susds.balanceOf(user1),               0);
+        assertEq(susds.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(),     225e18);
         assertEq(psm.shares(user1),     0);
@@ -193,10 +193,10 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function testFuzz_deposit_usdcThenSDai(uint256 usdcAmount, uint256 sDaiAmount) public {
+    function testFuzz_deposit_usdcThenSDai(uint256 usdcAmount, uint256 susdsAmount) public {
         // Zero amounts revert
         usdcAmount = _bound(usdcAmount, 1, USDC_TOKEN_MAX);
-        sDaiAmount = _bound(sDaiAmount, 1, SDAI_TOKEN_MAX);
+        susdsAmount = _bound(susdsAmount, 1, SUSDS_TOKEN_MAX);
 
         usdc.mint(user1, usdcAmount);
 
@@ -208,14 +208,14 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, usdcAmount * 1e12);
 
-        sDai.mint(user1, sDaiAmount);
-        sDai.approve(address(psm), sDaiAmount);
+        susds.mint(user1, susdsAmount);
+        susds.approve(address(psm), susdsAmount);
 
         assertEq(usdc.balanceOf(address(psm)), usdcAmount);
 
-        assertEq(sDai.allowance(user1, address(psm)), sDaiAmount);
-        assertEq(sDai.balanceOf(user1),               sDaiAmount);
-        assertEq(sDai.balanceOf(address(psm)),        0);
+        assertEq(susds.allowance(user1, address(psm)), susdsAmount);
+        assertEq(susds.balanceOf(user1),               susdsAmount);
+        assertEq(susds.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(),     usdcAmount * 1e12);
         assertEq(psm.shares(user1),     0);
@@ -223,19 +223,19 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, sDaiAmount);
+        newShares = psm.deposit(address(susds), receiver1, susdsAmount);
 
-        assertEq(newShares, sDaiAmount * 125/100);
+        assertEq(newShares, susdsAmount * 125/100);
 
         assertEq(usdc.balanceOf(address(psm)), usdcAmount);
 
-        assertEq(sDai.allowance(user1, address(psm)), 0);
-        assertEq(sDai.balanceOf(user1),               0);
-        assertEq(sDai.balanceOf(address(psm)),        sDaiAmount);
+        assertEq(susds.allowance(user1, address(psm)), 0);
+        assertEq(susds.balanceOf(user1),               0);
+        assertEq(susds.balanceOf(address(psm)),        susdsAmount);
 
-        assertEq(psm.totalShares(),     usdcAmount * 1e12 + sDaiAmount * 125/100);
+        assertEq(psm.totalShares(),     usdcAmount * 1e12 + susdsAmount * 125/100);
         assertEq(psm.shares(user1),     0);
-        assertEq(psm.shares(receiver1), usdcAmount * 1e12 + sDaiAmount * 125/100);
+        assertEq(psm.shares(receiver1), usdcAmount * 1e12 + susdsAmount * 125/100);
 
         assertEq(psm.convertToShares(1e18), 1e18);
     }
@@ -251,10 +251,10 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, 100e18);
 
-        sDai.mint(user1, 100e18);
-        sDai.approve(address(psm), 100e18);
+        susds.mint(user1, 100e18);
+        susds.approve(address(psm), 100e18);
 
-        newShares = psm.deposit(address(sDai), receiver1, 100e18);
+        newShares = psm.deposit(address(susds), receiver1, 100e18);
 
         assertEq(newShares, 125e18);
 
@@ -262,9 +262,9 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
-        assertEq(sDai.allowance(user1, address(psm)), 0);
-        assertEq(sDai.balanceOf(user1),               0);
-        assertEq(sDai.balanceOf(address(psm)),        100e18);
+        assertEq(susds.allowance(user1, address(psm)), 0);
+        assertEq(susds.balanceOf(user1),               0);
+        assertEq(susds.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.totalShares(),     225e18);
         assertEq(psm.shares(user1),     0);
@@ -276,7 +276,7 @@ contract PSMDepositTests is PSMTestBase {
 
         mockRateProvider.__setConversionRate(1.5e27);
 
-        // Total shares / (100 USDC + 150 sDAI value)
+        // Total shares / (100 USDC + 150 sUSDS value)
         uint256 expectedConversionRate = 225 * 1e18 / 250;
 
         assertEq(expectedConversionRate, 0.9e18);
@@ -285,25 +285,25 @@ contract PSMDepositTests is PSMTestBase {
 
         vm.startPrank(user2);
 
-        sDai.mint(user2, 100e18);
-        sDai.approve(address(psm), 100e18);
+        susds.mint(user2, 100e18);
+        susds.approve(address(psm), 100e18);
 
-        assertEq(sDai.allowance(user2, address(psm)), 100e18);
-        assertEq(sDai.balanceOf(user2),               100e18);
-        assertEq(sDai.balanceOf(address(psm)),        100e18);
+        assertEq(susds.allowance(user2, address(psm)), 100e18);
+        assertEq(susds.balanceOf(user2),               100e18);
+        assertEq(susds.balanceOf(address(psm)),        100e18);
 
         assertEq(psm.convertToAssetValue(psm.shares(receiver1)), 250e18);
         assertEq(psm.convertToAssetValue(psm.shares(receiver2)), 0);
 
         assertEq(psm.totalAssets(), 250e18);
 
-        newShares = psm.deposit(address(sDai), receiver2, 100e18);
+        newShares = psm.deposit(address(susds), receiver2, 100e18);
 
         assertEq(newShares, 135e18);
 
-        assertEq(sDai.allowance(user2, address(psm)), 0);
-        assertEq(sDai.balanceOf(user2),               0);
-        assertEq(sDai.balanceOf(address(psm)),        200e18);
+        assertEq(susds.allowance(user2, address(psm)), 0);
+        assertEq(susds.balanceOf(user2),               0);
+        assertEq(susds.balanceOf(address(psm)),        200e18);
 
         // Depositing 150 dollars of value at 0.9 exchange rate
         uint256 expectedShares = 150e18 * 9/10;
@@ -325,19 +325,19 @@ contract PSMDepositTests is PSMTestBase {
 
     function testFuzz_deposit_multiUser_changeConversionRate(
         uint256 usdcAmount,
-        uint256 sDaiAmount1,
-        uint256 sDaiAmount2,
+        uint256 susdsAmount1,
+        uint256 susdsAmount2,
         uint256 newRate
     )
         public
     {
         // Zero amounts revert
-        usdcAmount  = _bound(usdcAmount,  1,       USDC_TOKEN_MAX);
-        sDaiAmount1 = _bound(sDaiAmount1, 1,       SDAI_TOKEN_MAX);
-        sDaiAmount2 = _bound(sDaiAmount2, 1,       SDAI_TOKEN_MAX);
-        newRate     = _bound(newRate,     1.25e27, 1000e27);
+        usdcAmount   = _bound(usdcAmount,   1,       USDC_TOKEN_MAX);
+        susdsAmount1 = _bound(susdsAmount1, 1,       SUSDS_TOKEN_MAX);
+        susdsAmount2 = _bound(susdsAmount2, 1,       SUSDS_TOKEN_MAX);
+        newRate      = _bound(newRate,      1.25e27, 1000e27);
 
-        uint256 user1DepositValue = usdcAmount * 1e12 + sDaiAmount1 * 125/100;
+        uint256 user1DepositValue = usdcAmount * 1e12 + susdsAmount1 * 125/100;
 
         usdc.mint(user1, usdcAmount);
 
@@ -349,19 +349,19 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, usdcAmount * 1e12);
 
-        sDai.mint(user1, sDaiAmount1);
-        sDai.approve(address(psm), sDaiAmount1);
+        susds.mint(user1, susdsAmount1);
+        susds.approve(address(psm), susdsAmount1);
 
-        newShares = psm.deposit(address(sDai), receiver1, sDaiAmount1);
+        newShares = psm.deposit(address(susds), receiver1, susdsAmount1);
 
-        assertEq(newShares, sDaiAmount1 * 125/100);
+        assertEq(newShares, susdsAmount1 * 125/100);
 
         vm.stopPrank();
 
         assertEq(usdc.balanceOf(address(psm)), usdcAmount);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(address(psm)), sDaiAmount1);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(address(psm)), susdsAmount1);
 
         // Deposited at 1:1 conversion
         uint256 receiver1Shares = user1DepositValue;
@@ -374,15 +374,15 @@ contract PSMDepositTests is PSMTestBase {
 
         vm.startPrank(user2);
 
-        sDai.mint(user2, sDaiAmount2);
-        sDai.approve(address(psm), sDaiAmount2);
+        susds.mint(user2, susdsAmount2);
+        susds.approve(address(psm), susdsAmount2);
 
-        assertEq(sDai.allowance(user2, address(psm)), sDaiAmount2);
-        assertEq(sDai.balanceOf(user2),               sDaiAmount2);
-        assertEq(sDai.balanceOf(address(psm)),        sDaiAmount1);
+        assertEq(susds.allowance(user2, address(psm)), susdsAmount2);
+        assertEq(susds.balanceOf(user2),               susdsAmount2);
+        assertEq(susds.balanceOf(address(psm)),        susdsAmount1);
 
         // Receiver1 has gained from conversion change
-        uint256 receiver1NewValue = user1DepositValue + sDaiAmount1 * (newRate - 1.25e27) / 1e27;
+        uint256 receiver1NewValue = user1DepositValue + susdsAmount1 * (newRate - 1.25e27) / 1e27;
 
         // Receiver1 has gained from conversion change
         assertApproxEqAbs(
@@ -395,18 +395,18 @@ contract PSMDepositTests is PSMTestBase {
 
         assertApproxEqAbs(psm.totalAssets(), receiver1NewValue, 1);
 
-        newShares = psm.deposit(address(sDai), receiver2, sDaiAmount2);
+        newShares = psm.deposit(address(susds), receiver2, susdsAmount2);
 
         // Using queried values here instead of derived to avoid larger errors getting introduced
         // Assertions above prove that these values are as expected.
         uint256 receiver2Shares
-            = (sDaiAmount2 * newRate / 1e27) * psm.totalShares() / psm.totalAssets();
+            = (susdsAmount2 * newRate / 1e27) * psm.totalShares() / psm.totalAssets();
 
         assertApproxEqAbs(newShares, receiver2Shares, 2);
 
-        assertEq(sDai.allowance(user2, address(psm)), 0);
-        assertEq(sDai.balanceOf(user2),               0);
-        assertEq(sDai.balanceOf(address(psm)),        sDaiAmount1 + sDaiAmount2);
+        assertEq(susds.allowance(user2, address(psm)), 0);
+        assertEq(susds.balanceOf(user2),               0);
+        assertEq(susds.balanceOf(address(psm)),        susdsAmount1 + susdsAmount2);
 
         assertEq(psm.shares(user1), 0);
         assertEq(psm.shares(user2), 0);
@@ -415,7 +415,7 @@ contract PSMDepositTests is PSMTestBase {
         assertApproxEqAbs(psm.shares(receiver1), receiver1Shares,                   2);
         assertApproxEqAbs(psm.shares(receiver2), receiver2Shares,                   2);
 
-        uint256 receiver2NewValue = sDaiAmount2 * newRate / 1e27;
+        uint256 receiver2NewValue = susdsAmount2 * newRate / 1e27;
 
         // Rate change of up to 1000x introduces errors
         assertApproxEqAbs(psm.convertToAssetValue(psm.shares(receiver1)), receiver1NewValue, 1000);

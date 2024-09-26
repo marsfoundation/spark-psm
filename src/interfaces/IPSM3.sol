@@ -92,7 +92,7 @@ interface IPSM3 {
 
     /**
      *  @dev    Returns the IERC20 interface representing sUSDS. This asset is the yield-bearing
-     *          asset in the PSM (e.g., sDAI). The value of this asset is queried from the
+     *          asset in the PSM (e.g., sUSDS). The value of this asset is queried from the
      *          rate provider.
      *  @return The IERC20 interface of sUSDS.
      */
@@ -107,7 +107,7 @@ interface IPSM3 {
 
     /**
      *  @dev    Returns the address of the rate provider, a contract that provides the conversion
-     *          rate between sUSDS and the other two assets in the PSM (e.g., sDAI to USD).
+     *          rate between sUSDS and the other two assets in the PSM (e.g., sUSDS to USD).
      *  @return The address of the rate provider.
      */
     function rateProvider() external view returns (address);

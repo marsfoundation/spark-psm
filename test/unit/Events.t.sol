@@ -39,12 +39,12 @@ contract PSMEventTests is PSMTestBase {
     function test_deposit_events() public {
         vm.startPrank(sender);
 
-        dai.mint(sender, 100e18);
-        dai.approve(address(psm), 100e18);
+        usds.mint(sender, 100e18);
+        usds.approve(address(psm), 100e18);
 
         vm.expectEmit(address(psm));
-        emit Deposit(address(dai), sender, receiver, 100e18, 100e18);
-        psm.deposit(address(dai), receiver, 100e18);
+        emit Deposit(address(usds), sender, receiver, 100e18, 100e18);
+        psm.deposit(address(usds), receiver, 100e18);
 
         usdc.mint(sender, 100e6);
         usdc.approve(address(psm), 100e6);
@@ -53,49 +53,49 @@ contract PSMEventTests is PSMTestBase {
         emit Deposit(address(usdc), sender, receiver, 100e6, 100e18);
         psm.deposit(address(usdc), receiver, 100e6);
 
-        sDai.mint(sender, 100e18);
-        sDai.approve(address(psm), 100e18);
+        susds.mint(sender, 100e18);
+        susds.approve(address(psm), 100e18);
 
         vm.expectEmit(address(psm));
-        emit Deposit(address(sDai), sender, receiver, 100e18, 125e18);
-        psm.deposit(address(sDai), receiver, 100e18);
+        emit Deposit(address(susds), sender, receiver, 100e18, 125e18);
+        psm.deposit(address(susds), receiver, 100e18);
     }
 
     function test_withdraw_events() public {
-        _deposit(address(dai),  sender, 100e18);
+        _deposit(address(usds),  sender, 100e18);
         _deposit(address(usdc), sender, 100e6);
-        _deposit(address(sDai), sender, 100e18);
+        _deposit(address(susds), sender, 100e18);
 
         vm.startPrank(sender);
 
         vm.expectEmit(address(psm));
-        emit Withdraw(address(dai), sender, receiver, 100e18, 100e18);
-        psm.withdraw(address(dai), receiver, 100e18);
+        emit Withdraw(address(usds), sender, receiver, 100e18, 100e18);
+        psm.withdraw(address(usds), receiver, 100e18);
 
         vm.expectEmit(address(psm));
         emit Withdraw(address(usdc), sender, receiver, 100e6, 100e18);
         psm.withdraw(address(usdc), receiver, 100e6);
 
         vm.expectEmit(address(psm));
-        emit Withdraw(address(sDai), sender, receiver, 100e18, 125e18);
-        psm.withdraw(address(sDai), receiver, 100e18);
+        emit Withdraw(address(susds), sender, receiver, 100e18, 125e18);
+        psm.withdraw(address(susds), receiver, 100e18);
     }
 
     function test_swap_events() public {
-        dai.mint(address(psm),  1000e18);
+        usds.mint(address(psm),  1000e18);
         usdc.mint(address(psm), 1000e6);
-        sDai.mint(address(psm), 1000e18);
+        susds.mint(address(psm), 1000e18);
 
         vm.startPrank(sender);
 
-        _swapEventTest(address(dai), address(usdc), 100e18, 100e6, 1);
-        _swapEventTest(address(dai), address(sDai), 100e18, 80e18, 2);
+        _swapEventTest(address(usds), address(usdc),  100e18, 100e6, 1);
+        _swapEventTest(address(usds), address(susds), 100e18, 80e18, 2);
 
-        _swapEventTest(address(usdc), address(dai),  100e6, 100e18, 3);
-        _swapEventTest(address(usdc), address(sDai), 100e6, 80e18,  4);
+        _swapEventTest(address(usdc), address(usds),  100e6, 100e18, 3);
+        _swapEventTest(address(usdc), address(susds), 100e6, 80e18,  4);
 
-        _swapEventTest(address(sDai), address(dai),  100e18, 125e18, 5);
-        _swapEventTest(address(sDai), address(usdc), 100e18, 125e6,  6);
+        _swapEventTest(address(susds), address(usds), 100e18, 125e18, 5);
+        _swapEventTest(address(susds), address(usdc), 100e18, 125e6,  6);
     }
 
     function _swapEventTest(

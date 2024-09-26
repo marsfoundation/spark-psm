@@ -15,23 +15,23 @@ contract RoundingTests is PSMTestBase {
         super.setUp();
 
         // Seed the PSM with max liquidity so withdrawals can always be performed
-        _deposit(address(dai),  address(this), DAI_TOKEN_MAX);
-        _deposit(address(sDai), address(this), SDAI_TOKEN_MAX);
-        _deposit(address(usdc), address(this), USDC_TOKEN_MAX);
+        _deposit(address(usds),  address(this), USDS_TOKEN_MAX);
+        _deposit(address(susds), address(this), SUSDS_TOKEN_MAX);
+        _deposit(address(usdc),  address(this), USDC_TOKEN_MAX);
 
         // Set an exchange rate that will cause rounding
         mockRateProvider.__setConversionRate(1.25e27 * uint256(100) / 99);
     }
 
-    function test_roundAgainstUser_dai() public {
-        _deposit(address(dai), address(user), 1e18);
+    function test_roundAgainstUser_usds() public {
+        _deposit(address(usds), address(user), 1e18);
 
-        assertEq(dai.balanceOf(address(user)), 0);
+        assertEq(usds.balanceOf(address(user)), 0);
 
         vm.prank(user);
-        psm.withdraw(address(dai), address(user), 1e18);
+        psm.withdraw(address(usds), address(user), 1e18);
 
-        assertEq(dai.balanceOf(address(user)), 1e18 - 1);  // Rounds against user
+        assertEq(usds.balanceOf(address(user)), 1e18 - 1);  // Rounds against user
     }
 
     function test_roundAgainstUser_usdc() public {
@@ -45,18 +45,18 @@ contract RoundingTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(user)), 1e6 - 1);  // Rounds against user
     }
 
-    function test_roundAgainstUser_sDai() public {
-        _deposit(address(sDai), address(user), 1e18);
+    function test_roundAgainstUser_susds() public {
+        _deposit(address(susds), address(user), 1e18);
 
-        assertEq(sDai.balanceOf(address(user)), 0);
+        assertEq(susds.balanceOf(address(user)), 0);
 
         vm.prank(user);
-        psm.withdraw(address(sDai), address(user), 1e18);
+        psm.withdraw(address(susds), address(user), 1e18);
 
-        assertEq(sDai.balanceOf(address(user)), 1e18 - 1);  // Rounds against user
+        assertEq(susds.balanceOf(address(user)), 1e18 - 1);  // Rounds against user
     }
 
-    function testFuzz_roundingAgainstUser_multiUser_dai(
+    function testFuzz_roundingAgainstUser_multiUser_usds(
         uint256 rate1,
         uint256 rate2,
         uint256 amount1,
@@ -65,8 +65,8 @@ contract RoundingTests is PSMTestBase {
         public
     {
         _runRoundingAgainstUsersFuzzTest(
-            dai,
-            DAI_TOKEN_MAX,
+            usds,
+            USDS_TOKEN_MAX,
             rate1,
             rate2,
             amount1,
@@ -94,7 +94,7 @@ contract RoundingTests is PSMTestBase {
         );
     }
 
-    function testFuzz_roundingAgainstUser_multiUser_sDai(
+    function testFuzz_roundingAgainstUser_multiUser_susds(
         uint256 rate1,
         uint256 rate2,
         uint256 amount1,
@@ -103,13 +103,13 @@ contract RoundingTests is PSMTestBase {
         public
     {
         _runRoundingAgainstUsersFuzzTest(
-            sDai,
-            SDAI_TOKEN_MAX,
+            susds,
+            SUSDS_TOKEN_MAX,
             rate1,
             rate2,
             amount1,
             amount2,
-            4  // sDai has higher rounding errors that can be introduced because of rate conversion
+            4  // susds has higher rounding errors that can be introduced because of rate conversion
         );
     }
 

@@ -16,8 +16,8 @@ contract PSMHarnessTests is PSMTestBase {
         psmHarness = new PSM3Harness(
             address(owner),
             address(usdc),
-            address(dai),
-            address(sDai),
+            address(usds),
+            address(susds),
             address(rateProvider)
         );
     }
@@ -136,7 +136,7 @@ contract PSMHarnessTests is PSMTestBase {
 
     function testFuzz_getSUsdsValue_roundDown(uint256 conversionRate, uint256 amount) public {
         conversionRate = _bound(conversionRate, 0, 1000e27);
-        amount         = _bound(amount,         0, SDAI_TOKEN_MAX);
+        amount         = _bound(amount,         0, SUSDS_TOKEN_MAX);
 
         mockRateProvider.__setConversionRate(conversionRate);
 
@@ -160,51 +160,51 @@ contract PSMHarnessTests is PSMTestBase {
         assertEq(psmHarness.getAssetValue(address(usdc), 2e6, true), psmHarness.getUsdcValue(2e6));
         assertEq(psmHarness.getAssetValue(address(usdc), 3e6, true), psmHarness.getUsdcValue(3e6));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1, false), psmHarness.getUsdsValue(1));
-        assertEq(psmHarness.getAssetValue(address(dai), 2, false), psmHarness.getUsdsValue(2));
-        assertEq(psmHarness.getAssetValue(address(dai), 3, false), psmHarness.getUsdsValue(3));
+        assertEq(psmHarness.getAssetValue(address(usds), 1, false), psmHarness.getUsdsValue(1));
+        assertEq(psmHarness.getAssetValue(address(usds), 2, false), psmHarness.getUsdsValue(2));
+        assertEq(psmHarness.getAssetValue(address(usds), 3, false), psmHarness.getUsdsValue(3));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1, true), psmHarness.getUsdsValue(1));
-        assertEq(psmHarness.getAssetValue(address(dai), 2, true), psmHarness.getUsdsValue(2));
-        assertEq(psmHarness.getAssetValue(address(dai), 3, true), psmHarness.getUsdsValue(3));
+        assertEq(psmHarness.getAssetValue(address(usds), 1, true), psmHarness.getUsdsValue(1));
+        assertEq(psmHarness.getAssetValue(address(usds), 2, true), psmHarness.getUsdsValue(2));
+        assertEq(psmHarness.getAssetValue(address(usds), 3, true), psmHarness.getUsdsValue(3));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1e18, false), psmHarness.getUsdsValue(1e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 2e18, false), psmHarness.getUsdsValue(2e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 3e18, false), psmHarness.getUsdsValue(3e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 1e18, false), psmHarness.getUsdsValue(1e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 2e18, false), psmHarness.getUsdsValue(2e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 3e18, false), psmHarness.getUsdsValue(3e18));
 
-        assertEq(psmHarness.getAssetValue(address(dai), 1e18, true), psmHarness.getUsdsValue(1e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 2e18, true), psmHarness.getUsdsValue(2e18));
-        assertEq(psmHarness.getAssetValue(address(dai), 3e18, true), psmHarness.getUsdsValue(3e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 1e18, true), psmHarness.getUsdsValue(1e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 2e18, true), psmHarness.getUsdsValue(2e18));
+        assertEq(psmHarness.getAssetValue(address(usds), 3e18, true), psmHarness.getUsdsValue(3e18));
 
-        assertEq(psmHarness.getAssetValue(address(sDai), 1, false), psmHarness.getSUsdsValue(1, false));
-        assertEq(psmHarness.getAssetValue(address(sDai), 2, false), psmHarness.getSUsdsValue(2, false));
-        assertEq(psmHarness.getAssetValue(address(sDai), 3, false), psmHarness.getSUsdsValue(3, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 1, false), psmHarness.getSUsdsValue(1, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 2, false), psmHarness.getSUsdsValue(2, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 3, false), psmHarness.getSUsdsValue(3, false));
 
-        assertEq(psmHarness.getAssetValue(address(sDai), 1e18, false), psmHarness.getSUsdsValue(1e18, false));
-        assertEq(psmHarness.getAssetValue(address(sDai), 2e18, false), psmHarness.getSUsdsValue(2e18, false));
-        assertEq(psmHarness.getAssetValue(address(sDai), 3e18, false), psmHarness.getSUsdsValue(3e18, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 1e18, false), psmHarness.getSUsdsValue(1e18, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 2e18, false), psmHarness.getSUsdsValue(2e18, false));
+        assertEq(psmHarness.getAssetValue(address(susds), 3e18, false), psmHarness.getSUsdsValue(3e18, false));
 
-        assertEq(psmHarness.getAssetValue(address(sDai), 1, true), psmHarness.getSUsdsValue(1, true));
-        assertEq(psmHarness.getAssetValue(address(sDai), 2, true), psmHarness.getSUsdsValue(2, true));
-        assertEq(psmHarness.getAssetValue(address(sDai), 3, true), psmHarness.getSUsdsValue(3, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 1, true), psmHarness.getSUsdsValue(1, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 2, true), psmHarness.getSUsdsValue(2, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 3, true), psmHarness.getSUsdsValue(3, true));
 
-        assertEq(psmHarness.getAssetValue(address(sDai), 1e18, true), psmHarness.getSUsdsValue(1e18, true));
-        assertEq(psmHarness.getAssetValue(address(sDai), 2e18, true), psmHarness.getSUsdsValue(2e18, true));
-        assertEq(psmHarness.getAssetValue(address(sDai), 3e18, true), psmHarness.getSUsdsValue(3e18, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 1e18, true), psmHarness.getSUsdsValue(1e18, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 2e18, true), psmHarness.getSUsdsValue(2e18, true));
+        assertEq(psmHarness.getAssetValue(address(susds), 3e18, true), psmHarness.getSUsdsValue(3e18, true));
     }
 
     function testFuzz_getAssetValue(uint256 amount) public view {
-        amount = _bound(amount, 0, SDAI_TOKEN_MAX);
+        amount = _bound(amount, 0, SUSDS_TOKEN_MAX);
 
         // `usdc` and `usds` return the same values whether `roundUp` is true or false
-        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getUsdcValue(amount));
-        assertEq(psmHarness.getAssetValue(address(usdc), amount, true),  psmHarness.getUsdcValue(amount));
-        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getUsdsValue(amount));
-        assertEq(psmHarness.getAssetValue(address(dai),  amount, false), psmHarness.getUsdsValue(amount));
+        assertEq(psmHarness.getAssetValue(address(usdc),  amount, true),  psmHarness.getUsdcValue(amount));
+        assertEq(psmHarness.getAssetValue(address(usdc),  amount, true),  psmHarness.getUsdcValue(amount));
+        assertEq(psmHarness.getAssetValue(address(usds),  amount, false), psmHarness.getUsdsValue(amount));
+        assertEq(psmHarness.getAssetValue(address(usds),  amount, false), psmHarness.getUsdsValue(amount));
 
         // `susds` returns different values depending on the value of `roundUp`, but always same as underlying function
-        assertEq(psmHarness.getAssetValue(address(sDai), amount, false), psmHarness.getSUsdsValue(amount, false));
-        assertEq(psmHarness.getAssetValue(address(sDai), amount, true),  psmHarness.getSUsdsValue(amount, true));
+        assertEq(psmHarness.getAssetValue(address(susds), amount, false), psmHarness.getSUsdsValue(amount, false));
+        assertEq(psmHarness.getAssetValue(address(susds), amount, true),  psmHarness.getSUsdsValue(amount, true));
     }
 
     function test_getAssetValue_zeroAddress() public {
@@ -217,7 +217,7 @@ contract PSMHarnessTests is PSMTestBase {
 contract GetPsmTotalValueTests is PSMTestBase {
 
     function test_totalAssets_balanceChanges() public {
-        dai.mint(address(psm), 1e18);
+        usds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 1e18);
 
@@ -225,11 +225,11 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 2e18);
 
-        sDai.mint(address(psm), 1e18);
+        susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 3.25e18);
 
-        dai.burn(address(psm), 1e18);
+        usds.burn(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 2.25e18);
 
@@ -237,7 +237,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 1.25e18);
 
-        sDai.burn(address(psm), 1e18);
+        susds.burn(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 0);
     }
@@ -245,9 +245,9 @@ contract GetPsmTotalValueTests is PSMTestBase {
     function test_totalAssets_conversionRateChanges() public {
         assertEq(psm.totalAssets(), 0);
 
-        dai.mint(address(psm),  1e18);
+        usds.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
-        sDai.mint(address(psm), 1e18);
+        susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 3.25e18);
 
@@ -263,9 +263,9 @@ contract GetPsmTotalValueTests is PSMTestBase {
     function test_totalAssets_bothChange() public {
         assertEq(psm.totalAssets(), 0);
 
-        dai.mint(address(psm),  1e18);
+        usds.mint(address(psm),  1e18);
         usdc.mint(address(psm), 1e6);
-        sDai.mint(address(psm), 1e18);
+        susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 3.25e18);
 
@@ -273,33 +273,33 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 3.5e18);
 
-        sDai.mint(address(psm), 1e18);
+        susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 5e18);
     }
 
     function testFuzz_totalAssets(
-        uint256 daiAmount,
+        uint256 usdsAmount,
         uint256 usdcAmount,
-        uint256 sDaiAmount,
+        uint256 susdsAmount,
         uint256 conversionRate
     )
         public
     {
-        daiAmount      = _bound(daiAmount,      0,         DAI_TOKEN_MAX);
+        usdsAmount     = _bound(usdsAmount,     0,         USDS_TOKEN_MAX);
         usdcAmount     = _bound(usdcAmount,     0,         USDC_TOKEN_MAX);
-        sDaiAmount     = _bound(sDaiAmount,     0,         SDAI_TOKEN_MAX);
+        susdsAmount    = _bound(susdsAmount,    0,         SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
 
-        dai.mint(address(psm),  daiAmount);
-        usdc.mint(address(psm), usdcAmount);
-        sDai.mint(address(psm), sDaiAmount);
+        usds.mint(address(psm),  usdsAmount);
+        usdc.mint(address(psm),  usdcAmount);
+        susds.mint(address(psm), susdsAmount);
 
         mockRateProvider.__setConversionRate(conversionRate);
 
         assertEq(
             psm.totalAssets(),
-            daiAmount + (usdcAmount * 1e12) + (sDaiAmount * conversionRate / 1e27)
+            usdsAmount + (usdcAmount * 1e12) + (susdsAmount * conversionRate / 1e27)
         );
     }
 

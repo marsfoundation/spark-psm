@@ -29,11 +29,11 @@ contract PSMWithdrawTests is PSMTestBase {
     }
 
     function test_withdraw_onlyDaiInPsm() public {
-        _deposit(address(dai), user1, 100e18);
+        _deposit(address(usds), user1, 100e18);
 
-        assertEq(dai.balanceOf(user1),        0);
-        assertEq(dai.balanceOf(receiver1),    0);
-        assertEq(dai.balanceOf(address(psm)), 100e18);
+        assertEq(usds.balanceOf(user1),        0);
+        assertEq(usds.balanceOf(receiver1),    0);
+        assertEq(usds.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 100e18);
         assertEq(psm.shares(user1), 100e18);
@@ -41,13 +41,13 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(dai), receiver1, 100e18);
+        uint256 amount = psm.withdraw(address(usds), receiver1, 100e18);
 
         assertEq(amount, 100e18);
 
-        assertEq(dai.balanceOf(user1),        0);
-        assertEq(dai.balanceOf(receiver1),    100e18);
-        assertEq(dai.balanceOf(address(psm)), 0);
+        assertEq(usds.balanceOf(user1),        0);
+        assertEq(usds.balanceOf(receiver1),    100e18);
+        assertEq(usds.balanceOf(address(psm)), 0);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -83,11 +83,11 @@ contract PSMWithdrawTests is PSMTestBase {
     }
 
     function test_withdraw_onlySDaiInPsm() public {
-        _deposit(address(sDai), user1, 80e18);
+        _deposit(address(susds), user1, 80e18);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(receiver1),    0);
-        assertEq(sDai.balanceOf(address(psm)), 80e18);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(receiver1),    0);
+        assertEq(susds.balanceOf(address(psm)), 80e18);
 
         assertEq(psm.totalShares(), 100e18);
         assertEq(psm.shares(user1), 100e18);
@@ -95,13 +95,13 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        uint256 amount = psm.withdraw(address(sDai), receiver1, 80e18);
+        uint256 amount = psm.withdraw(address(susds), receiver1, 80e18);
 
         assertEq(amount, 80e18);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(receiver1),    80e18);
-        assertEq(sDai.balanceOf(address(psm)), 0);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(receiver1),    80e18);
+        assertEq(susds.balanceOf(address(psm)), 0);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -111,15 +111,15 @@ contract PSMWithdrawTests is PSMTestBase {
 
     function test_withdraw_usdcThenSDai() public {
         _deposit(address(usdc), user1, 100e6);
-        _deposit(address(sDai), user1, 100e18);
+        _deposit(address(susds), user1, 100e18);
 
         assertEq(usdc.balanceOf(user1),        0);
         assertEq(usdc.balanceOf(receiver1),    0);
         assertEq(usdc.balanceOf(address(psm)), 100e6);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(receiver1),    0);
-        assertEq(sDai.balanceOf(address(psm)), 100e18);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(receiver1),    0);
+        assertEq(susds.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 225e18);
         assertEq(psm.shares(user1), 225e18);
@@ -135,9 +135,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(receiver1),    100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(receiver1),    0);
-        assertEq(sDai.balanceOf(address(psm)), 100e18);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(receiver1),    0);
+        assertEq(susds.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 125e18);
         assertEq(psm.shares(user1), 125e18);
@@ -145,7 +145,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
 
         vm.prank(user1);
-        amount = psm.withdraw(address(sDai), receiver1, 100e18);
+        amount = psm.withdraw(address(susds), receiver1, 100e18);
 
         assertEq(amount, 100e18);
 
@@ -153,9 +153,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(receiver1),    100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(receiver1),    100e18);
-        assertEq(sDai.balanceOf(address(psm)), 0);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(receiver1),    100e18);
+        assertEq(susds.balanceOf(address(psm)), 0);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -164,8 +164,8 @@ contract PSMWithdrawTests is PSMTestBase {
     }
 
     function test_withdraw_amountHigherThanBalanceOfAsset() public {
-        _deposit(address(usdc), user1, 100e6);
-        _deposit(address(sDai), user1, 100e18);
+        _deposit(address(usdc),  user1, 100e6);
+        _deposit(address(susds), user1, 100e18);
 
         assertEq(usdc.balanceOf(user1),        0);
         assertEq(usdc.balanceOf(receiver1),    0);
@@ -190,9 +190,9 @@ contract PSMWithdrawTests is PSMTestBase {
     }
 
     function test_withdraw_amountHigherThanUserShares() public {
-        _deposit(address(usdc), user1, 100e6);
-        _deposit(address(sDai), user1, 100e18);
-        _deposit(address(usdc), user2, 200e6);
+        _deposit(address(usdc),  user1, 100e6);
+        _deposit(address(susds), user1, 100e18);
+        _deposit(address(usdc),  user2, 200e6);
 
         assertEq(usdc.balanceOf(user2),        0);
         assertEq(usdc.balanceOf(receiver2),    0);
@@ -233,12 +233,12 @@ contract PSMWithdrawTests is PSMTestBase {
         // Zero amounts revert
         depositAmount1 = _bound(depositAmount1, 1, USDC_TOKEN_MAX);
         depositAmount2 = _bound(depositAmount2, 1, USDC_TOKEN_MAX);
-        depositAmount3 = _bound(depositAmount3, 1, SDAI_TOKEN_MAX);
+        depositAmount3 = _bound(depositAmount3, 1, SUSDS_TOKEN_MAX);
 
         // Zero amounts revert
         withdrawAmount1 = _bound(withdrawAmount1, 1, USDC_TOKEN_MAX);
         withdrawAmount2 = _bound(withdrawAmount2, 1, depositAmount2);  // User can't burn up to 1e12 shares for 0 USDC in this case
-        withdrawAmount3 = _bound(withdrawAmount3, 1, SDAI_TOKEN_MAX);
+        withdrawAmount3 = _bound(withdrawAmount3, 1, SUSDS_TOKEN_MAX);
 
         // Run with zero share tolerance because the rounding error shouldn't be introduced with the above constraints.
         _runWithdrawFuzzTests(
@@ -265,12 +265,12 @@ contract PSMWithdrawTests is PSMTestBase {
         // Zero amounts revert
         depositAmount1 = _bound(depositAmount1, 1, USDC_TOKEN_MAX);
         depositAmount2 = _bound(depositAmount2, 1, USDC_TOKEN_MAX);
-        depositAmount3 = _bound(depositAmount3, 1, SDAI_TOKEN_MAX);
+        depositAmount3 = _bound(depositAmount3, 1, SUSDS_TOKEN_MAX);
 
         // Zero amounts revert
         withdrawAmount1 = _bound(withdrawAmount1, 1, USDC_TOKEN_MAX);
         withdrawAmount2 = _bound(withdrawAmount2, 1, USDC_TOKEN_MAX);
-        withdrawAmount3 = _bound(withdrawAmount3, 1, SDAI_TOKEN_MAX);
+        withdrawAmount3 = _bound(withdrawAmount3, 1, SUSDS_TOKEN_MAX);
 
         // Run with 1e12 share tolerance because the rounding error will be introduced with the above constraints.
         _runWithdrawFuzzTests(
@@ -306,9 +306,9 @@ contract PSMWithdrawTests is PSMTestBase {
     )
         internal
     {
-        _deposit(address(usdc), user1, depositAmount1);
-        _deposit(address(usdc), user2, depositAmount2);
-        _deposit(address(sDai), user2, depositAmount3);
+        _deposit(address(usdc),  user1, depositAmount1);
+        _deposit(address(usdc),  user2, depositAmount2);
+        _deposit(address(susds), user2, depositAmount3);
 
         WithdrawFuzzTestVars memory vars;
 
@@ -337,7 +337,7 @@ contract PSMWithdrawTests is PSMTestBase {
         );
 
         // NOTE: User 1 doesn't need a tolerance because their shares are 1e6 precision because they only
-        //       deposited USDC. User 2 has a tolerance because they deposited sDAI which has 1e18 precision
+        //       deposited USDC. User 2 has a tolerance because they deposited sUSDS which has 1e18 precision
         //       so there is a chance that the rounding will be off by up to 1e12.
         assertEq(usdc.balanceOf(user1),        0);
         assertEq(usdc.balanceOf(receiver1),    vars.expectedWithdrawnAmount1);
@@ -346,7 +346,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(address(psm)), vars.totalUsdc - vars.expectedWithdrawnAmount1);
 
         assertEq(psm.shares(user1), (depositAmount1 - vars.expectedWithdrawnAmount1) * 1e12);
-        assertEq(psm.shares(user2), depositAmount2 * 1e12 + depositAmount3 * 125/100);  // Includes sDAI deposit
+        assertEq(psm.shares(user2), depositAmount2 * 1e12 + depositAmount3 * 125/100);  // Includes sUSDS deposit
         assertEq(psm.totalShares(), vars.totalValue - vars.expectedWithdrawnAmount1 * 1e12);
 
         vars.expectedWithdrawnAmount2 = _getExpectedWithdrawnAmount(usdc, user2, withdrawAmount2);
@@ -369,9 +369,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(receiver2),    vars.expectedWithdrawnAmount2);
         assertEq(usdc.balanceOf(address(psm)), vars.totalUsdc - (vars.expectedWithdrawnAmount1 + vars.expectedWithdrawnAmount2));
 
-        assertEq(sDai.balanceOf(user2),        0);
-        assertEq(sDai.balanceOf(receiver2),    0);
-        assertEq(sDai.balanceOf(address(psm)), depositAmount3);
+        assertEq(susds.balanceOf(user2),        0);
+        assertEq(susds.balanceOf(receiver2),    0);
+        assertEq(susds.balanceOf(address(psm)), depositAmount3);
 
         assertEq(psm.shares(user1), (depositAmount1 - vars.expectedWithdrawnAmount1) * 1e12);
 
@@ -387,10 +387,10 @@ contract PSMWithdrawTests is PSMTestBase {
             usdcShareTolerance
         );
 
-        vars.expectedWithdrawnAmount3 = _getExpectedWithdrawnAmount(sDai, user2, withdrawAmount3);
+        vars.expectedWithdrawnAmount3 = _getExpectedWithdrawnAmount(susds, user2, withdrawAmount3);
 
         vm.prank(user2);
-        amount = psm.withdraw(address(sDai), receiver2, withdrawAmount3);
+        amount = psm.withdraw(address(susds), receiver2, withdrawAmount3);
 
         assertApproxEqAbs(amount, vars.expectedWithdrawnAmount3, 1);
 
@@ -398,7 +398,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
         assertApproxEqAbs(
             (usdc.balanceOf(receiver1) + usdc.balanceOf(receiver2)) * 1e12
-                + (sDai.balanceOf(receiver2) * rateProvider.getConversionRate() / 1e27)
+                + (susds.balanceOf(receiver2) * rateProvider.getConversionRate() / 1e27)
                 + psm.totalAssets(),
             vars.totalValue,
             1
@@ -410,34 +410,34 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(receiver2),    vars.expectedWithdrawnAmount2);
         assertEq(usdc.balanceOf(address(psm)), vars.totalUsdc - (vars.expectedWithdrawnAmount1 + vars.expectedWithdrawnAmount2));
 
-        assertApproxEqAbs(sDai.balanceOf(user2),        0,                                         0);
-        assertApproxEqAbs(sDai.balanceOf(receiver2),    vars.expectedWithdrawnAmount3,                  1);
-        assertApproxEqAbs(sDai.balanceOf(address(psm)), depositAmount3 - vars.expectedWithdrawnAmount3, 1);
+        assertApproxEqAbs(susds.balanceOf(user2),        0,                                              0);
+        assertApproxEqAbs(susds.balanceOf(receiver2),    vars.expectedWithdrawnAmount3,                  1);
+        assertApproxEqAbs(susds.balanceOf(address(psm)), depositAmount3 - vars.expectedWithdrawnAmount3, 1);
 
         assertEq(psm.shares(user1), (depositAmount1 - vars.expectedWithdrawnAmount1) * 1e12);
 
         assertApproxEqAbs(
             ((depositAmount2 * 1e12) + (depositAmount3 * 125/100) - (vars.expectedWithdrawnAmount2 * 1e12) - (vars.expectedWithdrawnAmount3 * 125/100)) - psm.shares(user2),
             0,
-            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sDAI calculations
+            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sUSDS calculations
         );
 
         assertApproxEqAbs(
             vars.totalValue - (vars.expectedWithdrawnAmount1 + vars.expectedWithdrawnAmount2) * 1e12 - (vars.expectedWithdrawnAmount3 * 125/100) - psm.totalShares(),
             0,
-            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sDAI calculations
+            usdcShareTolerance + 1  // 1 is added to the tolerance because of rounding error in sUSDS calculations
         );
     }
 
     function test_withdraw_changeConversionRate() public {
         _deposit(address(usdc), user1, 100e6);
-        _deposit(address(sDai), user2, 100e18);
+        _deposit(address(susds), user2, 100e18);
 
         assertEq(psm.convertToShares(1e18), 1e18);
 
         mockRateProvider.__setConversionRate(1.5e27);
 
-        // Total shares / (100 USDC + 150 sDAI value)
+        // Total shares / (100 USDC + 150 sUSDS value)
         uint256 expectedConversionRate = 225 * 1e18 / 250;
 
         assertEq(expectedConversionRate, 0.9e18);
@@ -460,45 +460,45 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user1),        100e6);
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(user2),        0);
-        assertEq(sDai.balanceOf(address(psm)), 100e18);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(user2),        0);
+        assertEq(susds.balanceOf(address(psm)), 100e18);
 
         assertEq(psm.totalShares(), 135e18);
         assertEq(psm.shares(user1), 10e18);  // Burn 90 shares to get 100 USDC
         assertEq(psm.shares(user2), 125e18);
 
         vm.prank(user1);
-        amount = psm.withdraw(address(sDai), user1, type(uint256).max);
+        amount = psm.withdraw(address(susds), user1, type(uint256).max);
 
         uint256 user1SDai = uint256(10e18) * 1e18 / 0.9e18 * 1e27 / 1.5e27;
 
         assertEq(amount,    user1SDai);
         assertEq(user1SDai, 7.407407407407407407e18);
 
-        assertEq(sDai.balanceOf(user1),        user1SDai);
-        assertEq(sDai.balanceOf(user2),        0);
-        assertEq(sDai.balanceOf(address(psm)), 100e18 - user1SDai);
+        assertEq(susds.balanceOf(user1),        user1SDai);
+        assertEq(susds.balanceOf(user2),        0);
+        assertEq(susds.balanceOf(address(psm)), 100e18 - user1SDai);
 
         assertEq(psm.totalShares(), 125e18);
         assertEq(psm.shares(user1), 0);
         assertEq(psm.shares(user2), 125e18);
 
         vm.prank(user2);
-        amount = psm.withdraw(address(sDai), user2, type(uint256).max);
+        amount = psm.withdraw(address(susds), user2, type(uint256).max);
 
         assertEq(amount, 100e18 - user1SDai - 1);  // Remaining funds in PSM (rounding)
 
-        assertEq(sDai.balanceOf(user1),        user1SDai);
-        assertEq(sDai.balanceOf(user2),        100e18 - user1SDai - 1);  // Rounding
-        assertEq(sDai.balanceOf(address(psm)), 1);                       // Rounding
+        assertEq(susds.balanceOf(user1),        user1SDai);
+        assertEq(susds.balanceOf(user2),        100e18 - user1SDai - 1);  // Rounding
+        assertEq(susds.balanceOf(address(psm)), 1);                       // Rounding
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
         assertEq(psm.shares(user2), 0);
 
-        uint256 user1ResultingValue = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * 150/100;
-        uint256 user2ResultingValue = sDai.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
+        uint256 user1ResultingValue = usdc.balanceOf(user1) * 1e12 + susds.balanceOf(user1) * 150/100;
+        uint256 user2ResultingValue = susds.balanceOf(user2) * 150/100;  // Use 1.5 conversion rate
 
         assertEq(user1ResultingValue, 111.111111111111111110e18);
         assertEq(user2ResultingValue, 138.888888888888888888e18);
@@ -512,7 +512,7 @@ contract PSMWithdrawTests is PSMTestBase {
 
     function testFuzz_withdraw_changeConversionRate(
         uint256 usdcAmount,
-        uint256 sDaiAmount,
+        uint256 susdsAmount,
         uint256 conversionRate
     )
         public
@@ -522,18 +522,18 @@ contract PSMWithdrawTests is PSMTestBase {
         // Since rounding is against user if it stays the same the value can decrease and
         // the check will underflow
         usdcAmount     = _bound(usdcAmount,     1e6,     USDC_TOKEN_MAX);
-        sDaiAmount     = _bound(sDaiAmount,     1e18,    SDAI_TOKEN_MAX);
+        susdsAmount    = _bound(susdsAmount,    1e18,    SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 1.26e27, 1000e27);
 
         _deposit(address(usdc), user1, usdcAmount);
-        _deposit(address(sDai), user2, sDaiAmount);
+        _deposit(address(susds), user2, susdsAmount);
 
         mockRateProvider.__setConversionRate(conversionRate);
 
         uint256 user1Shares = usdcAmount * 1e12;
-        uint256 user2Shares = sDaiAmount * 125/100;
+        uint256 user2Shares = susdsAmount * 125/100;
         uint256 totalShares = user1Shares + user2Shares;
-        uint256 totalValue  = usdcAmount * 1e12 + sDaiAmount * conversionRate / 1e27;
+        uint256 totalValue  = usdcAmount * 1e12 + susdsAmount * conversionRate / 1e27;
 
         assertEq(psm.totalAssets(), totalValue);
 
@@ -553,9 +553,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user1),        usdcAmount);
         assertEq(usdc.balanceOf(address(psm)), 0);
 
-        assertEq(sDai.balanceOf(user1),        0);
-        assertEq(sDai.balanceOf(user2),        0);
-        assertEq(sDai.balanceOf(address(psm)), sDaiAmount);
+        assertEq(susds.balanceOf(user1),        0);
+        assertEq(susds.balanceOf(user2),        0);
+        assertEq(susds.balanceOf(address(psm)), susdsAmount);
 
         uint256 expectedUser1SharesBurned = usdcAmount * 1e12 * totalShares / totalValue;
 
@@ -564,7 +564,7 @@ contract PSMWithdrawTests is PSMTestBase {
         assertApproxEqAbs(psm.shares(user2), user2Shares,                             0);
 
         vm.prank(user1);
-        amount = psm.withdraw(address(sDai), user1, type(uint256).max);
+        amount = psm.withdraw(address(susds), user1, type(uint256).max);
 
         {
             // User1s remaining shares are used
@@ -574,18 +574,18 @@ contract PSMWithdrawTests is PSMTestBase {
                 * 1e27
                 / conversionRate;
 
-            assertApproxEqAbs(sDai.balanceOf(user1),        user1SDai,              2);
-            assertApproxEqAbs(sDai.balanceOf(user2),        0,                      0);
-            assertApproxEqAbs(sDai.balanceOf(address(psm)), sDaiAmount - user1SDai, 2);
+            assertApproxEqAbs(susds.balanceOf(user1),        user1SDai,               2);
+            assertApproxEqAbs(susds.balanceOf(user2),        0,                       0);
+            assertApproxEqAbs(susds.balanceOf(address(psm)), susdsAmount - user1SDai, 2);
 
             vm.prank(user2);
-            amount = psm.withdraw(address(sDai), user2, type(uint256).max);
+            amount = psm.withdraw(address(susds), user2, type(uint256).max);
 
-            assertApproxEqAbs(amount, sDaiAmount - user1SDai, 2);
+            assertApproxEqAbs(amount, susdsAmount - user1SDai, 2);
 
-            assertApproxEqAbs(sDai.balanceOf(user1),        user1SDai,              2);
-            assertApproxEqAbs(sDai.balanceOf(user2),        sDaiAmount - user1SDai, 2);
-            assertApproxEqAbs(sDai.balanceOf(address(psm)), 0,                      2);
+            assertApproxEqAbs(susds.balanceOf(user1),        user1SDai,               2);
+            assertApproxEqAbs(susds.balanceOf(user2),        susdsAmount - user1SDai, 2);
+            assertApproxEqAbs(susds.balanceOf(address(psm)), 0,                       2);
         }
 
         assertEq(psm.totalShares(), 0);
@@ -593,9 +593,9 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(psm.shares(user2), 0);
 
         uint256 user1ResultingValue
-            = usdc.balanceOf(user1) * 1e12 + sDai.balanceOf(user1) * conversionRate / 1e27;
+            = usdc.balanceOf(user1) * 1e12 + susds.balanceOf(user1) * conversionRate / 1e27;
 
-        uint256 user2ResultingValue = sDai.balanceOf(user2) * conversionRate / 1e27;  // Use 1.5 conversion rate
+        uint256 user2ResultingValue = susds.balanceOf(user2) * conversionRate / 1e27;  // Use 1.5 conversion rate
 
         assertLe(psm.totalAssets(), 1000);
 
@@ -605,7 +605,7 @@ contract PSMWithdrawTests is PSMTestBase {
         // Value gains are the same for both users, accurate to 0.02%
         assertApproxEqRel(
             (user1ResultingValue - (usdcAmount * 1e12))    * 1e18 / (usdcAmount * 1e12),
-            (user2ResultingValue - (sDaiAmount * 125/100)) * 1e18 / (sDaiAmount * 125/100),
+            (user2ResultingValue - (susdsAmount * 125/100)) * 1e18 / (susdsAmount * 125/100),
             0.0021e18
         );
     }
@@ -617,7 +617,7 @@ contract PSMWithdrawTests is PSMTestBase {
     function _checkPsmInvariant() internal view {
         uint256 totalSharesValue = psm.convertToAssetValue(psm.totalShares());
         uint256 totalAssetsValue =
-            sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
+            susds.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27
             + usdc.balanceOf(address(psm)) * 1e12;
 
         assertApproxEqAbs(totalSharesValue, totalAssetsValue, 1);
