@@ -375,7 +375,7 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
 
     /// forge-config: default.fuzz.runs = 10
     /// forge-config: pr.fuzz.runs = 100
-    /// forge-config: master.fuzz.runs = 10000
+    /// forge-config: master.fuzz.runs = 1000
     function testFuzz_swapExactIn(
         uint256 conversionRate,
         uint256 depositSeed

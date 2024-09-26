@@ -40,9 +40,9 @@ The deployment library (`deploy/PSM3Deploy.sol`) in this repo contains logic for
 ### State Variables and Immutables
 
 - **`asset0`**: Non-yield-bearing base asset (e.g., USDC).
-- **`asset1`**: Another non-yield-bearing base asset that is directly correlated to `asset0` (e.g., DAI).
-- **`asset2`**: Yield-bearing version of both `asset0` and `asset1` (e.g., sDAI).
-- **`rateProvider`**: Contract that returns a conversion rate between and `asset2` and the base asset (e.g., sDAI to USD) in 1e27 precision.
+- **`asset1`**: Another non-yield-bearing base asset that is directly correlated to `asset0` (e.g., USDS).
+- **`asset2`**: Yield-bearing version of both `asset0` and `asset1` (e.g., sUSDS).
+- **`rateProvider`**: Contract that returns a conversion rate between and `asset2` and the base asset (e.g., sUSDS to USD) in 1e27 precision.
 - **`totalShares`**: Total shares in the PSM. Shares represent the ownership of the underlying assets in the PSM.
 - **`shares`**: Mapping of user addresses to their shares.
 

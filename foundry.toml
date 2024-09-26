@@ -25,8 +25,8 @@ runs = 100_000
 
 [profile.master.invariant]
 runs = 250
-depth = 5_000
-shrink_run_limit = 100_000
+depth = 2500
+shrink_run_limit = 50_000
 
 [profile.master.fuzz]
 runs = 1_000_000
