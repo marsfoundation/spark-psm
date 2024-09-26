@@ -93,9 +93,9 @@ contract PSM3 is IPSM3, Ownable {
             asset0.safeTransferFrom(pocket, newPocket, amountToTransfer);
         }
 
-        pocket = newPocket;
-
         emit PocketSet(pocket, newPocket, amountToTransfer);
+
+        pocket = newPocket;
     }
 
     /**********************************************************************************************/
