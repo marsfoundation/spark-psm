@@ -181,13 +181,13 @@ contract PSMSwapExactOutSuccessTestsBase is PSMTestBase {
 
 }
 
-contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
+contract PSMSwapExactOutUsdsAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
     function test_swapExactOut_usdsToUsdc_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usds, usdc, 100e6, 100e18, swapper, swapper);
     }
 
-    function test_swapExactOut_usdsToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdsToSUsds_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usds, susds, 80e18, 100e18, swapper, swapper);
     }
 
@@ -195,7 +195,7 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         _swapExactOutTest(usds, usdc, 100e6, 100e18, swapper, receiver);
     }
 
-    function test_swapExactOut_usdsToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdsToSUsds_differentReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usds, susds, 80e18, 100e18, swapper, receiver);
     }
 
@@ -213,7 +213,7 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         _swapExactOutTest(usds, usdc, amountOut, amountIn, fuzzSwapper, fuzzReceiver);
     }
 
-    function testFuzz_swapExactOut_usdsToSDai(
+    function testFuzz_swapExactOut_usdsToSUsds(
         uint256 amountOut,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -242,23 +242,23 @@ contract PSMSwapExactOutDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
 contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
-    function test_swapExactOut_usdcToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdcToUsds_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usdc, usds, 100e18, 100e6, swapper, swapper);
     }
 
-    function test_swapExactOut_usdcToSDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdcToSUsds_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usdc, susds, 80e18, 100e6, swapper, swapper);
     }
 
-    function test_swapExactOut_usdcToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdcToUsds_differentReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usdc, usds, 100e18, 100e6, swapper, receiver);
     }
 
-    function test_swapExactOut_usdcToSDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_usdcToSUsds_differentReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(usdc, susds, 80e18, 100e6, swapper, receiver);
     }
 
-    function testFuzz_swapExactOut_usdcToDai(
+    function testFuzz_swapExactOut_usdcToUsds(
         uint256 amountOut,
         address fuzzSwapper,
         address fuzzReceiver
@@ -279,7 +279,7 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
         _swapExactOutTest(usdc, usds, amountOut, returnedAmountIn, fuzzSwapper, fuzzReceiver);
     }
 
-    function testFuzz_swapExactOut_usdcToSDai(
+    function testFuzz_swapExactOut_usdcToSUsds(
         uint256 amountOut,
         uint256 conversionRate,
         address fuzzSwapper,
@@ -307,9 +307,9 @@ contract PSMSwapExactOutUsdcAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
 }
 
-contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
+contract PSMSwapExactOutSUsdsAssetInTests is PSMSwapExactOutSuccessTestsBase {
 
-    function test_swapExactOut_susdsToDai_sameReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_susdsToUsds_sameReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(susds, usds, 125e18, 100e18, swapper, swapper);
     }
 
@@ -317,7 +317,7 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         _swapExactOutTest(susds, usdc, 125e6, 100e18, swapper, swapper);
     }
 
-    function test_swapExactOut_susdsToDai_differentReceiver() public assertAtomicPsmValueDoesNotChange {
+    function test_swapExactOut_susdsToUsds_differentReceiver() public assertAtomicPsmValueDoesNotChange {
         _swapExactOutTest(susds, usds, 125e18, 100e18, swapper, receiver);
     }
 
@@ -325,7 +325,7 @@ contract PSMSwapExactOutSDaiAssetInTests is PSMSwapExactOutSuccessTestsBase {
         _swapExactOutTest(susds, usdc, 125e6, 100e18, swapper, receiver);
     }
 
-    function testFuzz_swapExactOut_susdsToDai(
+    function testFuzz_swapExactOut_susdsToUsds(
         uint256 amountOut,
         uint256 conversionRate,
         address fuzzSwapper,

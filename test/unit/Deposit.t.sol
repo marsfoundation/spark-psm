@@ -54,7 +54,7 @@ contract PSMDepositTests is PSMTestBase {
         psm.deposit(address(usds), user1, 100e18);
     }
 
-    function test_deposit_firstDepositDai() public {
+    function test_deposit_firstDepositUsds() public {
         usds.mint(user1, 100e18);
 
         vm.startPrank(user1);
@@ -118,7 +118,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function test_deposit_firstDepositSDai() public {
+    function test_deposit_firstDepositSUsds() public {
         susds.mint(user1, 100e18);
 
         vm.startPrank(user1);
@@ -150,7 +150,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function test_deposit_usdcThenSDai() public {
+    function test_deposit_usdcThenSUsds() public {
         usdc.mint(user1, 100e6);
 
         vm.startPrank(user1);
@@ -193,7 +193,7 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
-    function testFuzz_deposit_usdcThenSDai(uint256 usdcAmount, uint256 susdsAmount) public {
+    function testFuzz_deposit_usdcThenSUsds(uint256 usdcAmount, uint256 susdsAmount) public {
         // Zero amounts revert
         usdcAmount = _bound(usdcAmount, 1, USDC_TOKEN_MAX);
         susdsAmount = _bound(susdsAmount, 1, SUSDS_TOKEN_MAX);

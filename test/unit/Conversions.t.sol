@@ -109,7 +109,7 @@ contract PSMConvertToAssetValueTests is PSMConversionTestBase {
 
     function test_convertToAssetValue() public {
         _deposit(address(usds),  address(this), 100e18);
-        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(usdc),  address(this), 100e6);
         _deposit(address(susds), address(this), 80e18);
 
         assertEq(psm.convertToAssetValue(1e18), 1e18);
@@ -209,7 +209,7 @@ contract PSMConvertToSharesTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(amount), amount);
     }
 
-    function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
+    function test_convertToShares_depositAndWithdrawUsdcAndSUsds_noChange() public {
         _assertOneToOneConversion();
 
         _deposit(address(usdc), address(this), 100e6);
@@ -344,10 +344,10 @@ contract PSMConvertToSharesFailureTests is PSMTestBase {
 
 }
 
-contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
+contract PSMConvertToSharesWithUsdsTests is PSMConversionTestBase {
 
     function test_convertToShares_noValue() public view {
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
     }
 
     function testFuzz_convertToShares_noValue(uint256 amount) public view {
@@ -355,20 +355,20 @@ contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(usds), amount), amount);
     }
 
-    function test_convertToShares_depositAndWithdrawDaiAndSDai_noChange() public {
-        _assertOneToOneConversionDai();
+    function test_convertToShares_depositAndWithdrawUsdsAndSUsds_noChange() public {
+        _assertOneToOneConversionUsds();
 
         _deposit(address(usds), address(this), 100e18);
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
 
         _deposit(address(susds), address(this), 80e18);
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
 
         _withdraw(address(usds), address(this), 100e18);
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
 
         _withdraw(address(susds), address(this), 80e18);
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
     }
 
     function test_convertToShares_conversionRateIncrease() public {
@@ -376,7 +376,7 @@ contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
         _deposit(address(usds),  address(this), 100e18);
         _deposit(address(susds), address(this), 80e18);
 
-        _assertOneToOneConversionDai();
+        _assertOneToOneConversionUsds();
 
         // 80 sUSDS now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10.
@@ -470,7 +470,7 @@ contract PSMConvertToSharesWithDaiTests is PSMConversionTestBase {
         );
     }
 
-    function _assertOneToOneConversionDai() internal view {
+    function _assertOneToOneConversionUsds() internal view {
         assertEq(psm.convertToShares(address(usds), 1), 1);
         assertEq(psm.convertToShares(address(usds), 2), 2);
         assertEq(psm.convertToShares(address(usds), 3), 3);
@@ -495,7 +495,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(usdc), amount), amount * 1e12);
     }
 
-    function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
+    function test_convertToShares_depositAndWithdrawUsdcAndSUsds_noChange() public {
         _assertOneToOneConversionUsdc();
 
         _deposit(address(usdc), address(this), 100e6);
@@ -513,7 +513,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
 
     function test_convertToShares_conversionRateIncrease() public {
         // 200 shares minted at 1:1 ratio, $200 of value in pool
-        _deposit(address(usdc), address(this), 100e6);
+        _deposit(address(usdc),  address(this), 100e6);
         _deposit(address(susds), address(this), 80e18);
 
         _assertOneToOneConversionUsdc();
@@ -663,7 +663,7 @@ contract PSMConvertToSharesWithUsdcTests is PSMConversionTestBase {
 
 }
 
-contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
+contract PSMConvertToSharesWithSUsdsTests is PSMConversionTestBase {
 
     function test_convertToShares_noValue() public view {
         _assertOneToOneConversion();
@@ -678,20 +678,20 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         assertEq(psm.convertToShares(address(susds), amount), amount * conversionRate / 1e27);
     }
 
-    function test_convertToShares_depositAndWithdrawUsdcAndSDai_noChange() public {
+    function test_convertToShares_depositAndWithdrawUsdcAndSUsds_noChange() public {
         _assertOneToOneConversion();
 
         _deposit(address(usdc), address(this), 100e6);
-        _assertStartingConversionSDai();
+        _assertStartingConversionSUsds();
 
         _deposit(address(susds), address(this), 80e18);
-        _assertStartingConversionSDai();
+        _assertStartingConversionSUsds();
 
         _withdraw(address(usdc), address(this), 100e6);
-        _assertStartingConversionSDai();
+        _assertStartingConversionSUsds();
 
         _withdraw(address(susds), address(this), 80e18);
-        _assertStartingConversionSDai();
+        _assertStartingConversionSUsds();
     }
 
     function test_convertToShares_conversionRateIncrease() public {
@@ -699,7 +699,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         _deposit(address(usdc), address(this), 100e6);
         _deposit(address(susds), address(this), 80e18);
 
-        _assertStartingConversionSDai();
+        _assertStartingConversionSUsds();
 
         // 80 sUSDS now worth $120, 200 shares in pool with $220 of value
         // Each share should be worth $1.10. Since 1 sUSDS is now worth 1.5 USDC, 1 sUSDS is worth
@@ -725,7 +725,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
     )
         public
     {
-        // NOTE: Not using 1e27 for this test because initialSDaiValue needs to be different
+        // NOTE: Not using 1e27 for this test because initialSUsdsValue needs to be different
         mockRateProvider.__setConversionRate(1.1e27);  // Start lower than 1.25 for this test
 
         FuzzVars memory vars = _setUpConversionFuzzTest(
@@ -737,13 +737,13 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
 
         // These two values are always the same at the beginning
         uint256 initialValue     = vars.expectedShares;
-        uint256 initialSDaiValue = initialValue * 1e27 / 1.1e27;
+        uint256 initialSUsdsValue = initialValue * 1e27 / 1.1e27;
 
         conversionRate = _bound(conversionRate, 1.1e27, 1000e27);
 
         // 1:1 between shares and dollar value
         assertApproxEqAbs(
-            psm.convertToShares(address(susds), initialSDaiValue),
+            psm.convertToShares(address(susds), initialSUsdsValue),
             vars.expectedShares,
             1
         );
@@ -753,25 +753,25 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         uint256 newValue
             = vars.usdsAmount + vars.usdcAmount * 1e12 + vars.susdsAmount * conversionRate / 1e27;
 
-        uint256 newSDaiValue = newValue * 1e27 / conversionRate;
+        uint256 newSUsdsValue = newValue * 1e27 / conversionRate;
 
         // Depositing derived sUSDS amount yields the same amount of shares (approx)
         assertApproxEqAbs(
-            psm.convertToShares(address(susds), newSDaiValue),
+            psm.convertToShares(address(susds), newSUsdsValue),
             vars.expectedShares,
             1000
         );
 
         // Make sure that rounding error here is always against the user
         assertLe(
-            psm.convertToShares(address(susds), newSDaiValue),
+            psm.convertToShares(address(susds), newSUsdsValue),
             vars.expectedShares
         );
 
         // This is the exact calculation of what is happening
         assertEq(
-            psm.convertToShares(address(susds), newSDaiValue),
-            (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
+            psm.convertToShares(address(susds), newSUsdsValue),
+            (newSUsdsValue * conversionRate / 1e27) * vars.expectedShares / newValue
         );
 
         // Value change is only from sUSDS exchange rate increasing
@@ -800,14 +800,14 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         );
 
         // These two values are always the same at the beginning
-        uint256 initialValue     = vars.expectedShares;
-        uint256 initialSDaiValue = initialValue * 1e27 / 2e27;
+        uint256 initialValue      = vars.expectedShares;
+        uint256 initialSUsdsValue = initialValue * 1e27 / 2e27;
 
         conversionRate = _bound(conversionRate, 0.001e27, 2e27);
 
         // 1:1 between shares and dollar value
         assertApproxEqAbs(
-            psm.convertToShares(address(susds), initialSDaiValue),
+            psm.convertToShares(address(susds), initialSUsdsValue),
             vars.expectedShares,
             1
         );
@@ -817,25 +817,25 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
         uint256 newValue
             = vars.usdsAmount + vars.usdcAmount * 1e12 + vars.susdsAmount * conversionRate / 1e27;
 
-        uint256 newSDaiValue = newValue * 1e27 / conversionRate;
+        uint256 newSUsdsValue = newValue * 1e27 / conversionRate;
 
         // Depositing derived sUSDS amount yields the same amount of shares (approx)
         assertApproxEqAbs(
-            psm.convertToShares(address(susds), newSDaiValue),
+            psm.convertToShares(address(susds), newSUsdsValue),
             vars.expectedShares,
             2000
         );
 
         // Make sure that rounding error here is always against the user
         assertLe(
-            psm.convertToShares(address(susds), newSDaiValue),
+            psm.convertToShares(address(susds), newSUsdsValue),
             vars.expectedShares
         );
 
         // This is the exact calculation of what is happening
         assertEq(
-            psm.convertToShares(address(susds), newSDaiValue),
-            (newSDaiValue * conversionRate / 1e27) * vars.expectedShares / newValue
+            psm.convertToShares(address(susds), newSUsdsValue),
+            (newSUsdsValue * conversionRate / 1e27) * vars.expectedShares / newValue
         );
 
         // Value change is only from sUSDS exchange rate increasing
@@ -859,7 +859,7 @@ contract PSMConvertToSharesWithSDaiTests is PSMConversionTestBase {
     }
 
     // NOTE: This is different because the dollar value of sUSDS is 1.25x that of USDC
-    function _assertStartingConversionSDai() internal view {
+    function _assertStartingConversionSUsds() internal view {
         assertEq(psm.convertToShares(address(susds), 1), 1);
         assertEq(psm.convertToShares(address(susds), 2), 2);
         assertEq(psm.convertToShares(address(susds), 3), 3);

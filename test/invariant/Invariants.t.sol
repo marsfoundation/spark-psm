@@ -94,44 +94,44 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     }
 
     function _checkInvariant_E() public view {
-        uint256 expectedUsdcInflows = 0;
-        uint256 expectedDaiInflows  = 1e18;  // Seed amount
-        uint256 expectedSDaiInflows = 0;
+        uint256 expectedUsdcInflows  = 0;
+        uint256 expectedUsdsInflows  = 1e18;  // Seed amount
+        uint256 expectedSUsdsInflows = 0;
 
-        uint256 expectedUsdcOutflows = 0;
-        uint256 expectedDaiOutflows  = 0;
-        uint256 expectedSDaiOutflows = 0;
+        uint256 expectedUsdcOutflows  = 0;
+        uint256 expectedUsdsOutflows  = 0;
+        uint256 expectedSUsdsOutflows = 0;
 
         for(uint256 i; i < 3; i++) {
             address lp      = lpHandler.lps(i);
             address swapper = swapperHandler.swappers(i);
 
-            expectedUsdcInflows += lpHandler.lpDeposits(lp, address(usdc));
-            expectedDaiInflows  += lpHandler.lpDeposits(lp, address(usds));
-            expectedSDaiInflows += lpHandler.lpDeposits(lp, address(susds));
+            expectedUsdcInflows  += lpHandler.lpDeposits(lp, address(usdc));
+            expectedUsdsInflows  += lpHandler.lpDeposits(lp, address(usds));
+            expectedSUsdsInflows += lpHandler.lpDeposits(lp, address(susds));
 
-            expectedUsdcInflows += swapperHandler.swapsIn(swapper, address(usdc));
-            expectedDaiInflows  += swapperHandler.swapsIn(swapper, address(usds));
-            expectedSDaiInflows += swapperHandler.swapsIn(swapper, address(susds));
+            expectedUsdcInflows  += swapperHandler.swapsIn(swapper, address(usdc));
+            expectedUsdsInflows  += swapperHandler.swapsIn(swapper, address(usds));
+            expectedSUsdsInflows += swapperHandler.swapsIn(swapper, address(susds));
 
-            expectedUsdcOutflows += lpHandler.lpWithdrawals(lp, address(usdc));
-            expectedDaiOutflows  += lpHandler.lpWithdrawals(lp, address(usds));
-            expectedSDaiOutflows += lpHandler.lpWithdrawals(lp, address(susds));
+            expectedUsdcOutflows  += lpHandler.lpWithdrawals(lp, address(usdc));
+            expectedUsdsOutflows  += lpHandler.lpWithdrawals(lp, address(usds));
+            expectedSUsdsOutflows += lpHandler.lpWithdrawals(lp, address(susds));
 
-            expectedUsdcOutflows += swapperHandler.swapsOut(swapper, address(usdc));
-            expectedDaiOutflows  += swapperHandler.swapsOut(swapper, address(usds));
-            expectedSDaiOutflows += swapperHandler.swapsOut(swapper, address(susds));
+            expectedUsdcOutflows  += swapperHandler.swapsOut(swapper, address(usdc));
+            expectedUsdsOutflows  += swapperHandler.swapsOut(swapper, address(usds));
+            expectedSUsdsOutflows += swapperHandler.swapsOut(swapper, address(susds));
         }
 
         if (address(transferHandler) != address(0)) {
-            expectedUsdcInflows += transferHandler.transfersIn(address(usdc));
-            expectedDaiInflows  += transferHandler.transfersIn(address(usds));
-            expectedSDaiInflows += transferHandler.transfersIn(address(susds));
+            expectedUsdcInflows  += transferHandler.transfersIn(address(usdc));
+            expectedUsdsInflows  += transferHandler.transfersIn(address(usds));
+            expectedSUsdsInflows += transferHandler.transfersIn(address(susds));
         }
 
-        assertEq(usdc.balanceOf(address(psm)), expectedUsdcInflows - expectedUsdcOutflows);
-        assertEq(usds.balanceOf(address(psm)),  expectedDaiInflows  - expectedDaiOutflows);
-        assertEq(susds.balanceOf(address(psm)), expectedSDaiInflows - expectedSDaiOutflows);
+        assertEq(usdc.balanceOf(address(psm)),  expectedUsdcInflows  - expectedUsdcOutflows);
+        assertEq(usds.balanceOf(address(psm)),  expectedUsdsInflows  - expectedUsdsOutflows);
+        assertEq(susds.balanceOf(address(psm)), expectedSUsdsInflows - expectedSUsdsOutflows);
     }
 
     function _checkInvariant_F() public view {

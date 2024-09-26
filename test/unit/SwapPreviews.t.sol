@@ -63,7 +63,7 @@ contract PSMPreviewSwapExactOut_FailureTests is PSMTestBase {
 
 }
 
-contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
+contract PSMPreviewSwapExactIn_UsdsAssetInTests is PSMTestBase {
 
     function test_previewSwapExactIn_usdsToUsdc() public view {
         // Demo rounding down
@@ -85,7 +85,7 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactIn(address(usds), address(usdc), amountIn), amountIn / 1e12);
     }
 
-    function test_previewSwapExactIn_usdsToSDai() public view {
+    function test_previewSwapExactIn_usdsToSUsds() public view {
         // Demo rounding down
         assertEq(psm.previewSwapExactIn(address(usds), address(susds), 1e18 - 1), 0.8e18 - 1);
         assertEq(psm.previewSwapExactIn(address(usds), address(susds), 1e18),     0.8e18);
@@ -96,7 +96,7 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactIn(address(usds), address(susds), 3e18), 2.4e18);
     }
 
-    function testFuzz_previewSwapExactIn_usdsToSDai(uint256 amountIn, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactIn_usdsToSUsds(uint256 amountIn, uint256 conversionRate) public {
         amountIn       = _bound(amountIn,       1,         USDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
@@ -109,7 +109,7 @@ contract PSMPreviewSwapExactIn_DaiAssetInTests is PSMTestBase {
 
 }
 
-contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
+contract PSMPreviewSwapExactOut_UsdsAssetInTests is PSMTestBase {
 
     function test_previewSwapExactOut_usdsToUsdc() public view {
         // Demo rounding up
@@ -128,7 +128,7 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactOut(address(usds), address(usdc), amountOut), amountOut * 1e12);
     }
 
-    function test_previewSwapExactOut_usdsToSDai() public view {
+    function test_previewSwapExactOut_usdsToSUsds() public view {
         // Demo rounding up
         assertEq(psm.previewSwapExactOut(address(usds), address(susds), 1e18 - 1), 1.25e18 - 1);
         assertEq(psm.previewSwapExactOut(address(usds), address(susds), 1e18),     1.25e18);
@@ -139,7 +139,7 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactOut(address(usds), address(susds), 2.4e18), 3e18);
     }
 
-    function testFuzz_previewSwapExactOut_usdsToSDai(uint256 amountOut, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactOut_usdsToSUsds(uint256 amountOut, uint256 conversionRate) public {
         amountOut      = _bound(amountOut,      1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
@@ -157,7 +157,7 @@ contract PSMPreviewSwapExactOut_DaiAssetInTests is PSMTestBase {
 
 contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
 
-    function test_previewSwapExactIn_usdcToDai() public view {
+    function test_previewSwapExactIn_usdcToUsds() public view {
         // Demo rounding down
         assertEq(psm.previewSwapExactIn(address(usdc), address(usds), 1e6 - 1), 0.999999e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(usds), 1e6),     1e18);
@@ -168,13 +168,13 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactIn(address(usdc), address(usds), 3e6), 3e18);
     }
 
-    function testFuzz_previewSwapExactIn_usdcToDai(uint256 amountIn) public view {
+    function testFuzz_previewSwapExactIn_usdcToUsds(uint256 amountIn) public view {
         amountIn = _bound(amountIn, 0, USDC_TOKEN_MAX);
 
         assertEq(psm.previewSwapExactIn(address(usdc), address(usds), amountIn), amountIn * 1e12);
     }
 
-    function test_previewSwapExactIn_usdcToSDai() public view {
+    function test_previewSwapExactIn_usdcToSUsds() public view {
         // Demo rounding down
         assertEq(psm.previewSwapExactIn(address(usdc), address(susds), 1e6 - 1), 0.799999e18);
         assertEq(psm.previewSwapExactIn(address(usdc), address(susds), 1e6),     0.8e18);
@@ -185,7 +185,7 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactIn(address(usdc), address(susds), 3e6), 2.4e18);
     }
 
-    function testFuzz_previewSwapExactIn_usdcToSDai(uint256 amountIn, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactIn_usdcToSUsds(uint256 amountIn, uint256 conversionRate) public {
         amountIn       = _bound(amountIn,       1,         USDC_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
@@ -200,7 +200,7 @@ contract PSMPreviewSwapExactIn_USDCAssetInTests is PSMTestBase {
 
 contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
 
-    function test_previewSwapExactOut_usdcToDai() public view {
+    function test_previewSwapExactOut_usdcToUsds() public view {
         // Demo rounding up
         assertEq(psm.previewSwapExactOut(address(usdc), address(usds), 1e18 - 1), 1e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(usds), 1e18),     1e6);
@@ -211,7 +211,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactOut(address(usdc), address(usds), 3e18), 3e6);
     }
 
-    function testFuzz_previewSwapExactOut_usdcToDai(uint256 amountOut) public view {
+    function testFuzz_previewSwapExactOut_usdcToUsds(uint256 amountOut) public view {
         amountOut = _bound(amountOut, 0, USDS_TOKEN_MAX);
 
         uint256 amountIn = psm.previewSwapExactOut(address(usdc), address(usds), amountOut);
@@ -220,7 +220,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertLe(amountIn - amountOut / 1e12, 1);
     }
 
-    function test_previewSwapExactOut_usdcToSDai() public view {
+    function test_previewSwapExactOut_usdcToSUsds() public view {
         // Demo rounding up
         assertEq(psm.previewSwapExactOut(address(usdc), address(susds), 1e18 - 1), 1.25e6);
         assertEq(psm.previewSwapExactOut(address(usdc), address(susds), 1e18),     1.25e6);
@@ -231,7 +231,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactOut(address(usdc), address(susds), 2.4e18), 3e6);
     }
 
-    function testFuzz_previewSwapExactOut_usdcToSDai(uint256 amountOut, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactOut_usdcToSUsds(uint256 amountOut, uint256 conversionRate) public {
         amountOut      = _bound(amountOut,     1,         SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
@@ -246,7 +246,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertLe(amountIn - expectedAmountIn, 1);
     }
 
-    function test_demoRoundingUp_usdcToSDai() public view {
+    function test_demoRoundingUp_usdcToSUsds() public view {
         uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(susds), 0.8e18);
         uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(susds), 0.8e18 + 1);
         uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(susds), 0.8e18 + 0.8e12);
@@ -258,7 +258,7 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
         assertEq(expectedAmountIn4, 1e6 + 2);
     }
 
-    function test_demoRoundingUp_usdcToDai() public view {
+    function test_demoRoundingUp_usdcToUsds() public view {
         uint256 expectedAmountIn1 = psm.previewSwapExactOut(address(usdc), address(usds), 1e18);
         uint256 expectedAmountIn2 = psm.previewSwapExactOut(address(usdc), address(usds), 1e18 + 1);
         uint256 expectedAmountIn3 = psm.previewSwapExactOut(address(usdc), address(usds), 1e18 + 1e12);
@@ -272,9 +272,9 @@ contract PSMPreviewSwapExactOut_USDCAssetInTests is PSMTestBase {
 
 }
 
-contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
+contract PSMPreviewSwapExactIn_SUsdsAssetInTests is PSMTestBase {
 
-    function test_previewSwapExactIn_susdsToDai() public view {
+    function test_previewSwapExactIn_susdsToUsds() public view {
         // Demo rounding down
         assertEq(psm.previewSwapExactIn(address(susds), address(usds), 1e18 - 1), 1.25e18 - 2);
         assertEq(psm.previewSwapExactIn(address(susds), address(usds), 1e18),     1.25e18);
@@ -285,7 +285,7 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactIn(address(susds), address(usds), 3e18), 3.75e18);
     }
 
-    function testFuzz_previewSwapExactIn_susdsToDai(uint256 amountIn, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactIn_susdsToUsds(uint256 amountIn, uint256 conversionRate) public {
         amountIn       = _bound(amountIn,       1,         SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
@@ -320,9 +320,9 @@ contract PSMPreviewSwapExactIn_SDaiAssetInTests is PSMTestBase {
 
 }
 
-contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
+contract PSMPreviewSwapExactOut_SUsdsAssetInTests is PSMTestBase {
 
-    function test_previewSwapExactOut_susdsToDai() public view {
+    function test_previewSwapExactOut_susdsToUsds() public view {
         // Demo rounding up
         assertEq(psm.previewSwapExactOut(address(susds), address(usds), 1e18 - 1), 0.8e18);
         assertEq(psm.previewSwapExactOut(address(susds), address(usds), 1e18),     0.8e18);
@@ -333,7 +333,7 @@ contract PSMPreviewSwapExactOut_SDaiAssetInTests is PSMTestBase {
         assertEq(psm.previewSwapExactOut(address(susds), address(usds), 3.75e18), 3e18);
     }
 
-    function testFuzz_previewSwapExactOut_susdsToDai(uint256 amountOut, uint256 conversionRate) public {
+    function testFuzz_previewSwapExactOut_susdsToUsds(uint256 amountOut, uint256 conversionRate) public {
         amountOut      = _bound(amountOut,      1,         USDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);  // 0.01% to 100,000% conversion rate
 
