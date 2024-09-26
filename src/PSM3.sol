@@ -81,8 +81,7 @@ contract PSM3 is IPSM3, Ownable {
     /*** Owner functions                                                                        ***/
     /**********************************************************************************************/
 
-    // TODO: Add override
-    function setPocket(address newPocket) external onlyOwner {
+    function setPocket(address newPocket) external override onlyOwner {
         require(newPocket != address(0), "PSM3/invalid-pocket");
 
         uint256 amountToTransfer = asset0.balanceOf(pocket);

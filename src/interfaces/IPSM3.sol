@@ -9,7 +9,13 @@ interface IPSM3 {
     /*** Events                                                                                 ***/
     /**********************************************************************************************/
 
-    // TODO: Add natspec
+    /**
+     *  @dev   Emitted when a new pocket is set in the PSM, transferring the balance of asset0
+     *         of the old pocket to the new pocket.
+     *  @param oldPocket         Address of the old `pocket`.
+     *  @param newPocket         Address of the new `pocket`.
+     *  @param amountTransferred Amount of asset0 transferred from the old pocket to the new pocket.
+     */
     event PocketSet(
         address indexed oldPocket,
         address indexed newPocket,
@@ -121,6 +127,18 @@ interface IPSM3 {
      *  @return The number of shares held by the user.
      */
     function shares(address user) external view returns (uint256);
+
+    /**********************************************************************************************/
+    /*** Owner functions                                                                        ***/
+    /**********************************************************************************************/
+
+    /**
+     *  @dev    Sets the address of the pocket, an address that holds custody of asset0 in the PSM
+     *          and can deploy it to yield-bearing strategies. This function will transfer the
+     *          balance of USDC in the PSM to the new pocket. Callable only by the owner.
+     *  @param  newPocket Address of the new pocket.
+     */
+    function setPocket(address newPocket) external;
 
     /**********************************************************************************************/
     /*** Swap functions                                                                         ***/
