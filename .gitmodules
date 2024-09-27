@@ -7,3 +7,6 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "lib/xchain-ssr-oracle"]
+	path = lib/xchain-ssr-oracle
+	url = https://github.com/marsfoundation/xchain-ssr-oracle
