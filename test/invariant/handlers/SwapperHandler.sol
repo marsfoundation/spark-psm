@@ -30,14 +30,14 @@ contract SwapperHandler is HandlerBase {
 
     constructor(
         PSM3      psm_,
-        MockERC20 asset0,
-        MockERC20 asset1,
-        MockERC20 asset2,
+        MockERC20 usdc,
+        MockERC20 usds,
+        MockERC20 susds,
         uint256   swapperCount
     ) HandlerBase(psm_) {
-        assets[0] = asset0;
-        assets[1] = asset1;
-        assets[2] = asset2;
+        assets[0] = usdc;
+        assets[1] = usds;
+        assets[2] = susds;
 
         rateProvider = IRateProviderLike(psm.rateProvider());
 
@@ -353,8 +353,8 @@ contract SwapperHandler is HandlerBase {
     }
 
     function _getAssetValue(address asset, uint256 amount) internal view returns (uint256) {
-        if      (asset == address(assets[0])) return amount;
-        else if (asset == address(assets[1])) return amount * 1e12;
+        if      (asset == address(assets[0])) return amount * 1e12;
+        else if (asset == address(assets[1])) return amount;
         else if (asset == address(assets[2])) return amount * rateProvider.getConversionRate() / 1e27;
         else revert("SwapperHandler/asset-not-found");
     }

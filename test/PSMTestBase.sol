@@ -13,12 +13,13 @@ import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
 
 contract PSMTestBase is Test {
 
+    address public owner = makeAddr("owner");
+
     PSM3 public psm;
 
-    // NOTE: Using DAI, sDAI and USDC as example assets
-    MockERC20 public dai;
+    MockERC20 public usds;
     MockERC20 public usdc;
-    MockERC20 public sDai;
+    MockERC20 public susds;
 
     IRateProviderLike public rateProvider;  // Can be overridden by dsrOracle using same interface
 
@@ -31,14 +32,14 @@ contract PSMTestBase is Test {
     }
 
     // 1,000,000,000,000 of each token
-    uint256 public constant USDC_TOKEN_MAX = 1e18;
-    uint256 public constant SDAI_TOKEN_MAX = 1e30;
-    uint256 public constant DAI_TOKEN_MAX  = 1e30;
+    uint256 public constant USDS_TOKEN_MAX  = 1e30;
+    uint256 public constant SUSDS_TOKEN_MAX = 1e30;
+    uint256 public constant USDC_TOKEN_MAX  = 1e18;
 
     function setUp() public virtual {
-        dai  = new MockERC20("dai",  "dai",  18);
-        usdc = new MockERC20("usdc", "usdc", 6);
-        sDai = new MockERC20("sDai", "sDai", 18);
+        usds  = new MockERC20("usds",  "usds",  18);
+        usdc  = new MockERC20("usdc",  "usdc",  6);
+        susds = new MockERC20("susds", "susds", 18);
 
         mockRateProvider = new MockRateProvider();
 
@@ -47,17 +48,17 @@ contract PSMTestBase is Test {
 
         rateProvider = IRateProviderLike(address(mockRateProvider));
 
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(rateProvider));
+        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(rateProvider));
 
-        vm.label(address(dai),  "DAI");
-        vm.label(address(usdc), "USDC");
-        vm.label(address(sDai), "sDAI");
+        vm.label(address(usds),  "USDS");
+        vm.label(address(usdc),  "USDC");
+        vm.label(address(susds), "sUSDS");
     }
 
     function _getPsmValue() internal view returns (uint256) {
-        return (sDai.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
+        return (susds.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
             + usdc.balanceOf(address(psm)) * 1e12
-            + dai.balanceOf(address(psm));
+            + usds.balanceOf(address(psm));
     }
 
     function _deposit(address asset, address user, uint256 amount) internal {

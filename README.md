@@ -11,11 +11,11 @@
 
 This repository contains the implementation of a Peg Stability Module (PSM) contract, which facilitates the swapping, depositing, and withdrawing of three given assets to maintain stability and ensure the peg of involved assets. The PSM supports both yield-bearing and non-yield-bearing assets.
 
-`asset0` and `asset1` are two ERC20 tokens that are directly correlated and are non-yield-bearing, referred to as "base assets". `asset2` is a yield-bearing version of both `asset0` and `asset1`. The PSM contract allows users to swap between these assets, deposit any of the assets to mint shares, and withdraw any of the assets by burning shares.
+The PSM contract allows users to swap between USDC, USDS, and sSUDS, deposit any of the assets to mint shares, and withdraw any of the assets by burning shares.
 
-The conversion between a base asset and `asset2` is provided by a rate provider contract. The rate provider returns the conversion rate between `asset2` and the base asset in 1e27 precision. The conversion between the base assets is one to one.
+The conversion between a stablecoin and `susds` is provided by a rate provider contract. The rate provider returns the conversion rate between `susds` and the stablecoin in 1e27 precision. The conversion between the stablecoins is one to one.
 
-The conversion rate between assets and shares is based on the total value of assets held by the PSM. The total value is calculated by converting the assets to their equivalent value in the base asset with 18 decimal precision. The shares represent the ownership of the underlying assets in the PSM. Since three assets are used, each with different precisions and values, they are converted to a common base asset-denominated value for share conversions.
+The conversion rate between assets and shares is based on the total value of assets held by the PSM. The total value is calculated by converting the assets to their equivalent value in USD with 18 decimal precision. The shares represent the ownership of the underlying assets in the PSM. Since three assets are used, each with different precisions and values, they are converted to a common USD-denominated value for share conversions.
 
 For detailed implementation, refer to the contract code and `IPSM3` interface documentation.
 
@@ -39,14 +39,19 @@ The deployment library (`deploy/PSM3Deploy.sol`) in this repo contains logic for
 
 ### State Variables and Immutables
 
-- **`asset0`**: Non-yield-bearing base asset (e.g., USDC).
-- **`asset1`**: Another non-yield-bearing base asset that is directly correlated to `asset0` (e.g., USDS).
-- **`asset2`**: Yield-bearing version of both `asset0` and `asset1` (e.g., sUSDS).
-- **`rateProvider`**: Contract that returns a conversion rate between and `asset2` and the base asset (e.g., sUSDS to USD) in 1e27 precision.
+- **`usdc`**: IERC20 interface of USDC.
+- **`usds`**: IERC20 interface of USDS.
+- **`susds`**: IERC20 interface of sUSDS. Note that this is an ERC20 and not a ERC4626 because it's not on mainnet.
+- **`pocket`**: Address that holds custody of USDC. The `pocket` can deploy USDC to yield-bearing strategies. Defaulted to the address of the PSM itself.
+- **`rateProvider`**: Contract that returns a conversion rate between and sUSDS and USD in 1e27 precision.
 - **`totalShares`**: Total shares in the PSM. Shares represent the ownership of the underlying assets in the PSM.
 - **`shares`**: Mapping of user addresses to their shares.
 
 ### Functions
+
+#### Admin Functions
+
+- **`setPocket`**: Sets the `pocket` address. Only the `owner` can call this function. This is a very important and sensitive action because it transfers the entire balance of USDC to the new `pocket` address. OZ Ownable is used for this function, and `owner` will always be set to the governance proxy.
 
 #### Swap Functions
 
@@ -70,12 +75,12 @@ The deployment library (`deploy/PSM3Deploy.sol`) in this repo contains logic for
 NOTE: These functions do not round in the same way as preview functions, so they are meant to be used for general quoting purposes.
 
 - **`convertToAssets`**: Converts shares to the equivalent amount of a specified asset.
-- **`convertToAssetValue`**: Converts shares to their equivalent value in base asset terms with 18 decimal precision (e.g., USD).
+- **`convertToAssetValue`**: Converts shares to their equivalent value in USD terms with 18 decimal precision.
 - **`convertToShares`**: Converts asset values to shares based on the current exchange rate.
 
 #### Asset Value Functions
 
-- **`totalAssets`**: Returns the total value of all assets held by the PSM denominated in the base asset with 18 decimal precision. (e.g., USD).
+- **`totalAssets`**: Returns the total value of all assets held by the PSM denominated in USD with 18 decimal precision.
 
 ### Events
 

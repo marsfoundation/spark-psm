@@ -18,19 +18,19 @@ contract PSMPreviewDeposit_SuccessTests is PSMTestBase {
 
     address depositor = makeAddr("depositor");
 
-    function test_previewDeposit_dai_firstDeposit() public view {
-        assertEq(psm.previewDeposit(address(dai), 1), 1);
-        assertEq(psm.previewDeposit(address(dai), 2), 2);
-        assertEq(psm.previewDeposit(address(dai), 3), 3);
+    function test_previewDeposit_usds_firstDeposit() public view {
+        assertEq(psm.previewDeposit(address(usds), 1), 1);
+        assertEq(psm.previewDeposit(address(usds), 2), 2);
+        assertEq(psm.previewDeposit(address(usds), 3), 3);
 
-        assertEq(psm.previewDeposit(address(dai), 1e18), 1e18);
-        assertEq(psm.previewDeposit(address(dai), 2e18), 2e18);
-        assertEq(psm.previewDeposit(address(dai), 3e18), 3e18);
+        assertEq(psm.previewDeposit(address(usds), 1e18), 1e18);
+        assertEq(psm.previewDeposit(address(usds), 2e18), 2e18);
+        assertEq(psm.previewDeposit(address(usds), 3e18), 3e18);
     }
 
-    function testFuzz_previewDeposit_dai_firstDeposit(uint256 amount) public view {
-        amount = _bound(amount, 0, DAI_TOKEN_MAX);
-        assertEq(psm.previewDeposit(address(dai), amount), amount);
+    function testFuzz_previewDeposit_usds_firstDeposit(uint256 amount) public view {
+        amount = _bound(amount, 0, USDS_TOKEN_MAX);
+        assertEq(psm.previewDeposit(address(usds), amount), amount);
     }
 
     function test_previewDeposit_usdc_firstDeposit() public view {
@@ -48,43 +48,43 @@ contract PSMPreviewDeposit_SuccessTests is PSMTestBase {
         assertEq(psm.previewDeposit(address(usdc), amount), amount * 1e12);
     }
 
-    function test_previewDeposit_sDai_firstDeposit() public view {
-        assertEq(psm.previewDeposit(address(sDai), 1), 1);
-        assertEq(psm.previewDeposit(address(sDai), 2), 2);
-        assertEq(psm.previewDeposit(address(sDai), 3), 3);
-        assertEq(psm.previewDeposit(address(sDai), 4), 5);
+    function test_previewDeposit_susds_firstDeposit() public view {
+        assertEq(psm.previewDeposit(address(susds), 1), 1);
+        assertEq(psm.previewDeposit(address(susds), 2), 2);
+        assertEq(psm.previewDeposit(address(susds), 3), 3);
+        assertEq(psm.previewDeposit(address(susds), 4), 5);
 
-        assertEq(psm.previewDeposit(address(sDai), 1e18), 1.25e18);
-        assertEq(psm.previewDeposit(address(sDai), 2e18), 2.50e18);
-        assertEq(psm.previewDeposit(address(sDai), 3e18), 3.75e18);
-        assertEq(psm.previewDeposit(address(sDai), 4e18), 5.00e18);
+        assertEq(psm.previewDeposit(address(susds), 1e18), 1.25e18);
+        assertEq(psm.previewDeposit(address(susds), 2e18), 2.50e18);
+        assertEq(psm.previewDeposit(address(susds), 3e18), 3.75e18);
+        assertEq(psm.previewDeposit(address(susds), 4e18), 5.00e18);
     }
 
-    function testFuzz_previewDeposit_sDai_firstDeposit(uint256 amount) public view {
-        amount = _bound(amount, 0, SDAI_TOKEN_MAX);
-        assertEq(psm.previewDeposit(address(sDai), amount), amount * 1.25e27 / 1e27);
+    function testFuzz_previewDeposit_susds_firstDeposit(uint256 amount) public view {
+        amount = _bound(amount, 0, SUSDS_TOKEN_MAX);
+        assertEq(psm.previewDeposit(address(susds), amount), amount * 1.25e27 / 1e27);
     }
 
     function test_previewDeposit_afterDepositsAndExchangeRateIncrease() public {
         _assertOneToOne();
 
-        _deposit(address(dai), depositor, 1e18);
+        _deposit(address(usds), depositor, 1e18);
         _assertOneToOne();
 
         _deposit(address(usdc), depositor, 1e6);
         _assertOneToOne();
 
-        _deposit(address(sDai), depositor, 0.8e18);
+        _deposit(address(susds), depositor, 0.8e18);
         _assertOneToOne();
 
         mockRateProvider.__setConversionRate(2e27);
 
         // $300 dollars of value deposited, 300 shares minted.
-        // sDAI portion becomes worth $160, full pool worth $360, each share worth $1.20
+        // sUSDS portion becomes worth $160, full pool worth $360, each share worth $1.20
         // 1 USDC = 1/1.20 = 0.833...
-        assertEq(psm.previewDeposit(address(dai),  1e18), 0.833333333333333333e18);
-        assertEq(psm.previewDeposit(address(usdc), 1e6),  0.833333333333333333e18);
-        assertEq(psm.previewDeposit(address(sDai), 1e18), 1.666666666666666666e18);  // 1 sDAI = $2
+        assertEq(psm.previewDeposit(address(usds),  1e18), 0.833333333333333333e18);
+        assertEq(psm.previewDeposit(address(usdc),  1e6),  0.833333333333333333e18);
+        assertEq(psm.previewDeposit(address(susds), 1e18), 1.666666666666666666e18);  // 1 sUSDS = $2
     }
 
     function testFuzz_previewDeposit_afterDepositsAndExchangeRateIncrease(
@@ -94,21 +94,21 @@ contract PSMPreviewDeposit_SuccessTests is PSMTestBase {
         uint256 conversionRate,
         uint256 previewAmount
     ) public {
-        amount1        = _bound(amount1,        1,       DAI_TOKEN_MAX);
+        amount1        = _bound(amount1,        1,       USDS_TOKEN_MAX);
         amount2        = _bound(amount2,        1,       USDC_TOKEN_MAX);
-        amount3        = _bound(amount3,        1,       SDAI_TOKEN_MAX);
+        amount3        = _bound(amount3,        1,       SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 1.00e27, 1000e27);
-        previewAmount  = _bound(previewAmount,  0,       DAI_TOKEN_MAX);
+        previewAmount  = _bound(previewAmount,  0,       USDS_TOKEN_MAX);
 
         _assertOneToOne();
 
-        _deposit(address(dai), depositor, amount1);
+        _deposit(address(usds), depositor, amount1);
         _assertOneToOne();
 
         _deposit(address(usdc), depositor, amount2);
         _assertOneToOne();
 
-        _deposit(address(sDai), depositor, amount3);
+        _deposit(address(susds), depositor, amount3);
         _assertOneToOne();
 
         mockRateProvider.__setConversionRate(conversionRate);
@@ -117,15 +117,15 @@ contract PSMPreviewDeposit_SuccessTests is PSMTestBase {
         uint256 totalValue        = amount1 + amount2 * 1e12 + amount3 * conversionRate / 1e27;
         uint256 usdcPreviewAmount = previewAmount / 1e12;
 
-        assertEq(psm.previewDeposit(address(dai),  previewAmount),     previewAmount                           * totalSharesMinted / totalValue);
-        assertEq(psm.previewDeposit(address(usdc), usdcPreviewAmount), usdcPreviewAmount * 1e12                * totalSharesMinted / totalValue);  // Divide then multiply to replicate rounding
-        assertEq(psm.previewDeposit(address(sDai), previewAmount),     (previewAmount * conversionRate / 1e27) * totalSharesMinted / totalValue);
+        assertEq(psm.previewDeposit(address(usds),  previewAmount),     previewAmount                           * totalSharesMinted / totalValue);
+        assertEq(psm.previewDeposit(address(usdc),  usdcPreviewAmount), usdcPreviewAmount * 1e12                * totalSharesMinted / totalValue);  // Divide then multiply to replicate rounding
+        assertEq(psm.previewDeposit(address(susds), previewAmount),     (previewAmount * conversionRate / 1e27) * totalSharesMinted / totalValue);
     }
 
     function _assertOneToOne() internal view {
-        assertEq(psm.previewDeposit(address(dai),  1e18), 1e18);
-        assertEq(psm.previewDeposit(address(usdc), 1e6),  1e18);
-        assertEq(psm.previewDeposit(address(sDai), 1e18), 1.25e18);
+        assertEq(psm.previewDeposit(address(usds),  1e18), 1e18);
+        assertEq(psm.previewDeposit(address(usdc),  1e6),  1e18);
+        assertEq(psm.previewDeposit(address(susds), 1e18), 1.25e18);
     }
 
 }

@@ -5,8 +5,14 @@ import { PSM3 } from "src/PSM3.sol";
 
 contract PSM3Harness is PSM3 {
 
-    constructor(address asset0_, address asset1_, address asset2_, address rateProvider_)
-        PSM3(asset0_, asset1_, asset2_, rateProvider_) {}
+    constructor(
+        address owner_,
+        address usdc_,
+        address usds_,
+        address susds_,
+        address rateProvider_
+    )
+        PSM3(owner_, usdc_, usds_, susds_, rateProvider_) {}
 
     function getAssetValue(address asset, uint256 amount, bool roundUp)
         external view returns (uint256)
@@ -14,16 +20,16 @@ contract PSM3Harness is PSM3 {
         return _getAssetValue(asset, amount, roundUp);
     }
 
-    function getAsset0Value(uint256 amount) external view returns (uint256) {
-        return _getAsset0Value(amount);
+    function getUsdcValue(uint256 amount) external view returns (uint256) {
+        return _getUsdcValue(amount);
     }
 
-    function getAsset1Value(uint256 amount) external view returns (uint256) {
-        return _getAsset1Value(amount);
+    function getUsdsValue(uint256 amount) external view returns (uint256) {
+        return _getUsdsValue(amount);
     }
 
-    function getAsset2Value(uint256 amount, bool roundUp) external view returns (uint256) {
-        return _getAsset2Value(amount, roundUp);
+    function getSUsdsValue(uint256 amount, bool roundUp) external view returns (uint256) {
+        return _getSUsdsValue(amount, roundUp);
     }
 
 }

@@ -35,7 +35,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         super.setUp();
 
         // Seed the pool with 1e18 shares (1e18 of value)
-        _deposit(address(dai), BURN_ADDRESS, 1e18);
+        _deposit(address(usds), BURN_ADDRESS, 1e18);
     }
 
     /**********************************************************************************************/
@@ -94,44 +94,44 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     }
 
     function _checkInvariant_E() public view {
-        uint256 expectedUsdcInflows = 0;
-        uint256 expectedDaiInflows  = 1e18;  // Seed amount
-        uint256 expectedSDaiInflows = 0;
+        uint256 expectedUsdcInflows  = 0;
+        uint256 expectedUsdsInflows  = 1e18;  // Seed amount
+        uint256 expectedSUsdsInflows = 0;
 
-        uint256 expectedUsdcOutflows = 0;
-        uint256 expectedDaiOutflows  = 0;
-        uint256 expectedSDaiOutflows = 0;
+        uint256 expectedUsdcOutflows  = 0;
+        uint256 expectedUsdsOutflows  = 0;
+        uint256 expectedSUsdsOutflows = 0;
 
         for(uint256 i; i < 3; i++) {
             address lp      = lpHandler.lps(i);
             address swapper = swapperHandler.swappers(i);
 
-            expectedUsdcInflows += lpHandler.lpDeposits(lp, address(usdc));
-            expectedDaiInflows  += lpHandler.lpDeposits(lp, address(dai));
-            expectedSDaiInflows += lpHandler.lpDeposits(lp, address(sDai));
+            expectedUsdcInflows  += lpHandler.lpDeposits(lp, address(usdc));
+            expectedUsdsInflows  += lpHandler.lpDeposits(lp, address(usds));
+            expectedSUsdsInflows += lpHandler.lpDeposits(lp, address(susds));
 
-            expectedUsdcInflows += swapperHandler.swapsIn(swapper, address(usdc));
-            expectedDaiInflows  += swapperHandler.swapsIn(swapper, address(dai));
-            expectedSDaiInflows += swapperHandler.swapsIn(swapper, address(sDai));
+            expectedUsdcInflows  += swapperHandler.swapsIn(swapper, address(usdc));
+            expectedUsdsInflows  += swapperHandler.swapsIn(swapper, address(usds));
+            expectedSUsdsInflows += swapperHandler.swapsIn(swapper, address(susds));
 
-            expectedUsdcOutflows += lpHandler.lpWithdrawals(lp, address(usdc));
-            expectedDaiOutflows  += lpHandler.lpWithdrawals(lp, address(dai));
-            expectedSDaiOutflows += lpHandler.lpWithdrawals(lp, address(sDai));
+            expectedUsdcOutflows  += lpHandler.lpWithdrawals(lp, address(usdc));
+            expectedUsdsOutflows  += lpHandler.lpWithdrawals(lp, address(usds));
+            expectedSUsdsOutflows += lpHandler.lpWithdrawals(lp, address(susds));
 
-            expectedUsdcOutflows += swapperHandler.swapsOut(swapper, address(usdc));
-            expectedDaiOutflows  += swapperHandler.swapsOut(swapper, address(dai));
-            expectedSDaiOutflows += swapperHandler.swapsOut(swapper, address(sDai));
+            expectedUsdcOutflows  += swapperHandler.swapsOut(swapper, address(usdc));
+            expectedUsdsOutflows  += swapperHandler.swapsOut(swapper, address(usds));
+            expectedSUsdsOutflows += swapperHandler.swapsOut(swapper, address(susds));
         }
 
         if (address(transferHandler) != address(0)) {
-            expectedUsdcInflows += transferHandler.transfersIn(address(usdc));
-            expectedDaiInflows  += transferHandler.transfersIn(address(dai));
-            expectedSDaiInflows += transferHandler.transfersIn(address(sDai));
+            expectedUsdcInflows  += transferHandler.transfersIn(address(usdc));
+            expectedUsdsInflows  += transferHandler.transfersIn(address(usds));
+            expectedSUsdsInflows += transferHandler.transfersIn(address(susds));
         }
 
-        assertEq(usdc.balanceOf(address(psm)), expectedUsdcInflows - expectedUsdcOutflows);
-        assertEq(dai.balanceOf(address(psm)),  expectedDaiInflows  - expectedDaiOutflows);
-        assertEq(sDai.balanceOf(address(psm)), expectedSDaiInflows - expectedSDaiOutflows);
+        assertEq(usdc.balanceOf(address(psm)),  expectedUsdcInflows  - expectedUsdcOutflows);
+        assertEq(usds.balanceOf(address(psm)),  expectedUsdsInflows  - expectedUsdsOutflows);
+        assertEq(susds.balanceOf(address(psm)), expectedSUsdsInflows - expectedSUsdsOutflows);
     }
 
     function _checkInvariant_F() public view {
@@ -187,23 +187,23 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
     }
 
     function _getLpTokenValue(address lp) internal view returns (uint256) {
-        uint256 daiValue  = dai.balanceOf(lp);
-        uint256 usdcValue = usdc.balanceOf(lp) * 1e12;
-        uint256 sDaiValue = sDai.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
+        uint256 usdsValue  = usds.balanceOf(lp);
+        uint256 usdcValue  = usdc.balanceOf(lp) * 1e12;
+        uint256 susdsValue = susds.balanceOf(lp) * rateProvider.getConversionRate() / 1e27;
 
-        return daiValue + usdcValue + sDaiValue;
+        return usdsValue + usdcValue + susdsValue;
     }
 
     function _getLpDepositsValue(address lp) internal view returns (uint256) {
         uint256 depositValue =
-            lpHandler.lpDeposits(lp, address(dai)) +
+            lpHandler.lpDeposits(lp, address(usds)) +
             lpHandler.lpDeposits(lp, address(usdc)) * 1e12 +
-            lpHandler.lpDeposits(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+            lpHandler.lpDeposits(lp, address(susds)) * rateProvider.getConversionRate() / 1e27;
 
         uint256 withdrawValue =
-            lpHandler.lpWithdrawals(lp, address(dai)) +
+            lpHandler.lpWithdrawals(lp, address(usds)) +
             lpHandler.lpWithdrawals(lp, address(usdc)) * 1e12 +
-            lpHandler.lpWithdrawals(lp, address(sDai)) * rateProvider.getConversionRate() / 1e27;
+            lpHandler.lpWithdrawals(lp, address(susds)) * rateProvider.getConversionRate() / 1e27;
 
         return withdrawValue > depositValue ? 0 : depositValue - withdrawValue;
     }
@@ -239,17 +239,17 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         uint256 startingSeedValue = psm.convertToAssetValue(1e18);
 
         // Liquidity is unknown so withdraw all assets for all users to empty PSM.
-        _withdraw(address(dai),  lp0, type(uint256).max);
-        _withdraw(address(usdc), lp0, type(uint256).max);
-        _withdraw(address(sDai), lp0, type(uint256).max);
+        _withdraw(address(usds),  lp0, type(uint256).max);
+        _withdraw(address(usdc),  lp0, type(uint256).max);
+        _withdraw(address(susds), lp0, type(uint256).max);
 
-        _withdraw(address(dai),  lp1, type(uint256).max);
-        _withdraw(address(usdc), lp1, type(uint256).max);
-        _withdraw(address(sDai), lp1, type(uint256).max);
+        _withdraw(address(usds),  lp1, type(uint256).max);
+        _withdraw(address(usdc),  lp1, type(uint256).max);
+        _withdraw(address(susds), lp1, type(uint256).max);
 
-        _withdraw(address(dai),  lp2, type(uint256).max);
-        _withdraw(address(usdc), lp2, type(uint256).max);
-        _withdraw(address(sDai), lp2, type(uint256).max);
+        _withdraw(address(usds),  lp2, type(uint256).max);
+        _withdraw(address(usdc),  lp2, type(uint256).max);
+        _withdraw(address(susds), lp2, type(uint256).max);
 
         // All funds are completely withdrawn.
         assertEq(psm.shares(lp0), 0);
@@ -297,9 +297,9 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         // NOTE: Below logic is not realistic, shown to demonstrate precision.
 
-        _withdraw(address(dai),  BURN_ADDRESS, type(uint256).max);
-        _withdraw(address(usdc), BURN_ADDRESS, type(uint256).max);
-        _withdraw(address(sDai), BURN_ADDRESS, type(uint256).max);
+        _withdraw(address(usds),  BURN_ADDRESS, type(uint256).max);
+        _withdraw(address(usdc),  BURN_ADDRESS, type(uint256).max);
+        _withdraw(address(susds), BURN_ADDRESS, type(uint256).max);
 
         // When all funds are completely withdrawn, the sum of all funds withdrawn is equal to the
         // sum of value of all LPs including the burn address. All rounding errors get reduced to
@@ -321,9 +321,9 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
         address lp2 = lpHandler.lps(2);
 
         // Ensure that all users have a minimum balance of shares to improve precision
-        _deposit(address(dai), lp0, 100_000e18);
-        _deposit(address(dai), lp1, 100_000e18);
-        _deposit(address(dai), lp2, 100_000e18);
+        _deposit(address(usds), lp0, 100_000e18);
+        _deposit(address(usds), lp1, 100_000e18);
+        _deposit(address(usds), lp2, 100_000e18);
 
         uint256 lp0Value = psm.convertToAssetValue(psm.shares(lp0));
         uint256 lp1Value = psm.convertToAssetValue(psm.shares(lp1));
@@ -359,8 +359,8 @@ contract PSMInvariants_ConstantRate_NoTransfer is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler      = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler      = new LpHandler(psm, usdc, usds, susds, 3);
+        swapperHandler = new SwapperHandler(psm, usdc, usds, susds, 3);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -404,9 +404,9 @@ contract PSMInvariants_ConstantRate_WithTransfers is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler       = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler  = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        transferHandler = new TransferHandler(psm, dai, usdc, sDai);
+        lpHandler       = new LpHandler(psm, usdc, usds, susds, 3);
+        swapperHandler  = new SwapperHandler(psm, usdc, usds, susds, 3);
+        transferHandler = new TransferHandler(psm, usdc, usds, susds);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -447,9 +447,9 @@ contract PSMInvariants_RateSetting_NoTransfer is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        lpHandler         = new LpHandler(psm, usdc, usds, susds, 3);
         rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
-        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        swapperHandler    = new SwapperHandler(psm, usdc, usds, susds, 3);
 
         targetContract(address(lpHandler));
         targetContract(address(rateSetterHandler));
@@ -493,10 +493,10 @@ contract PSMInvariants_RateSetting_WithTransfers is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        lpHandler         = new LpHandler(psm, dai, usdc, sDai, 3);
+        lpHandler         = new LpHandler(psm, usdc, usds, susds, 3);
         rateSetterHandler = new RateSetterHandler(psm, address(rateProvider), 1.25e27);
-        swapperHandler    = new SwapperHandler(psm, dai, usdc, sDai, 3);
-        transferHandler   = new TransferHandler(psm, dai, usdc, sDai);
+        swapperHandler    = new SwapperHandler(psm, usdc, usds, susds, 3);
+        transferHandler   = new TransferHandler(psm, usdc, usds, susds);
 
         targetContract(address(lpHandler));
         targetContract(address(rateSetterHandler));
@@ -554,13 +554,13 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
-        _deposit(address(dai), BURN_ADDRESS, 1e18);
+        _deposit(address(usds), BURN_ADDRESS, 1e18);
 
-        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler            = new LpHandler(psm, usdc, usds, susds, 3);
+        swapperHandler       = new SwapperHandler(psm, usdc, usds, susds, 3);
         timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
@@ -580,7 +580,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
@@ -633,15 +633,15 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(address(dai), address(usdc), address(sDai), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(dsrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
-        _deposit(address(dai), BURN_ADDRESS, 1e18);
+        _deposit(address(usds), BURN_ADDRESS, 1e18);
 
-        lpHandler            = new LpHandler(psm, dai, usdc, sDai, 3);
-        swapperHandler       = new SwapperHandler(psm, dai, usdc, sDai, 3);
+        lpHandler            = new LpHandler(psm, usdc, usds, susds, 3);
+        swapperHandler       = new SwapperHandler(psm, usdc, usds, susds, 3);
         timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
-        transferHandler      = new TransferHandler(psm, dai, usdc, sDai);
+        transferHandler      = new TransferHandler(psm, usdc, usds, susds);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.
