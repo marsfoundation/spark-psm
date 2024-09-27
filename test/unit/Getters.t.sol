@@ -208,7 +208,7 @@ contract PSMHarnessTests is PSMTestBase {
     }
 
     function test_getAssetValue_zeroAddress() public {
-        vm.expectRevert("PSM3/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset-for-value");
         psmHarness.getAssetValue(address(0), 1, false);
     }
 
