@@ -24,9 +24,9 @@ contract TimeBasedRateHandler is HandlerBase, StdCheats {
     }
 
     // This acts as a receiver on an L2.
-    function setSUSDSData(uint256 newDsr) external {
+    function setSUSDSData(uint256 newSsr) external {
         // 1. Setup and bounds
-        ssr = _bound(newDsr, 1e27, TWENTY_PCT_APY_SSR);
+        ssr = _bound(newSsr, 1e27, TWENTY_PCT_APY_SSR);
 
         // Update rho to be current, update chi based on current rate
         uint256 rho = block.timestamp;
