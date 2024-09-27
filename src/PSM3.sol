@@ -207,7 +207,6 @@ contract PSM3 is IPSM3, Ownable {
             : maxAssetsToWithdraw;
 
         // Get shares to burn, rounding up for both calculations
-        // NOTE: Don't need to check valid asset here since `_getAssetValue` will revert if invalid
         sharesToBurn = _convertToSharesRoundUp(_getAssetValue(asset, assetsWithdrawn, true));
 
         uint256 userShares = shares[msg.sender];
