@@ -190,9 +190,8 @@ contract PSM3 is IPSM3, Ownable {
     function previewDeposit(address asset, uint256 assetsToDeposit)
         public view override returns (uint256)
     {
-        require(_isValidAsset(asset), "PSM3/invalid-asset");
-
         // Convert amount to 1e18 precision denominated in value of USD then convert to shares.
+        // NOTE: Don't need to check valid asset here since `_getAssetValue` will revert if invalid
         return convertToShares(_getAssetValue(asset, assetsToDeposit, false));  // Round down
     }
 
@@ -297,7 +296,7 @@ contract PSM3 is IPSM3, Ownable {
         if      (asset == address(usdc))  return _getUsdcValue(amount);
         else if (asset == address(usds))  return _getUsdsValue(amount);
         else if (asset == address(susds)) return _getSUsdsValue(amount, roundUp);
-        else revert("PSM3/invalid-asset");
+        else revert("PSM3/invalid-asset-for-value");
     }
 
     function _getUsdcValue(uint256 amount) internal view returns (uint256) {

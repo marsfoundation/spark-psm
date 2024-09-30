@@ -8,7 +8,7 @@ import { MockRateProvider, PSMTestBase } from "test/PSMTestBase.sol";
 contract PSMPreviewDeposit_FailureTests is PSMTestBase {
 
     function test_previewDeposit_invalidAsset() public {
-        vm.expectRevert("PSM3/invalid-asset");
+        vm.expectRevert("PSM3/invalid-asset-for-value");
         psm.previewDeposit(makeAddr("other-token"), 1);
     }
 

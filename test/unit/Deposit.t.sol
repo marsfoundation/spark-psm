@@ -19,8 +19,9 @@ contract PSMDepositTests is PSMTestBase {
         psm.deposit(address(usdc), user1, 0);
     }
 
-    function test_deposit_notUsdcOrUsds() public {
-        vm.expectRevert("PSM3/invalid-asset");
+    function test_deposit_invalidAsset() public {
+        // NOTE: This reverts in _getAssetValue
+        vm.expectRevert("PSM3/invalid-asset-for-value");
         psm.deposit(makeAddr("new-asset"), user1, 100e6);
     }
 
