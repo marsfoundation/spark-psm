@@ -3,8 +3,8 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 
-import { DSRAuthOracle } from "lib/xchain-dsr-oracle/src/DSRAuthOracle.sol";
-import { IDSROracle }    from "lib/xchain-dsr-oracle/src/interfaces/IDSROracle.sol";
+import { SSRAuthOracle } from "lib/xchain-ssr-oracle/src/SSRAuthOracle.sol";
+import { ISSROracle }    from "lib/xchain-ssr-oracle/src/interfaces/ISSROracle.sol";
 
 import { PSM3 } from "src/PSM3.sol";
 
@@ -541,36 +541,36 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
     function setUp() public override {
         super.setUp();
 
-        DSRAuthOracle dsrOracle = new DSRAuthOracle();
+        SSRAuthOracle ssrOracle = new SSRAuthOracle();
 
         // Workaround to initialize PSM with an oracle that does not return zero
         // This gets overwritten by the handler
-        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
-        dsrOracle.setPotData(IDSROracle.PotData({
-            dsr: uint96(1e27),
+        ssrOracle.grantRole(ssrOracle.DATA_PROVIDER_ROLE(), address(this));
+        ssrOracle.setSUSDSData(ISSROracle.SUSDSData({
+            ssr: uint96(1e27),
             chi: uint120(1e27),
             rho: uint40(block.timestamp)
         }));
-        dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
+        ssrOracle.revokeRole(ssrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);
 
         lpHandler            = new LpHandler(psm, usdc, usds, susds, 3);
         swapperHandler       = new SwapperHandler(psm, usdc, usds, susds, 3);
-        timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
+        timeBasedRateHandler = new TimeBasedRateHandler(psm, ssrOracle);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.
-        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
+        ssrOracle.grantRole(ssrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
 
-        rateProvider = IRateProviderLike(address(dsrOracle));
+        rateProvider = IRateProviderLike(address(ssrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27);
+        timeBasedRateHandler.setSUSDSData(1e27);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));
@@ -580,7 +580,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A_test() public view {
+    function invariant_A() public view {
         _checkInvariant_A();
     }
 
@@ -620,37 +620,37 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
     function setUp() public override {
         super.setUp();
 
-        DSRAuthOracle dsrOracle = new DSRAuthOracle();
+        SSRAuthOracle ssrOracle = new SSRAuthOracle();
 
         // Workaround to initialize PSM with an oracle that does not return zero
         // This gets overwritten by the handler
-        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
-        dsrOracle.setPotData(IDSROracle.PotData({
-            dsr: uint96(1e27),
+        ssrOracle.grantRole(ssrOracle.DATA_PROVIDER_ROLE(), address(this));
+        ssrOracle.setSUSDSData(ISSROracle.SUSDSData({
+            ssr: uint96(1e27),
             chi: uint120(1e27),
             rho: uint40(block.timestamp)
         }));
-        dsrOracle.revokeRole(dsrOracle.DATA_PROVIDER_ROLE(), address(this));
+        ssrOracle.revokeRole(ssrOracle.DATA_PROVIDER_ROLE(), address(this));
 
         // Redeploy PSM with new rate provider
-        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(dsrOracle));
+        psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);
 
         lpHandler            = new LpHandler(psm, usdc, usds, susds, 3);
         swapperHandler       = new SwapperHandler(psm, usdc, usds, susds, 3);
-        timeBasedRateHandler = new TimeBasedRateHandler(psm, dsrOracle);
+        timeBasedRateHandler = new TimeBasedRateHandler(psm, ssrOracle);
         transferHandler      = new TransferHandler(psm, usdc, usds, susds);
 
         // Handler acts in the same way as a receiver on L2, so add as a data provider to the
         // oracle.
-        dsrOracle.grantRole(dsrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
+        ssrOracle.grantRole(ssrOracle.DATA_PROVIDER_ROLE(), address(timeBasedRateHandler));
 
-        rateProvider = IRateProviderLike(address(dsrOracle));
+        rateProvider = IRateProviderLike(address(ssrOracle));
 
         // Manually set initial values for the oracle through the handler to start
-        timeBasedRateHandler.setPotData(1e27);
+        timeBasedRateHandler.setSUSDSData(1e27);
 
         targetContract(address(lpHandler));
         targetContract(address(swapperHandler));

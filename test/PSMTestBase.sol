@@ -21,7 +21,7 @@ contract PSMTestBase is Test {
     MockERC20 public usdc;
     MockERC20 public susds;
 
-    IRateProviderLike public rateProvider;  // Can be overridden by dsrOracle using same interface
+    IRateProviderLike public rateProvider;  // Can be overridden by ssrOracle using same interface
 
     MockRateProvider public mockRateProvider;  // Interface used for mocking
 
