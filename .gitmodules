@@ -4,9 +4,9 @@
 [submodule "lib/erc20-helpers"]
 	path = lib/erc20-helpers
 	url = https://github.com/marsfoundation/erc20-helpers
-[submodule "lib/xchain-dsr-oracle"]
-	path = lib/xchain-dsr-oracle
-	url = https://github.com/marsfoundation/xchain-dsr-oracle
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/openzeppelin/openzeppelin-contracts
+[submodule "lib/xchain-ssr-oracle"]
+	path = lib/xchain-ssr-oracle
+	url = https://github.com/marsfoundation/xchain-ssr-oracle
