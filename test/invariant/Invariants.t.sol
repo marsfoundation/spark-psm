@@ -303,16 +303,17 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
 
         // When all funds are completely withdrawn, the sum of all funds withdrawn is equal to the
         // sum of value of all LPs including the burn address. All rounding errors get reduced to
-        // a few wei.
+        // a few wei. Using 20 as a low tolerance that still allows for high rounding errors with
+        // large rate changes in long campaigns.
         assertApproxEqAbs(
             sumLpValue + _getLpTokenValue(BURN_ADDRESS),
             sumStartingValue + startingSeedValue,
-            6
+            20
         );
 
         // All funds can always be withdrawn completely (rounding in withdrawal against users).
         assertEq(psm.totalShares(), 0);
-        assertLe(psm.totalAssets(), 5);
+        assertLe(psm.totalAssets(), 20);
     }
 
     function _warpAndAssertConsistentValueAccrual() public {
