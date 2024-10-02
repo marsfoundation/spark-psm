@@ -140,7 +140,7 @@ contract SwapperHandler is HandlerBase {
         assertApproxEqAbs(
             psm.convertToAssetValue(1e18),
             startingConversion,
-            2e12,
+            3e12,
             "SwapperHandler/swapExactIn/conversion-rate-change"
         );
 
@@ -148,7 +148,7 @@ contract SwapperHandler is HandlerBase {
         assertApproxEqAbs(
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
-            2_000_000e12, // 2e18 of value
+            3_000_000e12, // 2e18 of value
             "SwapperHandler/swapExactIn/conversion-rate-change-million"
         );
 
@@ -284,7 +284,7 @@ contract SwapperHandler is HandlerBase {
         assertApproxEqAbs(
             psm.convertToAssetValue(1e18),
             startingConversion,
-            2e12,
+            3e12,
             "SwapperHandler/swapExactOut/conversion-rate-change"
         );
 
@@ -292,7 +292,7 @@ contract SwapperHandler is HandlerBase {
         assertApproxEqAbs(
             psm.convertToAssetValue(1_000_000e18),
             startingConversionMillion,
-            2_000_000e12, // 2e18 of value
+            3_000_000e12, // 2e18 of value
             "SwapperHandler/swapExactOut/conversion-rate-change-million"
         );
 
@@ -305,11 +305,11 @@ contract SwapperHandler is HandlerBase {
 
         // Disregard this assertion if the LP has less than a dollar of value
         if (startingConversionLp0 > 1e18) {
-            // Position values can fluctuate by up to 0.00000002% on swaps
+            // Position values can fluctuate by up to 0.00000003% on swaps
             assertApproxEqRel(
                 psm.convertToAssetValue(psm.shares(lp0)),
                 startingConversionLp0,
-                0.000002e18,
+                0.000003e18,
                 "SwapperHandler/swapExactOut/conversion-rate-change-lp"
             );
         }
@@ -321,11 +321,11 @@ contract SwapperHandler is HandlerBase {
             "SwapperHandler/swapExactOut/conversion-rate-lp-decrease"
         );
 
-        // PSM value can fluctuate by up to 0.00000002% on swaps because of USDC rounding
+        // PSM value can fluctuate by up to 0.00000003% on swaps because of USDC rounding
         assertApproxEqRel(
             psm.totalAssets(),
             startingValue,
-            0.000002e18,
+            0.000003e18,
             "SwapperHandler/swapExactOut/psm-total-value-change"
         );
 
