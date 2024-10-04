@@ -409,7 +409,7 @@ contract PSM3 is IPSM3, Ownable {
     }
 
     function _pushAsset(address asset, address receiver, uint256 amount) internal {
-        if (asset == address(usdc)) {
+        if (asset == address(usdc) && pocket != address(this)) {
             usdc.safeTransferFrom(pocket, receiver, amount);
         } else {
             IERC20(asset).safeTransfer(receiver, amount);

@@ -119,6 +119,41 @@ contract PSMDepositTests is PSMTestBase {
         assertEq(psm.convertToShares(1e18), 1e18);
     }
 
+    function test_deposit_firstDepositUsdc_pocketIsPsm() public {
+        vm.prank(owner);
+        psm.setPocket(address(psm));
+
+        usdc.mint(user1, 100e6);
+
+        vm.startPrank(user1);
+
+        usdc.approve(address(psm), 100e6);
+
+        assertEq(usdc.allowance(user1, address(psm)), 100e6);
+        assertEq(usdc.balanceOf(user1),               100e6);
+        assertEq(usdc.balanceOf(address(psm)),        0);
+
+        assertEq(psm.totalShares(),     0);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 0);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6);
+
+        assertEq(newShares, 100e18);
+
+        assertEq(usdc.allowance(user1, address(psm)), 0);
+        assertEq(usdc.balanceOf(user1),               0);
+        assertEq(usdc.balanceOf(address(psm)),       100e6);
+
+        assertEq(psm.totalShares(),     100e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 100e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+    }
+
     function test_deposit_firstDepositSUsds() public {
         susds.mint(user1, 100e18);
 

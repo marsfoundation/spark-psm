@@ -28,6 +28,17 @@ contract PSMWithdrawTests is PSMTestBase {
         psm.withdraw(makeAddr("new-asset"), receiver1, 100e6);
     }
 
+    function test_withdraw_pocketInsufficientApprovalBoundary() public {
+        vm.prank(pocket);
+        usdc.approve(address(psm), 100e18);
+
+        _deposit(address(usdc), user1, 100e18 + 1);
+
+        vm.prank(user1);
+        vm.expectRevert("SafeERC20/transfer-from-failed");
+        psm.withdraw(address(usdc), receiver1, 100e18 + 1);
+    }
+
     function test_withdraw_onlyUsdsInPsm() public {
         _deposit(address(usds), user1, 100e18);
 
@@ -75,6 +86,36 @@ contract PSMWithdrawTests is PSMTestBase {
         assertEq(usdc.balanceOf(user1),     0);
         assertEq(usdc.balanceOf(receiver1), 100e6);
         assertEq(usdc.balanceOf(pocket),    0);
+
+        assertEq(psm.totalShares(), 0);
+        assertEq(psm.shares(user1), 0);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+    }
+
+    function test_withdraw_onlyUsdcInPsm_pocketIsPsm() public {
+        vm.prank(owner);
+        psm.setPocket(address(psm));
+
+        _deposit(address(usdc), user1, 100e6);
+
+        assertEq(usdc.balanceOf(user1),        0);
+        assertEq(usdc.balanceOf(receiver1),    0);
+        assertEq(usdc.balanceOf(address(psm)), 100e6);
+
+        assertEq(psm.totalShares(), 100e18);
+        assertEq(psm.shares(user1), 100e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        vm.prank(user1);
+        uint256 amount = psm.withdraw(address(usdc), receiver1, 100e6);
+
+        assertEq(amount, 100e6);
+
+        assertEq(usdc.balanceOf(user1),        0);
+        assertEq(usdc.balanceOf(receiver1),    100e6);
+        assertEq(usdc.balanceOf(address(psm)), 0);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
