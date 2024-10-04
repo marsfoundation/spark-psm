@@ -20,6 +20,9 @@ contract PSMHarnessTests is PSMTestBase {
             address(susds),
             address(rateProvider)
         );
+
+        vm.prank(owner);
+        psmHarness.setPocket(pocket);
     }
 
     function test_getUsdsValue() public view {
@@ -210,6 +213,12 @@ contract PSMHarnessTests is PSMTestBase {
     function test_getAssetValue_zeroAddress() public {
         vm.expectRevert("PSM3/invalid-asset-for-value");
         psmHarness.getAssetValue(address(0), 1, false);
+    }
+
+    function test_getAssetCustodian() public view {
+        assertEq(psmHarness.getAssetCustodian(address(usdc)),  address(pocket));
+        assertEq(psmHarness.getAssetCustodian(address(usds)),  address(psmHarness));
+        assertEq(psmHarness.getAssetCustodian(address(susds)), address(psmHarness));
     }
 
 }

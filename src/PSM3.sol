@@ -400,4 +400,8 @@ contract PSM3 is IPSM3, Ownable {
         return asset == address(usdc) || asset == address(usds) || asset == address(susds);
     }
 
+    function _getAssetCustodian(address asset) internal view returns (address custodian) {
+        custodian = asset == address(usdc) ? pocket : address(this);
+    }
+
 }
