@@ -63,20 +63,27 @@ contract PSMSetPocketSuccessTests is PSMTestBase {
     );
 
     function test_setPocket_pocketIsPsm() public {
+        vm.prank(owner);
+        psm.setPocket(address(psm));
+
         deal(address(usdc), address(psm), 1_000_000e6);
 
         assertEq(usdc.balanceOf(address(psm)), 1_000_000e6);
         assertEq(usdc.balanceOf(pocket1),      0);
 
-        assertEq(psm.pocket(), pocket);
+        assertEq(psm.totalAssets(), 1_000_000e18);
+
+        assertEq(psm.pocket(), address(psm));
 
         vm.prank(owner);
         vm.expectEmit(address(psm));
-        emit PocketSet(pocket, pocket1, 1_000_000e6);
+        emit PocketSet(address(psm), pocket1, 1_000_000e6);
         psm.setPocket(pocket1);
 
         assertEq(usdc.balanceOf(address(psm)), 0);
         assertEq(usdc.balanceOf(pocket1),      1_000_000e6);
+
+        assertEq(psm.totalAssets(), 1_000_000e18);
 
         assertEq(psm.pocket(), pocket1);
     }
@@ -95,7 +102,7 @@ contract PSMSetPocketSuccessTests is PSMTestBase {
         assertEq(usdc.balanceOf(pocket1), 1_000_000e6);
         assertEq(usdc.balanceOf(pocket2), 0);
 
-        assertEq(psm.totalAssets(), 0);
+        assertEq(psm.totalAssets(), 1_000_000e18);
 
         assertEq(psm.pocket(), pocket1);
 
@@ -109,7 +116,7 @@ contract PSMSetPocketSuccessTests is PSMTestBase {
         assertEq(usdc.balanceOf(pocket1), 0);
         assertEq(usdc.balanceOf(pocket2), 1_000_000e6);
 
-        assertEq(psm.totalAssets(), 0);
+        assertEq(psm.totalAssets(), 1_000_000e18);
 
         assertEq(psm.pocket(), pocket2);
     }
@@ -129,7 +136,7 @@ contract PSMSetPocketSuccessTests is PSMTestBase {
         vm.prank(owner);
         psm.setPocket(pocket1);
 
-        assertEq(psm.totalAssets(), 2_000_000e18);
+        assertEq(psm.totalAssets(), 3_000_000e18);
     }
 
 }

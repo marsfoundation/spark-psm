@@ -16,7 +16,7 @@ contract PSMSwapExactInFailureTests is PSMTestBase {
         super.setUp();
 
         // Needed for boundary success conditions
-        usdc.mint(address(psm), 100e6);
+        usdc.mint(pocket, 100e6);
         susds.mint(address(psm), 100e18);
     }
 
@@ -135,7 +135,7 @@ contract PSMSwapExactInSuccessTestsBase is PSMTestBase {
         // Mint 100x higher than max amount for each token (max conversion rate)
         // Covers both lower and upper bounds of conversion rate (1% to 10,000% are both 100x)
         usds.mint(address(psm),  USDS_TOKEN_MAX  * 100);
-        usdc.mint(address(psm),  USDC_TOKEN_MAX  * 100);
+        usdc.mint(pocket,        USDC_TOKEN_MAX  * 100);
         susds.mint(address(psm), SUSDS_TOKEN_MAX * 100);
     }
 
@@ -151,6 +151,9 @@ contract PSMSwapExactInSuccessTestsBase is PSMTestBase {
         uint256 psmAssetInBalance  = 100_000_000_000_000 * 10 ** assetIn.decimals();
         uint256 psmAssetOutBalance = 100_000_000_000_000 * 10 ** assetOut.decimals();
 
+        address assetInCustodian  = address(assetIn)  == address(usdc) ? pocket : address(psm);
+        address assetOutCustodian = address(assetOut) == address(usdc) ? pocket : address(psm);
+
         assetIn.mint(swapper_, amountIn);
 
         vm.startPrank(swapper_);
@@ -159,11 +162,11 @@ contract PSMSwapExactInSuccessTestsBase is PSMTestBase {
 
         assertEq(assetIn.allowance(swapper_, address(psm)), amountIn);
 
-        assertEq(assetIn.balanceOf(swapper_),     amountIn);
-        assertEq(assetIn.balanceOf(address(psm)), psmAssetInBalance);
+        assertEq(assetIn.balanceOf(swapper_),         amountIn);
+        assertEq(assetIn.balanceOf(assetInCustodian), psmAssetInBalance);
 
-        assertEq(assetOut.balanceOf(receiver_),    0);
-        assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance);
+        assertEq(assetOut.balanceOf(receiver_),         0);
+        assertEq(assetOut.balanceOf(assetOutCustodian), psmAssetOutBalance);
 
         uint256 returnedAmountOut = psm.swapExactIn(
             address(assetIn),
@@ -178,11 +181,11 @@ contract PSMSwapExactInSuccessTestsBase is PSMTestBase {
 
         assertEq(assetIn.allowance(swapper_, address(psm)), 0);
 
-        assertEq(assetIn.balanceOf(swapper_),     0);
-        assertEq(assetIn.balanceOf(address(psm)), psmAssetInBalance + amountIn);
+        assertEq(assetIn.balanceOf(swapper_),         0);
+        assertEq(assetIn.balanceOf(assetInCustodian), psmAssetInBalance + amountIn);
 
-        assertEq(assetOut.balanceOf(receiver_),    amountOut);
-        assertEq(assetOut.balanceOf(address(psm)), psmAssetOutBalance - amountOut);
+        assertEq(assetOut.balanceOf(receiver_),         amountOut);
+        assertEq(assetOut.balanceOf(assetOutCustodian), psmAssetOutBalance - amountOut);
     }
 
 }
@@ -211,7 +214,9 @@ contract PSMSwapExactInUsdsAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn = _bound(amountIn, 1, USDS_TOKEN_MAX);  // Zero amount reverts
@@ -226,7 +231,9 @@ contract PSMSwapExactInUsdsAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn       = _bound(amountIn,       1,       USDS_TOKEN_MAX);
@@ -264,7 +271,9 @@ contract PSMSwapExactInUsdcAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn = _bound(amountIn, 1, USDC_TOKEN_MAX);  // Zero amount reverts
@@ -279,7 +288,9 @@ contract PSMSwapExactInUsdcAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn       = _bound(amountIn,       1,       USDC_TOKEN_MAX);
@@ -319,7 +330,9 @@ contract PSMSwapExactInSUsdsAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn       = _bound(amountIn,       1,       SUSDS_TOKEN_MAX);
@@ -339,7 +352,9 @@ contract PSMSwapExactInSUsdsAssetInTests is PSMSwapExactInSuccessTestsBase {
         address fuzzReceiver
     ) public {
         vm.assume(fuzzSwapper  != address(psm));
+        vm.assume(fuzzSwapper  != address(pocket));
         vm.assume(fuzzReceiver != address(psm));
+        vm.assume(fuzzReceiver != address(pocket));
         vm.assume(fuzzReceiver != address(0));
 
         amountIn       = _bound(amountIn,       1,       SUSDS_TOKEN_MAX);
@@ -409,11 +424,13 @@ contract PSMSwapExactInFuzzTests is PSMTestBase {
                 assetOut = _getAsset(_hash(i, "assetOut") + 1);
             }
 
+            address assetOutCustodian = address(assetOut) == address(usdc) ? pocket : address(psm);
+
             // Calculate the maximum amount that can be swapped by using the inverse conversion rate
             uint256 maxAmountIn = psm.previewSwapExactOut(
                 address(assetIn),
                 address(assetOut),
-                assetOut.balanceOf(address(psm))
+                assetOut.balanceOf(assetOutCustodian)
             );
 
             uint256 amountIn = _bound(_hash(i, "amountIn"), 0, maxAmountIn - 1);  // Rounding

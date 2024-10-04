@@ -230,7 +230,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 1e18);
 
-        usdc.mint(address(psm), 1e6);
+        usdc.mint(address(pocket), 1e6);
 
         assertEq(psm.totalAssets(), 2e18);
 
@@ -242,7 +242,7 @@ contract GetPsmTotalValueTests is PSMTestBase {
 
         assertEq(psm.totalAssets(), 2.25e18);
 
-        usdc.burn(address(psm), 1e6);
+        usdc.burn(address(pocket), 1e6);
 
         assertEq(psm.totalAssets(), 1.25e18);
 
@@ -254,8 +254,8 @@ contract GetPsmTotalValueTests is PSMTestBase {
     function test_totalAssets_conversionRateChanges() public {
         assertEq(psm.totalAssets(), 0);
 
-        usds.mint(address(psm),  1e18);
-        usdc.mint(address(psm), 1e6);
+        usds.mint(address(psm), 1e18);
+        usdc.mint(address(pocket), 1e6);
         susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 3.25e18);
@@ -272,8 +272,8 @@ contract GetPsmTotalValueTests is PSMTestBase {
     function test_totalAssets_bothChange() public {
         assertEq(psm.totalAssets(), 0);
 
-        usds.mint(address(psm),  1e18);
-        usdc.mint(address(psm), 1e6);
+        usds.mint(address(psm), 1e18);
+        usdc.mint(address(pocket), 1e6);
         susds.mint(address(psm), 1e18);
 
         assertEq(psm.totalAssets(), 3.25e18);
@@ -300,8 +300,8 @@ contract GetPsmTotalValueTests is PSMTestBase {
         susdsAmount    = _bound(susdsAmount,    0,         SUSDS_TOKEN_MAX);
         conversionRate = _bound(conversionRate, 0.0001e27, 1000e27);
 
-        usds.mint(address(psm),  usdsAmount);
-        usdc.mint(address(psm),  usdcAmount);
+        usds.mint(address(psm), usdsAmount);
+        usdc.mint(address(pocket), usdcAmount);
         susds.mint(address(psm), susdsAmount);
 
         mockRateProvider.__setConversionRate(conversionRate);

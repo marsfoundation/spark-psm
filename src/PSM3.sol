@@ -115,8 +115,8 @@ contract PSM3 is IPSM3, Ownable {
 
         require(amountOut >= minAmountOut, "PSM3/amountOut-too-low");
 
-        IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
-        IERC20(assetOut).safeTransfer(receiver, amountOut);
+        _pullAsset(assetIn, amountIn);
+        _pushAsset(assetOut, receiver, amountOut);
 
         emit Swap(assetIn, assetOut, msg.sender, receiver, amountIn, amountOut, referralCode);
     }
@@ -138,8 +138,8 @@ contract PSM3 is IPSM3, Ownable {
 
         require(amountIn <= maxAmountIn, "PSM3/amountIn-too-high");
 
-        IERC20(assetIn).safeTransferFrom(msg.sender, address(this), amountIn);
-        IERC20(assetOut).safeTransfer(receiver, amountOut);
+        _pullAsset(assetIn, amountIn);
+        _pushAsset(assetOut, receiver, amountOut);
 
         emit Swap(assetIn, assetOut, msg.sender, receiver, amountIn, amountOut, referralCode);
     }
@@ -158,7 +158,7 @@ contract PSM3 is IPSM3, Ownable {
         shares[receiver] += newShares;
         totalShares      += newShares;
 
-        IERC20(asset).safeTransferFrom(msg.sender, address(this), assetsToDeposit);
+        _pullAsset(asset, assetsToDeposit);
 
         emit Deposit(asset, msg.sender, receiver, assetsToDeposit, newShares);
     }
@@ -178,7 +178,7 @@ contract PSM3 is IPSM3, Ownable {
             totalShares        -= sharesToBurn;
         }
 
-        IERC20(asset).safeTransfer(receiver, assetsWithdrawn);
+        _pushAsset(asset, receiver, assetsWithdrawn);
 
         emit Withdraw(asset, msg.sender, receiver, assetsWithdrawn, sharesToBurn);
     }
@@ -200,7 +200,7 @@ contract PSM3 is IPSM3, Ownable {
     {
         require(_isValidAsset(asset), "PSM3/invalid-asset");
 
-        uint256 assetBalance = IERC20(asset).balanceOf(address(this));
+        uint256 assetBalance = IERC20(asset).balanceOf(_getAssetCustodian(asset));
 
         assetsWithdrawn = assetBalance < maxAssetsToWithdraw
             ? assetBalance
@@ -283,7 +283,7 @@ contract PSM3 is IPSM3, Ownable {
     /**********************************************************************************************/
 
     function totalAssets() public view override returns (uint256) {
-        return _getUsdcValue(usdc.balanceOf(address(this)))
+        return _getUsdcValue(usdc.balanceOf(pocket))
             +  _getUsdsValue(usds.balanceOf(address(this)))
             +  _getSUsdsValue(susds.balanceOf(address(this)), false);  // Round down
     }
@@ -402,6 +402,18 @@ contract PSM3 is IPSM3, Ownable {
 
     function _getAssetCustodian(address asset) internal view returns (address custodian) {
         custodian = asset == address(usdc) ? pocket : address(this);
+    }
+
+    function _pullAsset(address asset, uint256 amount) internal {
+        IERC20(asset).safeTransferFrom(msg.sender, _getAssetCustodian(asset), amount);
+    }
+
+    function _pushAsset(address asset, address receiver, uint256 amount) internal {
+        if (asset == address(usdc)) {
+            usdc.safeTransferFrom(pocket, receiver, amount);
+        } else {
+            IERC20(asset).safeTransfer(receiver, amount);
+        }
     }
 
 }

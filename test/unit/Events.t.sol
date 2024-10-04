@@ -83,7 +83,7 @@ contract PSMEventTests is PSMTestBase {
 
     function test_swap_events() public {
         usds.mint(address(psm),  1000e18);
-        usdc.mint(address(psm), 1000e6);
+        usdc.mint(pocket, 1000e6);
         susds.mint(address(psm), 1000e18);
 
         vm.startPrank(sender);

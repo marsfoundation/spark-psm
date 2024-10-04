@@ -129,7 +129,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             expectedSUsdsInflows += transferHandler.transfersIn(address(susds));
         }
 
-        assertEq(usdc.balanceOf(address(psm)),  expectedUsdcInflows  - expectedUsdcOutflows);
+        assertEq(usdc.balanceOf(psm.pocket()),  expectedUsdcInflows  - expectedUsdcOutflows);
         assertEq(usds.balanceOf(address(psm)),  expectedUsdsInflows  - expectedUsdsOutflows);
         assertEq(susds.balanceOf(address(psm)), expectedSUsdsInflows - expectedSUsdsOutflows);
     }
@@ -557,6 +557,12 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         // Redeploy PSM with new rate provider
         psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
 
+        vm.prank(owner);
+        psm.setPocket(pocket);
+
+        vm.prank(pocket);
+        usdc.approve(address(psm), type(uint256).max);
+
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);
 
@@ -581,7 +587,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         assertEq(swapperHandler.lp0(), lpHandler.lps(0));
     }
 
-    function invariant_A() public view {
+    function invariant_A_test() public view {
         _checkInvariant_A();
     }
 
@@ -635,6 +641,12 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
 
         // Redeploy PSM with new rate provider
         psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
+
+        vm.prank(owner);
+        psm.setPocket(pocket);
+
+        vm.prank(pocket);
+        usdc.approve(address(psm), type(uint256).max);
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);

@@ -54,6 +54,9 @@ contract PSMTestBase is Test {
         vm.prank(owner);
         psm.setPocket(pocket);
 
+        vm.prank(pocket);
+        usdc.approve(address(psm), type(uint256).max);
+
         vm.label(address(usds),  "USDS");
         vm.label(address(usdc),  "USDC");
         vm.label(address(susds), "sUSDS");
@@ -61,7 +64,7 @@ contract PSMTestBase is Test {
 
     function _getPsmValue() internal view returns (uint256) {
         return (susds.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
-            + usdc.balanceOf(address(psm)) * 1e12
+            + usdc.balanceOf(psm.pocket()) * 1e12
             + usds.balanceOf(address(psm));
     }
 
