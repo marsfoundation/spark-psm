@@ -44,10 +44,12 @@ contract TransferHandler is HandlerBase {
         // on transfer amounts.
         amount = _bound(amount, 1, 10_000_000 * 10 ** asset.decimals());
 
+        address custodian = address(asset) == address(assets[0]) ? psm.pocket() : address(psm);
+
         // 3. Perform action against protocol
         asset.mint(sender, amount);
         vm.prank(sender);
-        asset.transfer(address(psm), amount);
+        asset.transfer(custodian, amount);
 
         // 4. Update ghost variable(s)
         transfersIn[address(asset)] += amount;

@@ -61,7 +61,7 @@ contract InflationAttackTests is PSMTestBase {
         assertEq(psm.convertToAssetValue(1), 1);
 
         vm.prank(frontRunner);
-        usdc.transfer(address(psm), 10_000_000e6);
+        usdc.transfer(pocket, 10_000_000e6);
 
         // Highly inflated exchange rate
         assertEq(psm.convertToAssetValue(1), 10_000_000e18 + 1);
@@ -81,7 +81,7 @@ contract InflationAttackTests is PSMTestBase {
         _withdraw(address(usdc), firstDepositor, type(uint256).max);
         _withdraw(address(usdc), frontRunner,    type(uint256).max);
 
-        assertEq(usdc.balanceOf(address(psm)), 0);
+        assertEq(usdc.balanceOf(pocket), 0);
 
         // Front runner profits 5m USDC, first depositor loses 5m USDC
         assertEq(usdc.balanceOf(firstDepositor), 15_000_000e6);
@@ -98,7 +98,7 @@ contract InflationAttackTests is PSMTestBase {
         deal(address(usdc), frontRunner, 10_000_000e6);
 
         vm.prank(frontRunner);
-        usdc.transfer(address(psm), 10_000_000e6);
+        usdc.transfer(pocket, 10_000_000e6);
 
         // Still inflated, but all value is transferred to existing holder, deployer
         assertEq(psm.convertToAssetValue(1), 0.00000000001e18);

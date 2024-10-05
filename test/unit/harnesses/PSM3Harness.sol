@@ -32,4 +32,8 @@ contract PSM3Harness is PSM3 {
         return _getSUsdsValue(amount, roundUp);
     }
 
+    function getAssetCustodian(address asset) external view returns (address) {
+        return _getAssetCustodian(asset);
+    }
+
 }

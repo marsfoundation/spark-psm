@@ -13,12 +13,13 @@ import { MockRateProvider } from "test/mocks/MockRateProvider.sol";
 
 contract PSMTestBase is Test {
 
-    address public owner = makeAddr("owner");
+    address public owner  = makeAddr("owner");
+    address public pocket = makeAddr("pocket");
 
     PSM3 public psm;
 
-    MockERC20 public usds;
     MockERC20 public usdc;
+    MockERC20 public usds;
     MockERC20 public susds;
 
     IRateProviderLike public rateProvider;  // Can be overridden by ssrOracle using same interface
@@ -37,8 +38,8 @@ contract PSMTestBase is Test {
     uint256 public constant USDC_TOKEN_MAX  = 1e18;
 
     function setUp() public virtual {
-        usds  = new MockERC20("usds",  "usds",  18);
         usdc  = new MockERC20("usdc",  "usdc",  6);
+        usds  = new MockERC20("usds",  "usds",  18);
         susds = new MockERC20("susds", "susds", 18);
 
         mockRateProvider = new MockRateProvider();
@@ -50,6 +51,12 @@ contract PSMTestBase is Test {
 
         psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(rateProvider));
 
+        vm.prank(owner);
+        psm.setPocket(pocket);
+
+        vm.prank(pocket);
+        usdc.approve(address(psm), type(uint256).max);
+
         vm.label(address(usds),  "USDS");
         vm.label(address(usdc),  "USDC");
         vm.label(address(susds), "sUSDS");
@@ -57,7 +64,7 @@ contract PSMTestBase is Test {
 
     function _getPsmValue() internal view returns (uint256) {
         return (susds.balanceOf(address(psm)) * rateProvider.getConversionRate() / 1e27)
-            + usdc.balanceOf(address(psm)) * 1e12
+            + usdc.balanceOf(psm.pocket()) * 1e12
             + usds.balanceOf(address(psm));
     }
 

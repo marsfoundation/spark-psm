@@ -80,12 +80,15 @@ contract SwapperHandler is HandlerBase {
             assetOut = _getAsset(assetOutSeed + 2);
         }
 
+        address assetOutCustodian
+            = address(assetOut) == address(assets[0]) ? psm.pocket() : address(psm);
+
         // By calculating the amount of assetIn we can get from the max asset out, we can
         // determine the max amount of assetIn we can swap since its the same both ways.
         uint256 maxAmountIn = psm.previewSwapExactIn(
             address(assetOut),
             address(assetIn),
-            assetOut.balanceOf(address(psm))
+            assetOut.balanceOf(assetOutCustodian)
         );
 
         // If there's zero balance a swap can't be performed
@@ -230,13 +233,16 @@ contract SwapperHandler is HandlerBase {
             assetOut = _getAsset(assetOutSeed + 2);
         }
 
+        address assetOutCustodian
+            = address(assetOut) == address(assets[0]) ? psm.pocket() : address(psm);
+
         // If there's zero balance a swap can't be performed
-        if (assetOut.balanceOf(address(psm)) == 0) {
+        if (assetOut.balanceOf(assetOutCustodian) == 0) {
             zeroBalanceCount++;
             return;
         }
 
-        amountOut = _bound(amountOut, 1, assetOut.balanceOf(address(psm)));
+        amountOut = _bound(amountOut, 1, assetOut.balanceOf(assetOutCustodian));
 
         // Not testing this functionality, just want a successful swap
         uint256 maxAmountIn = type(uint256).max;
@@ -358,7 +364,5 @@ contract SwapperHandler is HandlerBase {
         else if (asset == address(assets[2])) return amount * rateProvider.getConversionRate() / 1e27;
         else revert("SwapperHandler/asset-not-found");
     }
-
-    // TODO: Add swapExactOut in separate PR
 
 }

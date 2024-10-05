@@ -17,6 +17,7 @@ import { RateSetterHandler }    from "test/invariant/handlers/RateSetterHandler.
 import { SwapperHandler }       from "test/invariant/handlers/SwapperHandler.sol";
 import { TimeBasedRateHandler } from "test/invariant/handlers/TimeBasedRateHandler.sol";
 import { TransferHandler }      from "test/invariant/handlers/TransferHandler.sol";
+import { OwnerHandler }         from "test/invariant/handlers/OwnerHandler.sol";
 
 abstract contract PSMInvariantTestBase is PSMTestBase {
 
@@ -129,7 +130,7 @@ abstract contract PSMInvariantTestBase is PSMTestBase {
             expectedSUsdsInflows += transferHandler.transfersIn(address(susds));
         }
 
-        assertEq(usdc.balanceOf(address(psm)),  expectedUsdcInflows  - expectedUsdcOutflows);
+        assertEq(usdc.balanceOf(psm.pocket()),  expectedUsdcInflows  - expectedUsdcOutflows);
         assertEq(usds.balanceOf(address(psm)),  expectedUsdsInflows  - expectedUsdsOutflows);
         assertEq(susds.balanceOf(address(psm)), expectedSUsdsInflows - expectedSUsdsOutflows);
     }
@@ -557,6 +558,8 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
         // Redeploy PSM with new rate provider
         psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
 
+        // NOTE: Don't need to set PSM as pocket for this suite as its default on deploy
+
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);
 
@@ -618,7 +621,7 @@ contract PSMInvariants_TimeBasedRateSetting_NoTransfer is PSMInvariantTestBase {
 
 contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBase {
 
-    function setUp() public override {
+    function setUp() public virtual override {
         super.setUp();
 
         SSRAuthOracle ssrOracle = new SSRAuthOracle();
@@ -635,6 +638,9 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
 
         // Redeploy PSM with new rate provider
         psm = new PSM3(owner, address(usdc), address(usds), address(susds), address(ssrOracle));
+
+        // NOTE: This base test suite tests the case of the PSM being the pocket for the whole time,
+        //       where the other suites are testing with an external `pocket`.
 
         // Seed the new PSM with 1e18 shares (1e18 of value)
         _deposit(address(usds), BURN_ADDRESS, 1e18);
@@ -693,6 +699,29 @@ contract PSMInvariants_TimeBasedRateSetting_WithTransfers is PSMInvariantTestBas
         vm.revertTo(snapshot);
 
         _withdrawAllPositions();
+    }
+
+}
+
+// NOTE: Adding pocket setting to only one invariant test suite, as the probability distribution of `setPocket` being
+//       called is too high to be considered reflective of reality (setting pocket as often as deposits for example).
+//       This inherited test suite is the most complex and realistic, so setting the pocket in this
+//       one is sufficient to ensure the expected behavior and accounting.
+contract PSMInvariants_TimeBasedRateSetting_WithTransfers_WithPocketSetting is PSMInvariants_TimeBasedRateSetting_WithTransfers {
+
+    OwnerHandler ownerHandler;
+
+    function setUp() public override {
+        super.setUp();
+
+        // NOTE: The PSM is the pocket to start, so the test suite will start with it as the pocket
+        //       and transfer it to other addresses.
+
+        ownerHandler = new OwnerHandler(psm, usdc);
+        targetContract(address(ownerHandler));
+
+        vm.prank(owner);
+        psm.transferOwnership(address(ownerHandler));
     }
 
 }

@@ -13,9 +13,9 @@ contract InflationAttackTests is PSMTestBase {
     function test_dos_sendFundsBeforeFirstDeposit() public {
         // Attack pool sending funds in before the first deposit
         usdc.mint(address(this), 100e6);
-        usdc.transfer(address(psm), 100e6);
+        usdc.transfer(pocket, 100e6);
 
-        assertEq(usdc.balanceOf(address(psm)), 100e6);
+        assertEq(usdc.balanceOf(pocket), 100e6);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -27,7 +27,7 @@ contract InflationAttackTests is PSMTestBase {
         // because totalValue is not zero so it enters that if statement.
         // This results in the funds going in the pool with no way for the user
         // to recover them.
-        assertEq(usdc.balanceOf(address(psm)), 1_000_100e6);
+        assertEq(usdc.balanceOf(pocket), 1_000_100e6);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);
@@ -37,7 +37,7 @@ contract InflationAttackTests is PSMTestBase {
         // get above zero.
         _deposit(address(usdc), address(user2), 1_000_000e6);
 
-        assertEq(usdc.balanceOf(address(psm)), 2_000_100e6);
+        assertEq(usdc.balanceOf(pocket), 2_000_100e6);
 
         assertEq(psm.totalShares(), 0);
         assertEq(psm.shares(user1), 0);

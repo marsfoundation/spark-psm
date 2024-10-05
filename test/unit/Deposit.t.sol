@@ -96,6 +96,41 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(usdc.allowance(user1, address(psm)), 100e6);
         assertEq(usdc.balanceOf(user1),               100e6);
+        assertEq(usdc.balanceOf(pocket),              0);
+
+        assertEq(psm.totalShares(),     0);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 0);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+
+        uint256 newShares = psm.deposit(address(usdc), receiver1, 100e6);
+
+        assertEq(newShares, 100e18);
+
+        assertEq(usdc.allowance(user1, address(psm)), 0);
+        assertEq(usdc.balanceOf(user1),               0);
+        assertEq(usdc.balanceOf(pocket),              100e6);
+
+        assertEq(psm.totalShares(),     100e18);
+        assertEq(psm.shares(user1),     0);
+        assertEq(psm.shares(receiver1), 100e18);
+
+        assertEq(psm.convertToShares(1e18), 1e18);
+    }
+
+    function test_deposit_firstDepositUsdc_pocketIsPsm() public {
+        vm.prank(owner);
+        psm.setPocket(address(psm));
+
+        usdc.mint(user1, 100e6);
+
+        vm.startPrank(user1);
+
+        usdc.approve(address(psm), 100e6);
+
+        assertEq(usdc.allowance(user1, address(psm)), 100e6);
+        assertEq(usdc.balanceOf(user1),               100e6);
         assertEq(usdc.balanceOf(address(psm)),        0);
 
         assertEq(psm.totalShares(),     0);
@@ -110,7 +145,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(usdc.allowance(user1, address(psm)), 0);
         assertEq(usdc.balanceOf(user1),               0);
-        assertEq(usdc.balanceOf(address(psm)),        100e6);
+        assertEq(usdc.balanceOf(address(psm)),       100e6);
 
         assertEq(psm.totalShares(),     100e18);
         assertEq(psm.shares(user1),     0);
@@ -165,7 +200,7 @@ contract PSMDepositTests is PSMTestBase {
         susds.mint(user1, 100e18);
         susds.approve(address(psm), 100e18);
 
-        assertEq(usdc.balanceOf(address(psm)), 100e6);
+        assertEq(usdc.balanceOf(pocket), 100e6);
 
         assertEq(susds.allowance(user1, address(psm)), 100e18);
         assertEq(susds.balanceOf(user1),               100e18);
@@ -181,7 +216,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, 125e18);
 
-        assertEq(usdc.balanceOf(address(psm)), 100e6);
+        assertEq(usdc.balanceOf(pocket), 100e6);
 
         assertEq(susds.allowance(user1, address(psm)), 0);
         assertEq(susds.balanceOf(user1),               0);
@@ -212,7 +247,7 @@ contract PSMDepositTests is PSMTestBase {
         susds.mint(user1, susdsAmount);
         susds.approve(address(psm), susdsAmount);
 
-        assertEq(usdc.balanceOf(address(psm)), usdcAmount);
+        assertEq(usdc.balanceOf(pocket), usdcAmount);
 
         assertEq(susds.allowance(user1, address(psm)), susdsAmount);
         assertEq(susds.balanceOf(user1),               susdsAmount);
@@ -228,7 +263,7 @@ contract PSMDepositTests is PSMTestBase {
 
         assertEq(newShares, susdsAmount * 125/100);
 
-        assertEq(usdc.balanceOf(address(psm)), usdcAmount);
+        assertEq(usdc.balanceOf(pocket), usdcAmount);
 
         assertEq(susds.allowance(user1, address(psm)), 0);
         assertEq(susds.balanceOf(user1),               0);
@@ -261,7 +296,7 @@ contract PSMDepositTests is PSMTestBase {
 
         vm.stopPrank();
 
-        assertEq(usdc.balanceOf(address(psm)), 100e6);
+        assertEq(usdc.balanceOf(pocket), 100e6);
 
         assertEq(susds.allowance(user1, address(psm)), 0);
         assertEq(susds.balanceOf(user1),               0);
@@ -359,7 +394,7 @@ contract PSMDepositTests is PSMTestBase {
 
         vm.stopPrank();
 
-        assertEq(usdc.balanceOf(address(psm)), usdcAmount);
+        assertEq(usdc.balanceOf(pocket), usdcAmount);
 
         assertEq(susds.balanceOf(user1),        0);
         assertEq(susds.balanceOf(address(psm)), susdsAmount1);
