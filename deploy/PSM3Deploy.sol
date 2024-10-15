@@ -14,7 +14,7 @@ library PSM3Deploy {
         address susds,
         address rateProvider
     )
-        external returns (address psm)
+        internal returns (address psm)
     {
         psm = address(new PSM3(owner, usdc, usds, susds, rateProvider));
 
