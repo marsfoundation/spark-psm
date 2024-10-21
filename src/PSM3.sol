@@ -11,6 +11,15 @@ import { Math }    from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 import { IPSM3 }             from "src/interfaces/IPSM3.sol";
 import { IRateProviderLike } from "src/interfaces/IRateProviderLike.sol";
 
+/*
+    ███████╗██████╗  █████╗ ██████╗ ██╗  ██╗    ██████╗ ███████╗███╗   ███╗
+    ██╔════╝██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝    ██╔══██╗██╔════╝████╗ ████║
+    ███████╗██████╔╝███████║██████╔╝█████╔╝     ██████╔╝███████╗██╔████╔██║
+    ╚════██║██╔═══╝ ██╔══██║██╔══██╗██╔═██╗     ██╔═══╝ ╚════██║██║╚██╔╝██║
+    ███████║██║     ██║  ██║██║  ██║██║  ██╗    ██║     ███████║██║ ╚═╝ ██║
+    ╚══════╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝     ╚══════╝╚═╝     ╚═╝
+*/
+
 contract PSM3 is IPSM3, Ownable {
 
     using SafeERC20 for IERC20;
