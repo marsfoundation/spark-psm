@@ -11,7 +11,7 @@
 
 This repository contains the implementation of a Peg Stability Module (PSM) contract, which facilitates the swapping, depositing, and withdrawing of three given assets to maintain stability and ensure the peg of involved assets. The PSM supports both yield-bearing and non-yield-bearing assets.
 
-The PSM contract allows users to swap between USDC, USDS, and sUDS, deposit any of the assets to mint shares, and withdraw any of the assets by burning shares.
+The PSM contract allows users to swap between USDC, USDS, and sUSDS, deposit any of the assets to mint shares, and withdraw any of the assets by burning shares.
 
 The conversion between a stablecoin and `susds` is provided by a rate provider contract. The rate provider returns the conversion rate between `susds` and the stablecoin in 1e27 precision. The conversion between the stablecoins is one to one.
 
