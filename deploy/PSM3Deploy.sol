@@ -18,8 +18,8 @@ library PSM3Deploy {
     {
         psm = address(new PSM3(owner, usdc, usds, susds, rateProvider));
 
-        IERC20(usds).approve(psm, 1e18);
-        PSM3(psm).deposit(usds, address(0), 1e18);
+        IERC20(usdc).approve(psm, 1e6);
+        PSM3(psm).deposit(usdc, address(0), 1e6);
     }
 
 }
