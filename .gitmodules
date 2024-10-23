@@ -10,3 +10,6 @@
 [submodule "lib/xchain-ssr-oracle"]
 	path = lib/xchain-ssr-oracle
 	url = https://github.com/marsfoundation/xchain-ssr-oracle
+[submodule "lib/spark-address-registry"]
+	path = lib/spark-address-registry
+	url = https://github.com/marsfoundation/spark-address-registry
