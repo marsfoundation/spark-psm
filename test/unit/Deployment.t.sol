@@ -12,7 +12,7 @@ import { PSMTestBase } from "test/PSMTestBase.sol";
 contract PSMDeployTests is PSMTestBase {
 
     function test_deploy() public {
-        deal(address(usds), address(this), 1e18);
+        deal(address(usdc), address(this), 1e6);
 
         PSM3 newPsm = PSM3(PSM3Deploy.deploy(
             address(owner),
@@ -28,10 +28,10 @@ contract PSMDeployTests is PSMTestBase {
         assertEq(address(newPsm.susds()),        address(susds));
         assertEq(address(newPsm.rateProvider()), address(rateProvider));
 
-        assertEq(usds.allowance(address(this), address(newPsm)), 0);
+        assertEq(usdc.allowance(address(this), address(newPsm)), 0);
 
-        assertEq(usds.balanceOf(address(this)),   0);
-        assertEq(usds.balanceOf(address(newPsm)), 1e18);
+        assertEq(usdc.balanceOf(address(this)),   0);
+        assertEq(usdc.balanceOf(address(newPsm)), 1e6);
 
         assertEq(newPsm.totalAssets(),         1e18);
         assertEq(newPsm.totalShares(),         1e18);
